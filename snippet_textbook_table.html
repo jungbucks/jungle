@@ -1,0 +1,256 @@
+<style>
+.msub-wrap{padding:28px 20px 48px;max-width:900px;margin:0 auto}
+.msub-heading{font-size:17px;font-weight:800;color:var(--g900,#111827);margin-bottom:6px}
+.msub-desc{font-size:13px;color:var(--g500,#6B7280);margin-bottom:20px;line-height:1.6}
+.msub-cnt{display:inline-block;background:#ECFDF5;color:#047857;font-size:12px;font-weight:700;padding:2px 8px;border-radius:20px;margin-left:6px;vertical-align:middle}
+.msub-table{width:100%;border-collapse:collapse;font-size:13px}
+.msub-table thead th{background:#059669;color:#fff;padding:10px 12px;text-align:left;font-weight:600;white-space:nowrap}
+.msub-table thead th:first-child{border-radius:8px 0 0 0}
+.msub-table thead th:last-child{border-radius:0 8px 0 0}
+.msub-table tbody td{padding:9px 12px;border-bottom:1px solid var(--g200,#E5E7EB);color:var(--g800,#1F2937);vertical-align:middle}
+.msub-table tbody tr:nth-child(even) td{background:var(--g50,#F9FAFB)}
+.msub-table tbody tr:hover td{background:#ECFDF5}
+.msub-num{color:var(--g400,#9CA3AF);font-size:12px;text-align:center;width:44px}
+.msub-curri{text-align:center;color:var(--g500,#6B7280);font-size:12px;width:72px}
+.msub-org{white-space:nowrap;color:var(--g700,#374151)}
+.msub-grade{text-align:center;color:var(--g500,#6B7280);font-size:12px;width:62px}
+.msub-subj-name{font-weight:600;color:#047857}
+.msub-subheading{font-size:14px;font-weight:700;color:#047857;margin:24px 0 10px;padding:5px 10px;background:#ECFDF5;border-left:3px solid #059669;border-radius:0 6px 6px 0}
+.msub-sep{border:none;border-top:2px solid var(--g200,#E5E7EB);margin:36px 0}
+.msub-empty{text-align:center;color:var(--g400,#9CA3AF);padding:20px 12px;font-size:13px;font-style:italic}
+.msub-publisher{font-weight:500;color:var(--g700,#374151)}
+.msub-year{text-align:center;color:var(--g500,#6B7280);font-size:12px;width:76px;white-space:nowrap}
+.msub-ebook{text-align:center;width:84px}
+.msub-ebook-btn{display:inline-block;padding:3px 10px;background:#059669;color:#fff;border-radius:5px;font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+.msub-ebook-btn:hover{background:#047857}
+</style>
+
+<div class="msub-wrap">
+
+  <!-- ── 중학교 정보 교과서 목록 ───────────────────── -->
+  <div class="msub-heading">중학교 정보 교과서 목록</div>
+  <div class="msub-desc">2022 개정 교육과정 기준 검정 교과서 목록입니다.</div>
+  <table class="msub-table">
+    <thead>
+      <tr>
+        <th class="msub-num">번호</th>
+        <th>출판사</th>
+        <th>저자</th>
+        <th class="msub-ebook">E-BOOK</th>
+        <th class="msub-year">발행연도</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <hr class="msub-sep">
+
+  <!-- ── 고등학교 정보교과 교과서 목록 ─────────────── -->
+  <div class="msub-heading">고등학교 정보교과 교과서 목록</div>
+  <div class="msub-desc">2022 개정 교육과정 기준 검정 교과서 목록입니다. 과목별로 구분되어 있습니다.</div>
+
+  <div class="msub-subheading">정보</div>
+  <table class="msub-table">
+    <thead>
+      <tr>
+        <th class="msub-num">번호</th>
+        <th>출판사</th>
+        <th>저자</th>
+        <th class="msub-ebook">E-BOOK</th>
+        <th class="msub-year">발행연도</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="msub-subheading">인공지능기초</div>
+  <table class="msub-table">
+    <thead>
+      <tr>
+        <th class="msub-num">번호</th>
+        <th>출판사</th>
+        <th>저자</th>
+        <th class="msub-ebook">E-BOOK</th>
+        <th class="msub-year">발행연도</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="msub-subheading">데이터과학</div>
+  <table class="msub-table">
+    <thead>
+      <tr>
+        <th class="msub-num">번호</th>
+        <th>출판사</th>
+        <th>저자</th>
+        <th class="msub-ebook">E-BOOK</th>
+        <th class="msub-year">발행연도</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <div class="msub-subheading">소프트웨어와 생활</div>
+  <table class="msub-table">
+    <thead>
+      <tr>
+        <th class="msub-num">번호</th>
+        <th>출판사</th>
+        <th>저자</th>
+        <th class="msub-ebook">E-BOOK</th>
+        <th class="msub-year">발행연도</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <hr class="msub-sep">
+
+  <!-- ── 중학교 고시외 과목 목록 ────────────────────── -->
+  <div class="msub-heading">중학교 고시외 과목 목록<span class="msub-cnt">16개</span></div>
+  <div class="msub-desc">2022 개정 교육과정 기준, 지역 교육청별 승인 완료 과목입니다. 교과서 개발·채택 시 참고하세요.</div>
+  <table class="msub-table">
+    <thead>
+      <tr>
+        <th>번호</th>
+        <th>교육과정</th>
+        <th>소속기관</th>
+        <th>학교급</th>
+        <th>관련교과</th>
+        <th>과목명</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="msub-num">1</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">인천광역시교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">문제 해결과 프로그래밍</td>
+      </tr>
+      <tr>
+        <td class="msub-num">2</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">경상남도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">피지컬 컴퓨팅</td>
+      </tr>
+      <tr>
+        <td class="msub-num">3</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">서울특별시교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">인공지능과 미래사회(중)</td>
+      </tr>
+      <tr>
+        <td class="msub-num">4</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">인천광역시교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">데이터 분석과 인공지능</td>
+      </tr>
+      <tr>
+        <td class="msub-num">5</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">대전광역시교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">파이썬과 데이터 융합</td>
+      </tr>
+      <tr>
+        <td class="msub-num">6</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">경상북도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">앱과 코딩</td>
+      </tr>
+      <tr>
+        <td class="msub-num">7</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">경상북도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">슬기로운 디지털 생활</td>
+      </tr>
+      <tr>
+        <td class="msub-num">8</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">전라남도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">인공지능과 생활</td>
+      </tr>
+      <tr>
+        <td class="msub-num">9</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">서울특별시교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">프로그래밍과 인공지능 로봇</td>
+      </tr>
+      <tr>
+        <td class="msub-num">10</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">울산광역시교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">스마트한 인공지능 생활 1</td>
+      </tr>
+      <tr>
+        <td class="msub-num">11</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">울산광역시교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">스마트한 인공지능 생활 2</td>
+      </tr>
+      <tr>
+        <td class="msub-num">12</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">충청남도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">인공지능과 차세대 모빌리티</td>
+      </tr>
+      <tr>
+        <td class="msub-num">13</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">경기도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>정보</td>
+        <td class="msub-subj-name">디지털윤리</td>
+      </tr>
+      <tr>
+        <td class="msub-num">14</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">경기도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">타자(他者)와 평화 Ⅱ</td>
+      </tr>
+      <tr>
+        <td class="msub-num">15</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">경기도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">인공지능탐구</td>
+      </tr>
+      <tr>
+        <td class="msub-num">16</td>
+        <td class="msub-curri">2022</td>
+        <td class="msub-org">경기도교육청</td>
+        <td class="msub-grade">중학교</td>
+        <td>과학/기술·가정/정보</td>
+        <td class="msub-subj-name">생활 공간 디자인</td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>

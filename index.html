@@ -1,0 +1,117 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2022 개정 정보과 교육과정 도우미</title>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <button class="header-brand" onclick="goHome()">
+      2022 개정 정보과 교육과정 도우미
+    </button>
+    <div class="tabs" id="tabs"></div>
+  </div>
+</div>
+
+<div class="subtab-bar" id="subtabBar"><div class="subtab-bar-inner" id="subtabBarInner"></div></div>
+
+<div id="jungleImg" style="text-align:center;padding:20px 20px 0"><img src="images/jungle.jpg" alt="" style="height:280px;width:auto"></div>
+
+<div class="search-wrap" id="searchSection">
+  <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input class="search-input" id="searchInput" type="text" placeholder="성취기준 코드 또는 내용 검색… (예: 알고리즘, 클래스, 9정03, 12인기)">
+  <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+</div>
+
+<div class="domain-filter" id="domainFilter"></div>
+
+<div class="main" id="main"></div>
+
+<footer class="site-footer">
+  <span>Instagram: <a href="https://www.instagram.com/jungbucks" target="_blank" rel="noopener" class="site-footer-link">@jungbucks</a></span>
+  <span class="site-footer-sep">·</span>
+  <span>Blog: <a href="http://blog.naver.com/kachu_t" target="_blank" rel="noopener" class="site-footer-link">blog.naver.com/kachu_t</a></span>
+</footer>
+
+<button class="fab" id="fab" onclick="togglePanel()">
+  📋 담은 항목 <span class="fab-cnt" id="fabCnt">0</span>
+</button>
+
+<div class="collect-panel" id="collectPanel">
+  <div class="panel-header" onclick="togglePanel()">
+    <div class="panel-title">📋 담은 성취기준 <span class="panel-cnt-badge" id="panelCnt">0</span></div>
+    <div class="panel-actions" onclick="event.stopPropagation()">
+      <button class="pbtn sec" onclick="clearCollect()">전체 삭제</button>
+      <button class="pbtn pri" id="copyAllBtn" onclick="copyAll()">전체 복사</button>
+      <button class="pbtn sec" id="downloadCollectedBtn" onclick="downloadCollected()">담은 항목 저장 (.txt)</button>
+      <button class="pbtn sec" onclick="togglePanel()">닫기 ▼</button>
+    </div>
+  </div>
+  <div class="panel-body" id="panelBody"></div>
+</div>
+
+
+<!-- 수업계획 성취기준 연결 모달 -->
+<div id="lessonModal" class="eval-modal-overlay" style="display:none" onclick="if(event.target===this)lpCloseModal()">
+  <div class="eval-modal">
+    <div class="eval-modal-hd">
+      <span class="eval-modal-title">성취기준 연결</span>
+      <select id="lpModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="lpModalChangeSubject(this.value)"></select>
+      <button class="cmp-close-btn" onclick="lpCloseModal()">✕</button>
+    </div>
+    <div class="eval-modal-body" id="lpModalBody"></div>
+    <div class="eval-modal-ft">
+      <span class="eval-modal-sel-count" id="lpModalSelCount">0개 선택됨</span>
+      <div style="display:flex;gap:8px">
+        <button class="pbtn sec" onclick="lpCloseModal()">취소</button>
+        <button class="pbtn pri" onclick="lpConfirmModal()">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 성취기준 연결 모달 -->
+<div id="evalModal" class="eval-modal-overlay" style="display:none" onclick="if(event.target===this)evalCloseModal()">
+  <div class="eval-modal">
+    <div class="eval-modal-hd">
+      <span class="eval-modal-title">성취기준 연결</span>
+      <select id="evalModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="evalModalChangeSubject(this.value)"></select>
+      <button class="cmp-close-btn" onclick="evalCloseModal()">✕</button>
+    </div>
+    <div class="eval-modal-body" id="evalModalBody"></div>
+    <div class="eval-modal-ft">
+      <span class="eval-modal-sel-count" id="evalModalSelCount">0개 선택됨</span>
+      <div style="display:flex;gap:8px">
+        <button class="pbtn sec" onclick="evalCloseModal()">취소</button>
+        <button class="pbtn pri" onclick="evalConfirmModal()">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 평가계획 표 미리보기 모달 -->
+<div id="evalPreviewModal" class="eval-preview-overlay" style="display:none" onclick="if(event.target===this)evalClosePreview()">
+  <div class="eval-preview-modal">
+    <div class="eval-preview-hd">
+      <span class="eval-preview-title">표 미리보기</span>
+      <button class="cmp-close-btn" onclick="evalClosePreview()">✕</button>
+    </div>
+    <div class="eval-preview-body" id="evalPreviewBody"></div>
+    <div class="eval-preview-ft">
+      <button class="pbtn sec" id="evalCopyBtn" onclick="evalCopyPreviewTable()">클립보드 복사</button>
+      <button class="pbtn pri" onclick="evalClosePreview()">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- 평가계획 요약 패널 -->
+<div id="evalSumPanel" class="eval-sum-panel"></div>
+
+<script src="assets/data.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>
