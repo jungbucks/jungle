@@ -1633,10 +1633,10 @@ const SUBJECTS = [
       ]}
     ]
   },
-  { id:"simulator", name:"고교학점제 시뮬레이터", type:"simulator",
-    accent:"#374151", aLight:"#F3F4F6", aDark:"#1F2937", domains:[] },
   { id:"evalplan", name:"수업/평가계획", type:"evalplan",
     accent:"#7C3AED", aLight:"#F5F3FF", aDark:"#6D28D9", domains:[] },
+  { id:"simulator", name:"교육과정 시뮬레이터", type:"simulator",
+    accent:"#374151", aLight:"#F3F4F6", aDark:"#1F2937", domains:[] },
   { id:"wiki", name:"추천사이트", type:"wiki",
     accent:"#0EA5E9", aLight:"#F0F9FF", aDark:"#0284C7", domains:[] },
   { id:"textbook", name:"정보교과서", type:"textbook",

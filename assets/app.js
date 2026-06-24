@@ -1,5 +1,5 @@
-﻿const HS_SUBTAB_ORDER = ['high','ai','ds','sw','cs','prog'].map(id => SUBJECTS.findIndex(s => s.id === id));
-const HS_SUBTAB_LABELS = ['정보 (일반선택)', '인공지능 기초 (진로선택)', '데이터 과학 (진로선택)', '소프트웨어와 생활 (융합선택)', '정보과학 (과학계열 진로선택)', '프로그래밍 (전문교과)'];
+﻿const HS_SUBTAB_ORDER = ['middle','high','ai','ds','sw','cs','prog'].map(id => SUBJECTS.findIndex(s => s.id === id));
+const HS_SUBTAB_LABELS = ['중학교 정보', '고등학교 정보 (일반선택)', '인공지능 기초 (진로선택)', '데이터 과학 (진로선택)', '소프트웨어와 생활 (융합선택)', '정보과학 (과학계열 진로선택)', '프로그래밍 (전문교과)'];
 
 // --- Simulator data ---
 const HS_SUBJECTS = [
@@ -27,7 +27,8 @@ const HS_SEMS = [
 ];
 
 // --- Lesson Plan Data ---
-const LP_METHODS = ['설명식 교수', '협력학습', '프로젝트', '토의토론', '실습', '탐구학습', '기타'];
+const LP_METHODS = ['강의식', '협력학습', '프로젝트', '토의토론', '실습', '탐구학습', '기타'];
+const LP_EVAL_METHODS = ['지필평가', '수행평가', '자기평가', '동료평가', '관찰평가'];
 
 // --- State ---
 let curIdx = 0;
@@ -109,11 +110,10 @@ function renderTabs() {
   const isHS = !homeMode && HS_SUBTAB_ORDER.includes(curIdx);
   const mainItems = [
     {type:'subject', idx:idxOf('overview')},
-    {type:'subject', idx:idxOf('middle')},
     {type:'hsgroup'},
-    {type:'subject', idx:idxOf('simulator')},
     {type:'subject', idx:idxOf('evalplan')},
     {type:'subject', idx:idxOf('textbook')},
+    {type:'subject', idx:idxOf('simulator')},
     {type:'subject', idx:idxOf('wiki')},
   ];
   document.getElementById('tabs').innerHTML = mainItems.map(item => {
@@ -132,9 +132,9 @@ function renderTabs() {
     }
     const active = isHS;
     const accent = active ? SUBJECTS[curIdx].accent : '';
-    return `<button class="tab${active?' active':''}" data-text="고등학교 정보 ▾" onclick="selectHSGroup()"
+    return `<button class="tab${active?' active':''}" data-text="정보 성취기준 ▾" onclick="selectHSGroup()"
       style="${active?`color:${accent};border-bottom-color:${accent}`:''}">
-      <span class="tab-inner">고등학교 정보<span style="font-size:10px;line-height:1">▾</span></span></button>`;
+      <span class="tab-inner">정보 성취기준<span style="font-size:10px;line-height:1">▾</span></span></button>`;
   }).join('');
 
   const subtabBar = document.getElementById('subtabBar');
@@ -784,60 +784,219 @@ function updatePanel() {
 
 // --- Textbook ---
 function renderTextbook() {
-  const bookThead = `<thead><tr>
-    <th class="msub-num">번호</th><th>출판사</th><th>저자</th>
-    <th class="msub-ebook">E-BOOK</th><th class="msub-year">발행연도</th>
-  </tr></thead><tbody></tbody>`;
+  const sid = id => SUBJECTS.find(s => s.id === id);
+  const mid  = sid('middle');
+  const high = sid('high');
+  const ai   = sid('ai');
+  const ds   = sid('ds');
+  const sw   = sid('sw');
+
+  function bookTable(s, rows='') {
+    const bg = s.aDark;
+    return `<div class="msub-tbl-scroll"><table class="msub-table">
+    <thead><tr>
+      <th class="msub-num" style="background:${bg}">번호</th>
+      <th style="background:${bg}">출판사</th>
+      <th style="background:${bg}">저자</th>
+      <th class="msub-year" style="background:${bg}">발행연도</th>
+      <th class="msub-ebook" style="background:${bg}">E-BOOK</th>
+    </tr></thead><tbody>${rows}</tbody>
+  </table></div>`;
+  }
+
+  function subheading(s, label) {
+    return `<div class="msub-subheading" style="color:${s.aDark};background:${s.aLight};border-left-color:${s.accent}">${label}</div>`;
+  }
+
+  const highRows = `
+      <tr><td class="msub-num">1</td><td class="msub-publisher">교학사</td><td>이영준 외 5명</td><td class="msub-year">2025</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">2</td><td class="msub-publisher">미래엔</td><td>안성진 외 6명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">3</td><td class="msub-publisher">도서출판길벗</td><td>김재현 외 4명</td><td class="msub-year">2025</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">4</td><td class="msub-publisher">금성출판사</td><td>김영일 외 4명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">5</td><td class="msub-publisher">교문사</td><td>정영식 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">6</td><td class="msub-publisher">비상교육</td><td>임희석 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">7</td><td class="msub-publisher">와이비엠</td><td>정재화 외 7명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">8</td><td class="msub-publisher">이오북스</td><td>김영식 외 7명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">9</td><td class="msub-publisher">천재교과서</td><td>김현철 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">10</td><td class="msub-publisher">씨마스</td><td>강신천 외 9명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">11</td><td class="msub-publisher">삼양미디어</td><td>정웅열 외 7명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>`;
+  const aiRows = `
+      <tr><td class="msub-num">1</td><td class="msub-publisher">웅보출판사</td><td>민무홍 외 3명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">2</td><td class="msub-publisher">금성출판사</td><td>김영일 외 3명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">3</td><td class="msub-publisher">도서출판길벗</td><td>김재현 외 4명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">4</td><td class="msub-publisher">미래엔</td><td>안성진 외 6명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">5</td><td class="msub-publisher">미래융합연구원</td><td>유두규 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">6</td><td class="msub-publisher">비상교육</td><td>임희석 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">7</td><td class="msub-publisher">삼양미디어</td><td>정웅열 외 6명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">8</td><td class="msub-publisher">씨마스</td><td>이지항 외 8명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">9</td><td class="msub-publisher">와이비엠</td><td>서인순 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">10</td><td class="msub-publisher">이오북스</td><td>김귀훈 외 7명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">11</td><td class="msub-publisher">천재교과서</td><td>김현철 외 4명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">12</td><td class="msub-publisher">플레이스터디</td><td>최현종 외 4명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>`;
+  const dsRows = `
+      <tr><td class="msub-num">1</td><td class="msub-publisher">씨마스</td><td>강신천 외 8명</td><td class="msub-year">2025</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">2</td><td class="msub-publisher">올드앤뉴</td><td>임부현 외 4명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">3</td><td class="msub-publisher">삼양미디어</td><td>정웅열 외 7명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">4</td><td class="msub-publisher">와이비엠</td><td>서인순 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">5</td><td class="msub-publisher">천재교과서</td><td>김현철 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>`;
+  const swRows = `
+      <tr><td class="msub-num">1</td><td class="msub-publisher">교학사</td><td>이영준 외 4명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">2</td><td class="msub-publisher">도서출판길벗</td><td>김재현 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">3</td><td class="msub-publisher">삼양미디어</td><td>서성원 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">4</td><td class="msub-publisher">이오북스</td><td>김귀훈 외 7명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">5</td><td class="msub-publisher">천재교과서</td><td>이준구 외 5명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>
+      <tr><td class="msub-num">6</td><td class="msub-publisher">씨마스</td><td>조정원 외 9명</td><td class="msub-year">2024</td><td class="msub-ebook"></td></tr>`;
+  const midGosiwaRows = `
+      <tr><td class="msub-num">1</td><td class="msub-curri">2022</td><td class="msub-org">인천광역시교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">문제 해결과 프로그래밍</td></tr>
+      <tr><td class="msub-num">2</td><td class="msub-curri">2022</td><td class="msub-org">경상남도교육청</td><td>정보</td><td class="msub-subj-name">피지컬 컴퓨팅</td></tr>
+      <tr><td class="msub-num">3</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>정보</td><td class="msub-subj-name">인공지능과 미래사회(중)</td></tr>
+      <tr><td class="msub-num">4</td><td class="msub-curri">2022</td><td class="msub-org">인천광역시교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">데이터 분석과 인공지능</td></tr>
+      <tr><td class="msub-num">5</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>정보</td><td class="msub-subj-name">파이썬과 데이터 융합</td></tr>
+      <tr><td class="msub-num">6</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>정보</td><td class="msub-subj-name">앱과 코딩</td></tr>
+      <tr><td class="msub-num">7</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>정보</td><td class="msub-subj-name">슬기로운 디지털 생활</td></tr>
+      <tr><td class="msub-num">8</td><td class="msub-curri">2022</td><td class="msub-org">전라남도교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">인공지능과 생활</td></tr>
+      <tr><td class="msub-num">9</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>정보</td><td class="msub-subj-name">프로그래밍과 인공지능 로봇</td></tr>
+      <tr><td class="msub-num">10</td><td class="msub-curri">2022</td><td class="msub-org">울산광역시교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">스마트한 인공지능 생활 1</td></tr>
+      <tr><td class="msub-num">11</td><td class="msub-curri">2022</td><td class="msub-org">울산광역시교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">스마트한 인공지능 생활 2</td></tr>
+      <tr><td class="msub-num">12</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>정보</td><td class="msub-subj-name">인공지능과 차세대 모빌리티</td></tr>
+      <tr><td class="msub-num">13</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>정보</td><td class="msub-subj-name">디지털윤리</td></tr>
+      <tr><td class="msub-num">14</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">타자(他者)와 평화 Ⅱ</td></tr>
+      <tr><td class="msub-num">15</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">인공지능탐구</td></tr>
+      <tr><td class="msub-num">16</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">생활 공간 디자인</td></tr>`;
+  const hsGosiwaRows = `
+      <tr><td class="msub-num">1</td><td class="msub-curri">2022</td><td class="msub-org">광주광역시교육청</td><td>정보통신</td><td class="msub-subj-name">군대윤리</td></tr>
+      <tr><td class="msub-num">2</td><td class="msub-curri">2022</td><td class="msub-org">광주광역시교육청</td><td>정보</td><td class="msub-subj-name">수리와 인공지능</td></tr>
+      <tr><td class="msub-num">3</td><td class="msub-curri">2022</td><td class="msub-org">광주광역시교육청</td><td>보통 교과(진로선택)/정보</td><td class="msub-subj-name">정보 과제 연구</td></tr>
+      <tr><td class="msub-num">4</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>보통 교과(정보)-진로선택</td><td class="msub-subj-name">인공지능과 미래사회</td></tr>
+      <tr><td class="msub-num">5</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문 교과(정보-통신)</td><td class="msub-subj-name">프로그래밍(C++)</td></tr>
+      <tr><td class="msub-num">6</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>정보-통신/전공일반</td><td class="msub-subj-name">서버 구축 및 운영</td></tr>
+      <tr><td class="msub-num">7</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>정보-통신/전공일반</td><td class="msub-subj-name">웹 프로그래밍 실무</td></tr>
+      <tr><td class="msub-num">8</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>정보-통신(전공실무)</td><td class="msub-subj-name">화면 디자인</td></tr>
+      <tr><td class="msub-num">9</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과(정보-통신)-전공실무</td><td class="msub-subj-name">웹 애플리케이션 개발</td></tr>
+      <tr><td class="msub-num">10</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과(정보-통신)-전공실무</td><td class="msub-subj-name">인공지능 활용 서비스 개발</td></tr>
+      <tr><td class="msub-num">11</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과(정보-통신)-전공실무</td><td class="msub-subj-name">웹 응용 SW 프로그래밍 실무</td></tr>
+      <tr><td class="msub-num">12</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과(정보-통신)-전공실무</td><td class="msub-subj-name">운영체제와 클라우드 인프라스트럭처 활용</td></tr>
+      <tr><td class="msub-num">13</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과(정보-통신)-전공실무</td><td class="msub-subj-name">서버 응용 SW 엔지니어링 실무</td></tr>
+      <tr><td class="msub-num">14</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과(정보-통신)-전공일반</td><td class="msub-subj-name">프로그래밍 JAVA 기초</td></tr>
+      <tr><td class="msub-num">15</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과(정보-통신)-전공일반</td><td class="msub-subj-name">프로그래밍 JAVA 실무</td></tr>
+      <tr><td class="msub-num">16</td><td class="msub-curri">2022</td><td class="msub-org">전라남도교육청</td><td>정보통신/전공실무</td><td class="msub-subj-name">응용SW엔지니어링</td></tr>
+      <tr><td class="msub-num">17</td><td class="msub-curri">2022</td><td class="msub-org">전라남도교육청</td><td>정보-통신/전공실무</td><td class="msub-subj-name">인공지능과 사물인터넷</td></tr>
+      <tr><td class="msub-num">18</td><td class="msub-curri">2022</td><td class="msub-org">대구광역시교육청</td><td>정보</td><td class="msub-subj-name">데이터과학머신러닝</td></tr>
+      <tr><td class="msub-num">19</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>과학계열(정보)</td><td class="msub-subj-name">정보과학융합 탐구</td></tr>
+      <tr><td class="msub-num">20</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>과학계열(정보)</td><td class="msub-subj-name">정보과학 과제연구</td></tr>
+      <tr><td class="msub-num">21</td><td class="msub-curri">2022</td><td class="msub-org">강원특별자치도교육청</td><td>정보</td><td class="msub-subj-name">프로그래밍기초</td></tr>
+      <tr><td class="msub-num">22</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">운영체제1</td></tr>
+      <tr><td class="msub-num">23</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">운영체제2</td></tr>
+      <tr><td class="msub-num">24</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">인공지능론1</td></tr>
+      <tr><td class="msub-num">25</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">인공지능론2</td></tr>
+      <tr><td class="msub-num">26</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">서버 프로그래밍</td></tr>
+      <tr><td class="msub-num">27</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">인공지능 활용</td></tr>
+      <tr><td class="msub-num">28</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">프론트엔드 프로그래밍</td></tr>
+      <tr><td class="msub-num">29</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">알고리즘 실무1</td></tr>
+      <tr><td class="msub-num">30</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">알고리즘 실무2</td></tr>
+      <tr><td class="msub-num">31</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">컴퓨터과학 탐구I</td></tr>
+      <tr><td class="msub-num">32</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">컴퓨터과학 탐구II</td></tr>
+      <tr><td class="msub-num">33</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">프로젝트 실무I</td></tr>
+      <tr><td class="msub-num">34</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">프로젝트 실무II</td></tr>
+      <tr><td class="msub-num">35</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">딥러닝 실무</td></tr>
+      <tr><td class="msub-num">36</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">빅데이터 실무</td></tr>
+      <tr><td class="msub-num">37</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">서버 프로그래밍 실무</td></tr>
+      <tr><td class="msub-num">38</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">프론트엔드 프로그래밍 실무</td></tr>
+      <tr><td class="msub-num">39</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">웹 개발 입문</td></tr>
+      <tr><td class="msub-num">40</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">인공지능 프로그래밍 입문</td></tr>
+      <tr><td class="msub-num">41</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">앱 개발 프로그래밍</td></tr>
+      <tr><td class="msub-num">42</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공일반(정보-통신)</td><td class="msub-subj-name">객체지향 프로그래밍(JAVA)</td></tr>
+      <tr><td class="msub-num">43</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">소프트웨어 엔지니어링 실무</td></tr>
+      <tr><td class="msub-num">44</td><td class="msub-curri">2022</td><td class="msub-org">인천광역시교육청</td><td>보통 교과(과학 계열)/정보/진로 선택</td><td class="msub-subj-name">데이터 시각화 프로그래밍</td></tr>
+      <tr><td class="msub-num">45</td><td class="msub-curri">2022</td><td class="msub-org">대구광역시교육청</td><td>정보-통신</td><td class="msub-subj-name">디지털트윈</td></tr>
+      <tr><td class="msub-num">46</td><td class="msub-curri">2022</td><td class="msub-org">광주광역시교육청</td><td>전문교과(전공실무)/정보-통신</td><td class="msub-subj-name">프로젝트 실무</td></tr>
+      <tr><td class="msub-num">47</td><td class="msub-curri">2022</td><td class="msub-org">대구광역시교육청</td><td>정보-통신</td><td class="msub-subj-name">디지털트윈 구축</td></tr>
+      <tr><td class="msub-num">48</td><td class="msub-curri">2022</td><td class="msub-org">대구광역시교육청</td><td>정보-통신</td><td class="msub-subj-name">스마트물류통합관리</td></tr>
+      <tr><td class="msub-num">49</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>전공실무-정보-통신</td><td class="msub-subj-name">클라우드 컴퓨팅 이해</td></tr>
+      <tr><td class="msub-num">50</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>전공실무-정보-통신</td><td class="msub-subj-name">클라우드 시스템 구성</td></tr>
+      <tr><td class="msub-num">51</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>전공실무-정보-통신</td><td class="msub-subj-name">비즈니스 프로그래밍 기초</td></tr>
+      <tr><td class="msub-num">52</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>전공실무-정보-통신</td><td class="msub-subj-name">비즈니스 프로그래밍 중급</td></tr>
+      <tr><td class="msub-num">53</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>전공실무-정보-통신</td><td class="msub-subj-name">기업 프로세스 기초</td></tr>
+      <tr><td class="msub-num">54</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>전공실무-정보-통신</td><td class="msub-subj-name">재무관리시스템</td></tr>
+      <tr><td class="msub-num">55</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td>전공실무-정보-통신</td><td class="msub-subj-name">물류관리시스템</td></tr>
+      <tr><td class="msub-num">56</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과-정보-통신-전공실무</td><td class="msub-subj-name">디지털 자산의 이해와 보안</td></tr>
+      <tr><td class="msub-num">57</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문교과-정보-통신-전공실무</td><td class="msub-subj-name">인공지능 프라이버시</td></tr>
+      <tr><td class="msub-num">58</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">임베디드 리눅스 프로그래밍</td></tr>
+      <tr><td class="msub-num">59</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">임베디드 시스템</td></tr>
+      <tr><td class="msub-num">60</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">임베디드 실시간 운영체제</td></tr>
+      <tr><td class="msub-num">61</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무(정보-통신)</td><td class="msub-subj-name">임베디드 프로젝트 실무</td></tr>
+      <tr><td class="msub-num">62</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td>전문교과/전공실무/정보-통신</td><td class="msub-subj-name">바이오 건축설비</td></tr>
+      <tr><td class="msub-num">63</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>정보</td><td class="msub-subj-name">AP 컴퓨터과학A I</td></tr>
+      <tr><td class="msub-num">64</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>정보</td><td class="msub-subj-name">AP 컴퓨터과학A II</td></tr>
+      <tr><td class="msub-num">65</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>정보</td><td class="msub-subj-name">AP 컴퓨터과학 원리 I</td></tr>
+      <tr><td class="msub-num">66</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>정보</td><td class="msub-subj-name">AP 컴퓨터과학 원리 II</td></tr>
+      <tr><td class="msub-num">67</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>전문교과/정보-통신 교과(군)/전공실무</td><td class="msub-subj-name">사물인터넷 이해와 활용</td></tr>
+      <tr><td class="msub-num">68</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>전문교과/정보-통신 교과(군)/전공실무</td><td class="msub-subj-name">사물인터넷 프로젝트</td></tr>
+      <tr><td class="msub-num">69</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>보통교과/정보교과(군)/진로선택</td><td class="msub-subj-name">데이터전문탐구I</td></tr>
+      <tr><td class="msub-num">70</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>보통교과/정보교과(군)/진로선택</td><td class="msub-subj-name">데이터전문탐구II</td></tr>
+      <tr><td class="msub-num">71</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>보통교과/기술·가정/정보 정보 교과(군)/진로선택</td><td class="msub-subj-name">IB 컴퓨터과학 SL I</td></tr>
+      <tr><td class="msub-num">72</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>보통교과/기술·가정/정보 정보 교과(군)/진로선택</td><td class="msub-subj-name">IB 컴퓨터과학 SL II</td></tr>
+      <tr><td class="msub-num">73</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>보통교과/기술·가정/정보 정보 교과(군)/진로선택</td><td class="msub-subj-name">IB 컴퓨터과학 HL I</td></tr>
+      <tr><td class="msub-num">74</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td>보통교과/기술·가정/정보 정보 교과(군)/진로선택</td><td class="msub-subj-name">IB 컴퓨터과학 HL II</td></tr>
+      <tr><td class="msub-num">75</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문 교과(정보-통신)-전공 일반</td><td class="msub-subj-name">인공지능 파이썬 실무</td></tr>
+      <tr><td class="msub-num">76</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td>전문 교과(정보-통신)-전공 일반</td><td class="msub-subj-name">인공지능 파이썬 기초</td></tr>
+      <tr><td class="msub-num">77</td><td class="msub-curri">2022</td><td class="msub-org">전라남도교육청</td><td>전문교과-정보-통신(전공실무)</td><td class="msub-subj-name">사무자동화기기운용</td></tr>
+      <tr><td class="msub-num">78</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>기술·가정/정보</td><td class="msub-subj-name">인공지능 융합 프로젝트</td></tr>
+      <tr><td class="msub-num">79</td><td class="msub-curri">2022</td><td class="msub-org">세종특별자치시교육청</td><td>보통교과/정보/진로선택</td><td class="msub-subj-name">시뮬레이션과 인공지능</td></tr>
+      <tr><td class="msub-num">80</td><td class="msub-curri">2022</td><td class="msub-org">세종특별자치시교육청</td><td>보통교과/정보/진로선택</td><td class="msub-subj-name">인공지능과 소설의 만남</td></tr>
+      <tr><td class="msub-num">81</td><td class="msub-curri">2022</td><td class="msub-org">세종특별자치시교육청</td><td>보통교과/정보/진로선택</td><td class="msub-subj-name">생성형 인공지능 프로젝트</td></tr>
+      <tr><td class="msub-num">82</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td>기술·가정/정보</td><td class="msub-subj-name">나와 지구를 위한 지속가능 스타일링</td></tr>`;
+
+  function gosiwaTable(headBg, rows) {
+    return `<div class="msub-tbl-scroll"><table class="msub-table">
+    <thead><tr>
+      <th class="msub-num" style="background:${headBg}">번호</th>
+      <th style="background:${headBg}">교육과정</th>
+      <th style="background:${headBg}">소속기관</th>
+      <th style="background:${headBg}">관련교과</th>
+      <th style="background:${headBg}">과목명</th>
+    </tr></thead><tbody>${rows}</tbody>
+  </table></div>`;
+  }
+
   return `<div class="msub-wrap">
 
-  <div class="msub-heading">중학교 정보 교과서 목록</div>
+  <div class="msub-heading" style="color:${mid.accent}">중학교 정보 교과서 목록</div>
   <div class="msub-desc">2022 개정 교육과정 기준 검정 교과서 목록입니다.</div>
-  <table class="msub-table">${bookThead}</table>
+  ${bookTable(mid)}
 
   <hr class="msub-sep">
 
   <div class="msub-heading">고등학교 정보교과 교과서 목록</div>
   <div class="msub-desc">2022 개정 교육과정 기준 검정 교과서 목록입니다. 과목별로 구분되어 있습니다.</div>
 
-  <div class="msub-subheading">정보</div>
-  <table class="msub-table">${bookThead}</table>
+  ${subheading(high, '정보')}
+  ${bookTable(high, highRows)}
 
-  <div class="msub-subheading">인공지능기초</div>
-  <table class="msub-table">${bookThead}</table>
+  ${subheading(ai, '인공지능기초')}
+  ${bookTable(ai, aiRows)}
 
-  <div class="msub-subheading">데이터과학</div>
-  <table class="msub-table">${bookThead}</table>
+  ${subheading(ds, '데이터과학')}
+  ${bookTable(ds, dsRows)}
 
-  <div class="msub-subheading">소프트웨어와 생활</div>
-  <table class="msub-table">${bookThead}</table>
+  ${subheading(sw, '소프트웨어와 생활')}
+  ${bookTable(sw, swRows)}
 
   <hr class="msub-sep">
 
-  <div class="msub-heading">중학교 고시외 과목 목록<span class="msub-cnt">16개</span></div>
-  <div class="msub-desc">2022 개정 교육과정 기준, 지역 교육청별 승인 완료 과목입니다. 교과서 개발·채택 시 참고하세요.</div>
-  <table class="msub-table">
-    <thead><tr>
-      <th>번호</th><th>교육과정</th><th>소속기관</th><th>학교급</th><th>관련교과</th><th>과목명</th>
-    </tr></thead>
-    <tbody>
-      <tr><td class="msub-num">1</td><td class="msub-curri">2022</td><td class="msub-org">인천광역시교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">문제 해결과 프로그래밍</td></tr>
-      <tr><td class="msub-num">2</td><td class="msub-curri">2022</td><td class="msub-org">경상남도교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">피지컬 컴퓨팅</td></tr>
-      <tr><td class="msub-num">3</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">인공지능과 미래사회(중)</td></tr>
-      <tr><td class="msub-num">4</td><td class="msub-curri">2022</td><td class="msub-org">인천광역시교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">데이터 분석과 인공지능</td></tr>
-      <tr><td class="msub-num">5</td><td class="msub-curri">2022</td><td class="msub-org">대전광역시교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">파이썬과 데이터 융합</td></tr>
-      <tr><td class="msub-num">6</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">앱과 코딩</td></tr>
-      <tr><td class="msub-num">7</td><td class="msub-curri">2022</td><td class="msub-org">경상북도교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">슬기로운 디지털 생활</td></tr>
-      <tr><td class="msub-num">8</td><td class="msub-curri">2022</td><td class="msub-org">전라남도교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">인공지능과 생활</td></tr>
-      <tr><td class="msub-num">9</td><td class="msub-curri">2022</td><td class="msub-org">서울특별시교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">프로그래밍과 인공지능 로봇</td></tr>
-      <tr><td class="msub-num">10</td><td class="msub-curri">2022</td><td class="msub-org">울산광역시교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">스마트한 인공지능 생활 1</td></tr>
-      <tr><td class="msub-num">11</td><td class="msub-curri">2022</td><td class="msub-org">울산광역시교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">스마트한 인공지능 생활 2</td></tr>
-      <tr><td class="msub-num">12</td><td class="msub-curri">2022</td><td class="msub-org">충청남도교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">인공지능과 차세대 모빌리티</td></tr>
-      <tr><td class="msub-num">13</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td class="msub-grade">중학교</td><td>정보</td><td class="msub-subj-name">디지털윤리</td></tr>
-      <tr><td class="msub-num">14</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">타자(他者)와 평화 Ⅱ</td></tr>
-      <tr><td class="msub-num">15</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">인공지능탐구</td></tr>
-      <tr><td class="msub-num">16</td><td class="msub-curri">2022</td><td class="msub-org">경기도교육청</td><td class="msub-grade">중학교</td><td>과학/기술·가정/정보</td><td class="msub-subj-name">생활 공간 디자인</td></tr>
-    </tbody>
-  </table>
+  <details class="msub-collapse">
+    <summary class="msub-collapse-hd" style="color:#D97706"><span class="msub-collapse-arrow">▶</span>중학교 고시외 과목 목록<span class="msub-cnt" style="background:#FEF3C7;color:#92400E">16개</span></summary>
+    <div class="msub-desc">2022 개정 교육과정 기준, 지역 교육청별 승인 완료 과목입니다. 교과서 개발·채택 시 참고하세요.</div>
+    ${gosiwaTable('#D97706', midGosiwaRows)}
+  </details>
+
+  <hr class="msub-sep">
+
+  <details class="msub-collapse">
+    <summary class="msub-collapse-hd" style="color:#4F46E5"><span class="msub-collapse-arrow">▶</span>고등학교 고시외 과목 목록<span class="msub-cnt" style="background:#EEF2FF;color:#3730A3">82개</span></summary>
+    <div class="msub-desc">2022 개정 교육과정 기준, 지역 교육청별 승인 완료 과목입니다.</div>
+    ${gosiwaTable('#4F46E5', hsGosiwaRows)}
+  </details>
 
 </div>`;
 }
@@ -872,48 +1031,62 @@ function renderOverview() {
 
   <div class="ov-diagram">
     <div class="ov-row">
-      <div class="ov-row-label">(총론)<br>인간상</div>
+      <div class="ov-row-label"><span class="ov-row-sublabel">(총론)</span>인간상</div>
       <div class="ov-row-content">
-        <div class="ov-row-items">
-          <div class="ov-circle">자기주도적인 사람</div>
-          <div class="ov-circle">창의적인 사람</div>
-          <div class="ov-circle">교양 있는 사람</div>
-          <div class="ov-circle">더불어 사는 사람</div>
+        <div class="ov-circles">
+          <div class="ov-circle">자기주도적인<br>사람</div>
+          <div class="ov-circle">창의적인<br>사람</div>
+          <div class="ov-circle">교양 있는<br>사람</div>
+          <div class="ov-circle">더불어<br>사는 사람</div>
         </div>
       </div>
     </div>
-    <div class="ov-connector">▼</div>
+    <div class="ov-arrow-row"><div class="ov-arrow-spacer"></div><div class="ov-arrow"></div></div>
     <div class="ov-row">
-      <div class="ov-row-label">(총론)<br>핵심역량</div>
+      <div class="ov-row-label"><span class="ov-row-sublabel">(총론)</span>핵심역량</div>
       <div class="ov-row-content">
-        <div class="ov-hex-row">
-          <div class="ov-hex dim">자기관리</div>
-          <div class="ov-hex dim">심미적 감성</div>
-        </div>
-        <div class="ov-hex-row">
-          <div class="ov-hex hi">지식정보처리</div>
-          <div class="ov-hex hi">창의적 사고</div>
-          <div class="ov-hex hi">협력적 소통</div>
-          <div class="ov-hex hi">공동체 역량</div>
+        <div class="ov-hex-section">
+          <div class="ov-hex-row">
+            <div class="ov-hex dim">자기관리</div>
+            <div class="ov-hex dim">심미적 감성</div>
+          </div>
+          <div class="ov-hex-row">
+            <div class="ov-hex hi">지식정보처리</div>
+            <div class="ov-hex hi">창의적 사고</div>
+            <div class="ov-hex hi">협력적 소통</div>
+            <div class="ov-hex hi">공동체 역량</div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="ov-connector">▼</div>
+    <div class="ov-arrow-row"><div class="ov-arrow-spacer"></div><div class="ov-arrow"></div></div>
     <div class="ov-row">
-      <div class="ov-row-label">교과<br>역량</div>
+      <div class="ov-row-label"><span class="ov-row-sublabel">정보</span>교과 역량</div>
       <div class="ov-row-content">
         <div class="ov-comp-row">
           <div class="ov-comp">
             <div class="ov-comp-title">컴퓨팅 사고력</div>
-            <div class="ov-comp-sub">추상화 능력<br>자동화 능력<br>창의·융합 능력</div>
+            <ul class="ov-comp-list">
+              <li>추상화 능력</li>
+              <li>자동화 능력</li>
+              <li>창의·융합 능력</li>
+            </ul>
           </div>
           <div class="ov-comp">
             <div class="ov-comp-title">디지털 문화 소양</div>
-            <div class="ov-comp-sub">디지털 의사 소통·협업 능력<br>디지털 윤리의식<br>디지털 기술 활용 능력</div>
+            <ul class="ov-comp-list">
+              <li>디지털 의사소통·협업 능력</li>
+              <li>디지털 윤리의식</li>
+              <li>디지털 기술 활용 능력</li>
+            </ul>
           </div>
           <div class="ov-comp">
             <div class="ov-comp-title">인공지능 소양</div>
-            <div class="ov-comp-sub">인공지능 문제 해결력<br>데이터 문해력<br>인공지능 윤리의식</div>
+            <ul class="ov-comp-list">
+              <li>인공지능 문제 해결력</li>
+              <li>데이터 문해력</li>
+              <li>인공지능 윤리의식</li>
+            </ul>
           </div>
         </div>
       </div>
@@ -1034,7 +1207,7 @@ function downloadTxt() {
 
 // --- Eval Plan ---
 function evalSubjects() {
-  return SUBJECTS.filter(s => !['overview','simulator','evalplan'].includes(s.type));
+  return SUBJECTS.filter(s => !['overview','simulator','evalplan','wiki','textbook'].includes(s.type));
 }
 
 function evalSave() {
@@ -1580,13 +1753,13 @@ function lpSetEndMW(val) {
 
 function lpGenerate() {
   const weeks = lpGenWeeks(lessonState.semester, lessonState.startMW, lessonState.endMW);
-  lessonState.rows = weeks.map(mw => ({monthWeek:mw, domain:'', linkedCodes:[], method:''}));
+  lessonState.rows = weeks.map(mw => ({monthWeek:mw, domain:'', linkedCodes:[], method:'', evalMethod:''}));
   lessonState.generated = true;
   lpSave(); lpRerender();
 }
 
 function lpAddRow() {
-  lessonState.rows.push({monthWeek:'', domain:'', linkedCodes:[], method:''});
+  lessonState.rows.push({monthWeek:'', domain:'', linkedCodes:[], method:'', evalMethod:''});
   lpSave(); lpRerender();
 }
 
@@ -1609,6 +1782,15 @@ function lpSetDomain(i, val) {
 function lpSetMethod(i, val) {
   lessonState.rows[i].method = val;
   lpSave();
+}
+function lpSetEvalMethod(i, val) {
+  lessonState.rows[i].evalMethod = val;
+  lpSave();
+  const tbody = document.querySelector('.lp-table tbody');
+  if (tbody) {
+    const tr = tbody.querySelectorAll('tr')[i];
+    if (tr) tr.style.background = val === '수행평가' ? '#fffde7' : '';
+  }
 }
 
 function lpUnlinkCode(i, code) {
@@ -1727,14 +1909,18 @@ function renderLessonTable(selSubj) {
       domains.map((d, di) => `<option value="${esc(d.name)}"${row.domain===d.name?' selected':''}>${ROM[di]||di+1}. ${esc(d.name)}</option>`).join('');
     const mthOpts = `<option value="">선택</option>` +
       LP_METHODS.map(m => `<option value="${esc(m)}"${row.method===m?' selected':''}>${esc(m)}</option>`).join('');
+    const evalOpts = `<option value="">선택 안 함</option>` +
+      LP_EVAL_METHODS.map(m => `<option value="${esc(m)}"${row.evalMethod===m?' selected':''}>${esc(m)}</option>`).join('');
+    const rowBg = row.evalMethod === '수행평가' ? '#fffde7' : '';
     const codesHtml = row.linkedCodes.map(c =>
       `<span class="lp-code-badge" style="background:${aLight};color:${accent}">${esc(c)}<button class="lp-code-del" onclick="lpUnlinkCode(${i},'${c.replace(/'/g,"\\'")}')">×</button></span>`
     ).join('');
-    return `<tr>
+    return `<tr style="background:${rowBg}">
       <td><div class="lp-mw" contenteditable="true" onblur="lpUpdateMW(${i},this.textContent.trim())">${esc(row.monthWeek)}</div></td>
       <td><select class="lp-select" onchange="lpSetDomain(${i},this.value)">${domOpts}</select></td>
       <td class="lp-std-cell">${codesHtml}<button class="lp-add-std" onclick="lpOpenModal(${i})">+ 성취기준</button></td>
       <td><select class="lp-select" onchange="lpSetMethod(${i},this.value)">${mthOpts}</select></td>
+      <td><select class="lp-select" onchange="lpSetEvalMethod(${i},this.value)">${evalOpts}</select></td>
       <td><button class="lp-del-row" onclick="lpDeleteRow(${i})">✕</button></td>
     </tr>`;
   }).join('');
@@ -1744,7 +1930,8 @@ function renderLessonTable(selSubj) {
         <th style="width:68px">월/주</th>
         <th style="width:155px">단원명</th>
         <th>성취기준</th>
-        <th style="width:128px">수업방법</th>
+        <th style="width:110px">수업방법</th>
+        <th style="width:110px">평가방법</th>
         <th style="width:34px"></th>
       </tr></thead>
       <tbody>${rowsHtml}</tbody>
