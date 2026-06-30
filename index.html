@@ -3,45 +3,61 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>정글(JGLE) | 정보교사 매니저</title>
+<meta name="theme-color" content="#ffffff">
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.min.css">
+<title>정글 · JunGLE | 정보교사 매니저</title>
+<meta name="description" content="2022 개정 교육과정 성취기준 탐색, 수업·평가계획, 교과서 목록 등 정보교사를 위한 올인원 매니저">
+<meta property="og:type" content="website">
+<meta property="og:title" content="정글 · JunGLE | 정보교사 매니저">
+<meta property="og:description" content="2022 개정 교육과정 성취기준 탐색, 수업·평가계획, 교과서 목록 등 정보교사를 위한 올인원 매니저">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="정글 · JunGLE | 정보교사 매니저">
+<meta name="twitter:description" content="2022 개정 교육과정 성취기준 탐색, 수업·평가계획, 교과서 목록 등 정보교사를 위한 올인원 매니저">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌿</text></svg>">
 <link rel="stylesheet" href="assets/style.css">
 </head>
 <body>
 
+<a href="#main" class="skip-link">본문 바로가기</a>
+
+<h1 class="sr-only">정글 · JunGLE 정보교사 매니저</h1>
 <div class="header">
   <div class="header-inner">
     <button class="header-brand" onclick="goHome()">
-      정글(JGLE)<small>정보교사 매니저</small>
+      정글 · JunGLE<small>정보교사 매니저</small>
     </button>
-    <div class="tabs" id="tabs"></div>
+    <div class="tabs" id="tabs" role="navigation" aria-label="주요 메뉴"></div>
+    <button class="hamburger" id="hamburger" onclick="toggleMobileNav()" aria-label="메뉴 열기">
+      <span></span><span></span><span></span>
+    </button>
   </div>
 </div>
 
-<div class="subtab-bar" id="subtabBar"><div class="subtab-bar-inner" id="subtabBarInner"></div></div>
+<div class="subtab-bar" id="subtabBar"><div class="subtab-bar-inner" id="subtabBarInner" role="tablist"></div></div>
 
-<div id="jungleImg" style="text-align:center;padding:20px 20px 0"><img src="images/jungle.jpg" alt="" style="height:280px;width:auto"></div>
+<div id="jungleImg" style="text-align:center;padding:16px 20px 0"><img src="images/jungle.jpg" alt="" style="height:160px;width:auto;border-radius:14px;opacity:.93"></div>
 
 <div class="search-wrap" id="searchSection">
-  <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
-  <input class="search-input" id="searchInput" type="text" placeholder="성취기준 코드 또는 내용 검색… (예: 알고리즘, 클래스, 9정03, 12인기)">
-  <button class="search-clear" id="searchClear" onclick="clearSearch()">✕</button>
+  <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+  <input class="search-input" id="searchInput" type="text" placeholder="" aria-label="성취기준 검색">
+  <button class="search-clear" id="searchClear" onclick="clearSearch()" aria-label="검색어 지우기">✕</button>
 </div>
 
 <div class="domain-filter" id="domainFilter"></div>
 
-<div class="main" id="main"></div>
+<div class="main" id="main" role="main"></div>
 
 <footer class="site-footer">
-  <span>Instagram: <a href="https://www.instagram.com/jungbucks" target="_blank" rel="noopener" class="site-footer-link">@jungbucks</a></span>
-  <span>Blog: <a href="http://blog.naver.com/kachu_t" target="_blank" rel="noopener" class="site-footer-link">blog.naver.com/kachu_t</a></span>
+  <span>Instagram: <a href="https://www.instagram.com/jungbucks" target="_blank" rel="noopener noreferrer" class="site-footer-link">@jungbucks</a></span>
+  <span>Blog: <a href="https://blog.naver.com/kachu_t" target="_blank" rel="noopener noreferrer" class="site-footer-link">blog.naver.com/kachu_t</a></span>
 </footer>
 
-<button class="fab" id="fab" onclick="togglePanel()">
-  📋 담은 항목 <span class="fab-cnt" id="fabCnt">0</span>
+<button class="fab" id="fab" onclick="togglePanel()" aria-expanded="false" aria-controls="collectPanel" aria-label="담은 성취기준 패널 열기/닫기">
+  📋 담은 항목 <span class="fab-cnt" id="fabCnt" aria-live="polite" aria-atomic="true">0</span>
 </button>
 
-<div class="collect-panel" id="collectPanel">
-  <div class="panel-header" onclick="togglePanel()">
+<div class="collect-panel" id="collectPanel" aria-hidden="true">
+  <div class="panel-header" onclick="togglePanel()" role="button" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();togglePanel()}">
     <div class="panel-title">📋 담은 성취기준 <span class="panel-cnt-badge" id="panelCnt">0</span></div>
     <div class="panel-actions" onclick="event.stopPropagation()">
       <button class="pbtn sec" onclick="clearCollect()">전체 삭제</button>
@@ -56,11 +72,11 @@
 
 <!-- 수업계획 성취기준 연결 모달 -->
 <div id="lessonModal" class="eval-modal-overlay" style="display:none" onclick="if(event.target===this)lpCloseModal()">
-  <div class="eval-modal">
+  <div class="eval-modal" role="dialog" aria-modal="true" aria-labelledby="lpModalTitle">
     <div class="eval-modal-hd">
-      <span class="eval-modal-title">성취기준 연결</span>
-      <select id="lpModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="lpModalChangeSubject(this.value)"></select>
-      <button class="cmp-close-btn" onclick="lpCloseModal()">✕</button>
+      <span class="eval-modal-title" id="lpModalTitle">성취기준 연결</span>
+      <select id="lpModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="lpModalChangeSubject(this.value)" aria-label="과목 선택"></select>
+      <button class="cmp-close-btn" onclick="lpCloseModal()" aria-label="닫기">✕</button>
     </div>
     <div class="eval-modal-body" id="lpModalBody"></div>
     <div class="eval-modal-ft">
@@ -75,11 +91,11 @@
 
 <!-- 성취기준 연결 모달 -->
 <div id="evalModal" class="eval-modal-overlay" style="display:none" onclick="if(event.target===this)evalCloseModal()">
-  <div class="eval-modal">
+  <div class="eval-modal" role="dialog" aria-modal="true" aria-labelledby="evalModalTitle">
     <div class="eval-modal-hd">
-      <span class="eval-modal-title">성취기준 연결</span>
-      <select id="evalModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="evalModalChangeSubject(this.value)"></select>
-      <button class="cmp-close-btn" onclick="evalCloseModal()">✕</button>
+      <span class="eval-modal-title" id="evalModalTitle">성취기준 연결</span>
+      <select id="evalModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="evalModalChangeSubject(this.value)" aria-label="과목 선택"></select>
+      <button class="cmp-close-btn" onclick="evalCloseModal()" aria-label="닫기">✕</button>
     </div>
     <div class="eval-modal-body" id="evalModalBody"></div>
     <div class="eval-modal-ft">
@@ -92,12 +108,50 @@
   </div>
 </div>
 
+<!-- 루브릭 성취기준 선택 모달 -->
+<div id="rubricModal" class="eval-modal-overlay" style="display:none" onclick="if(event.target===this)rubricCloseModal()">
+  <div class="eval-modal" role="dialog" aria-modal="true" aria-labelledby="rubricModalTitle">
+    <div class="eval-modal-hd">
+      <span class="eval-modal-title" id="rubricModalTitle">성취기준 선택</span>
+      <select id="rubricModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="rubricModalChangeSubject(this.value)" aria-label="과목 선택"></select>
+      <button class="cmp-close-btn" onclick="rubricCloseModal()" aria-label="닫기">✕</button>
+    </div>
+    <div class="eval-modal-body" id="rubricModalBody"></div>
+    <div class="eval-modal-ft">
+      <span class="eval-modal-sel-count" id="rubricModalSelCount">0개 선택됨</span>
+      <div style="display:flex;gap:8px">
+        <button class="pbtn sec" onclick="rubricCloseModal()">취소</button>
+        <button class="pbtn pri" onclick="rubricConfirmModal()">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 정기시험 성취기준 선택 모달 -->
+<div id="regExamModal" class="eval-modal-overlay" style="display:none" onclick="if(event.target===this)regExamCloseModal()">
+  <div class="eval-modal" role="dialog" aria-modal="true" aria-labelledby="regExamModalTitle">
+    <div class="eval-modal-hd">
+      <span class="eval-modal-title" id="regExamModalTitle">성취기준 선택</span>
+      <select id="regExamModalSubjSel" class="eval-select" style="font-size:12px;flex:1;max-width:220px" onchange="regExamModalChangeSubject(this.value)" aria-label="과목 선택"></select>
+      <button class="cmp-close-btn" onclick="regExamCloseModal()" aria-label="닫기">✕</button>
+    </div>
+    <div class="eval-modal-body" id="regExamModalBody"></div>
+    <div class="eval-modal-ft">
+      <span class="eval-modal-sel-count" id="regExamModalSelCount">0개 선택됨</span>
+      <div style="display:flex;gap:8px">
+        <button class="pbtn sec" onclick="regExamCloseModal()">취소</button>
+        <button class="pbtn pri" onclick="regExamConfirmModal()">확인</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- 평가계획 표 미리보기 모달 -->
 <div id="evalPreviewModal" class="eval-preview-overlay" style="display:none" onclick="if(event.target===this)evalClosePreview()">
-  <div class="eval-preview-modal">
+  <div class="eval-preview-modal" role="dialog" aria-modal="true" aria-labelledby="evalPreviewTitle">
     <div class="eval-preview-hd">
-      <span class="eval-preview-title">표 미리보기</span>
-      <button class="cmp-close-btn" onclick="evalClosePreview()">✕</button>
+      <span class="eval-preview-title" id="evalPreviewTitle">표 미리보기</span>
+      <button class="cmp-close-btn" onclick="evalClosePreview()" aria-label="닫기">✕</button>
     </div>
     <div class="eval-preview-body" id="evalPreviewBody"></div>
     <div class="eval-preview-ft">
@@ -110,7 +164,30 @@
 <!-- 평가계획 요약 패널 -->
 <div id="evalSumPanel" class="eval-sum-panel"></div>
 
+<div class="nav-overlay" id="navOverlay" onclick="closeMobileNav()"></div>
+<div class="nav-drawer" id="navDrawer" role="navigation" aria-label="모바일 메뉴">
+  <div class="nav-drawer-hd">
+    <div class="nav-drawer-brand">정글 · JunGLE<small>정보교사 매니저</small></div>
+    <button class="nav-drawer-close" onclick="closeMobileNav()" aria-label="메뉴 닫기">✕</button>
+  </div>
+  <div class="nav-drawer-body" id="mobileNavMenu"></div>
+</div>
+
+<div id="liveRegion" aria-live="polite" aria-atomic="true" class="sr-only"></div>
 <script src="assets/data.js"></script>
-<script src="assets/app.js"></script>
+<script>
+/* ES 모듈에서 classic script const 변수에 접근하려면 window에 명시적으로 등록 */
+window.SUBJECTS = SUBJECTS;
+window.ACHIEVEMENTS = ACHIEVEMENTS;
+window.HS_SEMS = HS_SEMS;
+window.HS_SUBJECTS = HS_SUBJECTS;
+window.HS_TYPE_COLOR = HS_TYPE_COLOR;
+window.APPSTORE_APPS = APPSTORE_APPS;
+window.RECOMMENDED_SITES = RECOMMENDED_SITES;
+window.SW_DATA = SW_DATA;
+window.LP_METHODS = LP_METHODS;
+window.LP_EVAL_METHODS = LP_EVAL_METHODS;
+</script>
+<script type="module" src="assets/app.js"></script>
 </body>
 </html>

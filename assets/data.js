@@ -1327,6 +1327,13 @@
 
 const RECOMMENDED_SITES = [
   {
+    category: "🏘️ 정보교사 커뮤니티",
+    items: [
+      { name: "정보쌤 웹진", url: "https://infossam.notion.site", desc: "대한민국 유일의 정보교사 전용 매거진" },
+      { name: "한국정보교사연합회", url: "https://www.kait.re.kr", desc: "전국 정보교사 네트워크, 연수·자료 공유" }
+    ]
+  },
+  {
     category: "🤖 AI 도구",
     items: [
       { name: "Claude",      url: "https://claude.ai",                   desc: "긴 문서 분석, 수업 자료 제작에 강함" },
@@ -1345,15 +1352,21 @@ const RECOMMENDED_SITES = [
       { name: "Python Tutor",url: "https://pythontutor.com",             desc: "코드 실행 흐름 시각화, 알고리즘 수업 필수" },
       { name: "Google Colab",url: "https://colab.google",                desc: "설치 없이 파이썬/AI 실습, 고등학교 이상 추천" },
       { name: "Replit",      url: "https://replit.com",                  desc: "브라우저 기반 코딩 환경, 협업 가능" },
-      { name: "W3Schools",   url: "https://w3schools.com",               desc: "파이썬, C언어 등 문법 실습 및 교사/학생용 튜토리얼 사전" }
+      { name: "W3Schools",   url: "https://w3schools.com",               desc: "파이썬, C언어 등 문법 실습 및 교사/학생용 튜토리얼 사전" },
+      { name: "myCompiler",  url: "https://www.mycompiler.io",           desc: "C, Python 등 다양한 소스 코드의 실행 결과 확인 가능" }
     ]
   },
   {
     category: "🧠 AI · 데이터 교육",
     items: [
-      { name: "Teachable Machine", url: "https://teachablemachine.withgoogle.com", desc: "Google의 노코드 ML 체험 도구, 인공지능 수업 필수" },
-      { name: "Orange3",           url: "https://orangedatamining.com",            desc: "블록 기반 데이터 분석/시각화, 데이터 과학 수업 적합" },
-      { name: "AI Experiments",    url: "https://experiments.withgoogle.com",      desc: "Google AI 체험 모음, 수업 도입부 흥미 유발" }
+      { name: "Teachable Machine",     url: "https://teachablemachine.withgoogle.com", desc: "Google 노코드 ML 체험 도구, 이미지·소리·동작 분류기 제작" },
+      { name: "p5.js 에디터",          url: "https://editor.p5js.org",                desc: "브라우저에서 바로 쓰는 크리에이티브 코딩, 알고리즘 시각화 수업 활용" },
+      { name: "ml5.js",                url: "https://ml5js.org",                       desc: "p5.js와 연동되는 초보자용 ML 라이브러리, 코드 몇 줄로 AI 구현" },
+      { name: "TensorFlow Playground", url: "https://playground.tensorflow.org",       desc: "신경망 구조를 시각적으로 조작, 인공지능 기초 원리 설명에 최적" },
+      { name: "Kaggle",                url: "https://kaggle.com",                      desc: "무료 데이터셋 수천 개 제공, 데이터 과학 수업 자료 확보" },
+      { name: "Quick, Draw!",          url: "https://quickdraw.withgoogle.com",        desc: "Google 신경망 낙서 인식 게임, AI 수업 도입부 흥미 유발" },
+      { name: "Orange3",               url: "https://orangedatamining.com",            desc: "블록 기반 데이터 분석·시각화, 데이터 과학 수업 적합" },
+      { name: "AI Experiments",        url: "https://experiments.withgoogle.com",      desc: "Google AI 체험 모음, 다양한 AI 활용 사례 탐색" }
     ]
   },
   {
@@ -1382,17 +1395,89 @@ const RECOMMENDED_SITES = [
       { name: "에듀넷",          url: "https://edunet.net",      desc: "교육부 공식 교육 자료 포털" },
       { name: "국가교육과정 정보센터", url: "https://ncic.re.kr", desc: "2022 개정 교육과정 원문 열람" },
       { name: "KERIS",           url: "https://keris.or.kr",     desc: "교육학술정보원, 에듀테크 정책 자료" },
-      { name: "한국정보교사연합회",url: "https://kaict.or.kr",   desc: "정보 교사 커뮤니티, 수업 자료 공유" },
       { name: "소프트웨어야 놀자", url: "https://swcoding.org",  desc: "SW 교육 자료 모음, 엔트리 기반 수업 자료 풍부" },
       { name: "커리어넷",        url: "https://career.go.kr",    desc: "미래 IT 진로 및 기술 변화 연계 수업 설계 참고" }
     ]
-  }
+  },
 ];
 
 
+const SW_DATA = {
+  windows: [
+    {
+      name: "PureRef",
+      category: "이미지",
+      free: true,
+      desc: "항상 이미지를 화면에 띄워두고 수업할 수 있는 툴",
+      url: "",
+      blogUrl: ""
+    },
+    {
+      name: "Everything",
+      category: "검색",
+      free: true,
+      desc: "가장 빠른 윈도우 파일 검색기",
+      url: "",
+      blogUrl: ""
+    },
+    {
+      name: "Imagine",
+      category: "이미지 뷰어",
+      free: true,
+      desc: "현직 정보 선생님이 만든 가볍고 빠른 이미지 뷰어",
+      url: "",
+      blogUrl: ""
+    }
+  ],
+  mac: [
+    {
+      name: "Amphetamine",
+      category: "유틸리티",
+      free: true,
+      desc: "수업 중 화면 꺼짐과 슬립 모드를 방지하는 필수 도구",
+      url: "https://apps.apple.com/app/amphetamine/id937984704",
+      blogUrl: ""
+    },
+    {
+      name: "Rectangle",
+      category: "생산성",
+      free: true,
+      desc: "단축키로 창을 분할하고 배치하는 맥용 윈도우 스냅 도구",
+      url: "https://rectangleapp.com",
+      blogUrl: ""
+    },
+    {
+      name: "Keka",
+      category: "유틸리티",
+      free: true,
+      desc: "맥 기본 압축보다 훨씬 강력한 압축/해제 도구",
+      url: "https://www.keka.io",
+      blogUrl: ""
+    }
+  ],
+  ipad: [
+    {
+      name: "GoodNotes / Notability",
+      category: "필기",
+      free: false,
+      desc: "애플펜슬로 수업 판서를 디지털화하는 대표 필기 앱",
+      url: "https://www.goodnotes.com",
+      blogUrl: ""
+    },
+    {
+      name: "LumaFusion",
+      category: "영상편집",
+      free: false,
+      desc: "아이패드에서 쓸 수 있는 가장 강력한 영상 편집 앱",
+      url: "https://luma-touch.com",
+      blogUrl: ""
+    }
+  ]
+};
+
 const SUBJECTS = [
   {
-    id:"overview", name:"교육과정 구성", type:"overview",
+    id:"overview", name:"정보 교육과정", type:"overview",
     accent:"#374151", aLight:"#F3F4F6", aDark:"#1F2937",
     domains:[]
   },
@@ -1438,7 +1523,7 @@ const SUBJECTS = [
     ]
   },
   {
-    id:"high", name:"고등학교 정보", level:"고등학교 (일반 선택)",
+    id:"high", name:"고등학교 정보", level:"고등학교 (일반선택)",
     accent:"#10B981", aLight:"#ECFDF5", aDark:"#059669",
     domains:[
       { name:"컴퓨팅 시스템", items:[
@@ -1477,7 +1562,7 @@ const SUBJECTS = [
     ]
   },
   {
-    id:"ai", name:"인공지능 기초", level:"고등학교 (진로 선택)",
+    id:"ai", name:"인공지능 기초", level:"고등학교 (진로선택)",
     accent:"#8B5CF6", aLight:"#F5F3FF", aDark:"#7C3AED",
     domains:[
       { name:"인공지능의 이해", items:[
@@ -1510,7 +1595,7 @@ const SUBJECTS = [
     ]
   },
   {
-    id:"ds", name:"데이터 과학", level:"고등학교 (진로 선택)",
+    id:"ds", name:"데이터 과학", level:"고등학교 (진로선택)",
     accent:"#F59E0B", aLight:"#FFFBEB", aDark:"#D97706",
     domains:[
       { name:"데이터 과학의 이해", items:[
@@ -1543,7 +1628,7 @@ const SUBJECTS = [
     ]
   },
   {
-    id:"sw", name:"소프트웨어와 생활", level:"고등학교 (융합 선택)",
+    id:"sw", name:"소프트웨어와 생활", level:"고등학교 (융합선택)",
     accent:"#EC4899", aLight:"#FDF2F8", aDark:"#DB2777",
     domains:[
       { name:"세상을 변화시키는 소프트웨어", items:[
@@ -1577,7 +1662,7 @@ const SUBJECTS = [
       ]}
     ]
   },
-  { id:"cs", name:"정보과학", level:"고등학교 (과학계열 진로 선택)",
+  { id:"cs", name:"정보과학", level:"고등학교 (과학계열 진로선택)",
     accent:"#0EA5E9", aLight:"#F0F9FF", aDark:"#0284C7",
     domains:[
       { name:"프로그래밍", items:[
@@ -1635,10 +1720,61 @@ const SUBJECTS = [
   },
   { id:"evalplan", name:"수업/평가계획", type:"evalplan",
     accent:"#7C3AED", aLight:"#F5F3FF", aDark:"#6D28D9", domains:[] },
-  { id:"simulator", name:"교육과정 시뮬레이터", type:"simulator",
-    accent:"#374151", aLight:"#F3F4F6", aDark:"#1F2937", domains:[] },
-  { id:"wiki", name:"추천사이트", type:"wiki",
-    accent:"#0EA5E9", aLight:"#F0F9FF", aDark:"#0284C7", domains:[] },
+  { id:"simulator", name:"고교과정 설계", type:"simulator",
+    accent:"#6366F1", aLight:"#EEF2FF", aDark:"#4F46E5", domains:[] },
+  { id:"chasi", name:"차시 계산기", type:"chasi",
+    accent:"#0891B2", aLight:"#ECFEFF", aDark:"#0E7490", domains:[] },
+  { id:"fav", name:"추천사이트", type:"fav",
+    accent:"#14B8A6", aLight:"#F0FDFA", aDark:"#0D9488", domains:[] },
   { id:"textbook", name:"정보교과서", type:"textbook",
-    accent:"#059669", aLight:"#ECFDF5", aDark:"#047857", domains:[] }
+    accent:"#059669", aLight:"#ECFDF5", aDark:"#047857", domains:[] },
+  { id:"swrec", name:"추천SW", type:"swrec",
+    accent:"#F43F5E", aLight:"#FFF1F2", aDark:"#E11D48", domains:[] },
+  { id:"appstore", name:"앱스토어", type:"appstore",
+    accent:"#D946EF", aLight:"#FDF4FF", aDark:"#A21CAF", domains:[] }
 ];
+
+// --- 시뮬레이터 데이터 ---
+const HS_SUBJECTS = [
+  { id:'s1', name:'정보',              type:'일반선택',         credit:3 },
+  { id:'s2', name:'정보과학',          type:'과학계열 진로선택', credit:3 },
+  { id:'s3', name:'데이터 과학',       type:'진로선택',         credit:3 },
+  { id:'s4', name:'인공지능 기초',     type:'진로선택',         credit:3 },
+  { id:'s5', name:'소프트웨어와 생활', type:'융합선택',         credit:3 },
+  { id:'s6', name:'프로그래밍',        type:'전문교과',         credit:3 },
+];
+const HS_TYPE_COLOR = {
+  '일반선택':         { c:'#10B981', l:'#ECFDF5' },
+  '진로선택':         { c:'#8B5CF6', l:'#F5F3FF' },
+  '과학계열 진로선택': { c:'#0EA5E9', l:'#F0F9FF' },
+  '융합선택':         { c:'#EC4899', l:'#FDF2F8' },
+  '전문교과':         { c:'#F97316', l:'#FFF7ED' },
+};
+const HS_SEMS = [
+  { key:'1-1', label:'1학년 1학기', yr:1, yb:false },
+  { key:'1-2', label:'1학년 2학기', yr:1, yb:false },
+  { key:'2-1', label:'2학년 1학기', yr:2, yb:true  },
+  { key:'2-2', label:'2학년 2학기', yr:2, yb:false },
+  { key:'3-1', label:'3학년 1학기', yr:3, yb:true  },
+  { key:'3-2', label:'3학년 2학기', yr:3, yb:false },
+];
+
+// --- 앱스토어 ---
+// 스키마: { name, author, authorUrl?, desc, type, tags, url, thumb? }
+// type: 'webapp' | 'extension' | 'desktop' | 'mobile' | 'other'
+const APPSTORE_APPS = [
+  {
+    name: '마크다운 연습장',
+    author: '정벅',
+    authorUrl: 'https://www.instagram.com/jungbucks',
+    desc: '마크다운 문법을 처음 접하는 분들을 위한 실시간 미리보기 연습 도구입니다. 왼쪽에 입력하면 오른쪽에 결과가 즉시 반영됩니다.',
+    type: 'webapp',
+    tags: ['마크다운', '글쓰기', '초보자'],
+    url: 'http://jungbucks.github.io/markdown',
+    thumb: 'images/apps/markdown.png',
+  },
+];
+
+// --- 수업/평가계획 데이터 ---
+const LP_METHODS = ['강의식', '협력학습', '프로젝트', '토의토론', '실습', '탐구학습', '기타'];
+const LP_EVAL_METHODS = ['지필평가', '수행평가', '자기평가', '동료평가', '관찰평가'];
