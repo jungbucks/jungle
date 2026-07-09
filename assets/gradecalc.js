@@ -36,25 +36,34 @@ function gcActiveStudents() {
     String(st.sid).trim() !== '' || st.s1 !== '' || st.s2 !== '' || st.sp !== '');
 }
 
-function gcGrade(pct) {
-  if (pct <= 10) return 1;
-  if (pct <= 34) return 2;
-  if (pct <= 66) return 3;
-  if (pct <= 90) return 4;
-  return 5;
+// 등급 판정은 석차백분율이 아니라 "등급별 누적인원 경계"로 한다 (소인원에서 1등급 0명이 되는 결함 방지).
+// 조견표(GC_GRADE_TABLE)가 진실, 없는 N만 반올림 공식 폴백. 값 = 누적 상한 인원 [cum1..cum5].
+// ※ 사용자의 공식 조견표를 받으면 여기에 채울 것 (등급별 인원 표로 받으면 누적으로 변환) — SPEC §6.
+const GC_GRADE_TABLE = {
+  5: [1, 2, 3, 4, 5], // 사용자 확인분 — 반올림 공식([1,2,3,5,5])과 다름
+};
+const GC_CUM_PCTS = [10, 34, 66, 90, 100];
+function gcGradeCums(N) {
+  const cums = GC_GRADE_TABLE[N]
+    ? GC_GRADE_TABLE[N].slice()
+    : GC_CUM_PCTS.map(p => Math.round(N * p / 100));
+  cums[4] = N; // 5등급 누적은 항상 전원
+  for (let k = 1; k < 5; k++) if (cums[k] < cums[k - 1]) cums[k] = cums[k - 1]; // 역전 방지
+  return cums;
 }
 
 function gcCompute() {
-  const { e1, e2, perf } = gcState.ratios;
-  const r1 = gcNum(e1) / 100, r2 = gcNum(e2) / 100, rp = gcNum(perf) / 100;
+  const { e1, e2 } = gcState.ratios;
+  const r1 = gcNum(e1) / 100, r2 = gcNum(e2) / 100;
   const rows = gcActiveStudents().map(st => {
-    const v1 = st.a1 ? gcNum(st.s1) : 0;
-    const v2 = st.a2 ? gcNum(st.s2) : 0;
-    const vp = gcNum(st.sp);
-    const total = v1 * r1 + v2 * r2 + vp * rp;
+    // 지필만 비율을 곱한다. 수행은 만점=반영비율로 채점된 점수라 무가공 합산 (v2 수정).
+    const v1 = st.a1 ? gcNum(st.s1) * r1 : 0;
+    const v2 = st.a2 ? gcNum(st.s2) * r2 : 0;
+    const total = v1 + v2 + gcNum(st.sp);
     return { sid: String(st.sid).trim() || '(번호 없음)', total: Math.round(total * 1e6) / 1e6 };
   });
   const N = rows.length;
+  const cums = gcGradeCums(N);
   const useMid = gcState.tieMode !== 'eq';
   rows.forEach(r => {
     const higher = rows.filter(o => o.total > r.total).length;
@@ -62,21 +71,23 @@ function gcCompute() {
     // 석차 표기는 RANK.EQ(동점자 같은 석차, 다음 석차 건너뜀)
     r.rank = higher + 1;
     r.ties = ties;
-    // 백분율 판정: 중간석차(NEIS) = 석차 + (동점자수-1)/2 / RANK.EQ = 석차 그대로
+    // 유효 석차: 중간석차(NEIS) = 석차 + (동점자수-1)/2 / RANK.EQ = 석차 그대로
     const effRank = useMid ? higher + 1 + (ties - 1) / 2 : higher + 1;
-    r.pct = N ? (effRank / N) * 100 : 0;
-    r.grade = gcGrade(r.pct);
+    r.pct = N ? (effRank / N) * 100 : 0; // 표시용 — 판정에는 쓰지 않음
+    r.grade = cums.findIndex(c => effRank <= c) + 1;
   });
   rows.sort((a, b) => a.rank - b.rank);
   return { rows, N };
 }
 
 // --- 입력 이상치 검사 ---
-function gcScoreInvalid(v) {
+// 지필 두 열은 0~100, 수행 열만 0~반영비율(=만점) — 호출부가 max를 넘긴다 (v2)
+function gcScoreInvalid(v, max = 100) {
   if (String(v).trim() === '') return false;
   const n = parseFloat(v);
-  return isNaN(n) || n < 0 || n > 100;
+  return isNaN(n) || n < 0 || n > max;
 }
+function gcPerfMax() { return gcNum(gcState.ratios.perf); }
 function gcDupSids() {
   const seen = {}, dups = new Set();
   gcState.students.forEach(st => {
@@ -96,7 +107,20 @@ function gcMarkDups() {
 }
 
 // --- 이벤트 핸들러 ---
-function gcSetRatio(key, val) { gcState.ratios[key] = val; gcSave(); gcClearResultDom(); gcUpdateRatioSum(); }
+function gcSetRatio(key, val) {
+  gcState.ratios[key] = val; gcSave(); gcClearResultDom(); gcUpdateRatioSum();
+  if (key === 'perf') gcUpdatePerfMax(); // 수행 만점이 곧 이 비율 — 헤더·셀 검사 즉시 갱신 (재렌더 금지)
+}
+// 수행 열 헤더의 만점 표기와 각 행 수행 셀의 max·invalid를 DOM 순회로 갱신 (DOM 행 순서 = state 순서)
+function gcUpdatePerfMax() {
+  const max = gcPerfMax();
+  const th = document.getElementById('gcPerfMaxLabel');
+  if (th) th.textContent = `만점 ${max}점`;
+  document.querySelectorAll('.gc-perf-input').forEach(inp => {
+    inp.max = max;
+    inp.classList.toggle('invalid', gcScoreInvalid(inp.value, max));
+  });
+}
 function gcSetCell(i, key, val) { gcState.students[i][key] = val; gcClearResultDom(); }
 function gcToggleAttend(i, key, checked) { gcState.students[i][key] = checked; gcClearResultDom(); }
 function gcToggleAll(key, checked) {
@@ -111,8 +135,9 @@ function gcRemoveStudent(id) {
 // 번호 자동 채우기: 인원수 N → 1~N행 생성 (번호 체계라서 가능한 빠른 시작)
 async function gcAutoFill() {
   const inp = document.getElementById('gcFillN');
-  const n = Math.max(1, Math.min(100, parseInt(inp && inp.value, 10) || 0));
-  if (!n) return;
+  const raw = parseInt(inp && inp.value, 10);
+  if (!raw || raw < 1) { uiToast('수강자수를 먼저 입력하세요.', { isErr: true }); return; }
+  const n = Math.min(100, raw);
   if (gcState.students.length && !(await uiConfirm(`현재 표(${gcState.students.length}행)를 지우고 1~${n}번으로 새로 만들까요?`))) return;
   gcState.students = Array.from({ length: n }, (_, i) => gcNewStudent(String(i + 1)));
   gcResults = null; gcRerender();
@@ -139,9 +164,12 @@ async function gcCalculate() {
   const { e1, e2, perf } = gcState.ratios;
   const sum = +(gcNum(e1) + gcNum(e2) + gcNum(perf)).toFixed(2);
   if (sum !== 100) warns.push(`반영 비율의 합이 100%가 아닙니다 (현재 ${sum}%)`);
-  const badCells = gcActiveStudents().reduce((n, st) =>
-    n + [st.s1, st.s2, st.sp].filter(gcScoreInvalid).length, 0);
-  if (badCells) warns.push(`점수 범위(0~100) 밖 입력이 ${badCells}건 있습니다 (빨간 칸 확인)`);
+  const act = gcActiveStudents();
+  const badExam = act.reduce((n, st) => n + [st.s1, st.s2].filter(v => gcScoreInvalid(v)).length, 0);
+  const pMax = gcPerfMax();
+  const badPerf = act.reduce((n, st) => n + (gcScoreInvalid(st.sp, pMax) ? 1 : 0), 0);
+  if (badExam) warns.push(`지필 점수 범위(0~100) 밖 입력이 ${badExam}건 있습니다 (빨간 칸 확인)`);
+  if (badPerf) warns.push(`수행 점수가 만점(${pMax}점)을 넘거나 범위 밖인 입력이 ${badPerf}건 있습니다 (빨간 칸 확인)`);
   const dups = gcDupSids();
   if (dups.size) warns.push(`중복된 번호가 있습니다: ${[...dups].join(', ')}`);
   if (warns.length &&
@@ -156,6 +184,23 @@ function gcSetTieMode(mode) {
   if (gcState.tieMode === mode) return;
   gcState.tieMode = mode;
   gcResults = null; gcSave(); gcRerender();
+}
+
+// --- 수강자수 → 등급별 인원 미리보기 (비영속 — gcSave 대상 아님) ---
+let gcPreviewN = '';
+function gcPreviewChipsHtml() {
+  const n = Math.max(0, Math.min(100, parseInt(gcPreviewN, 10) || 0));
+  if (!n) return '<span class="gc-preview-empty">수강자수를 입력하면 등급별 인원을 보여드려요.</span>';
+  const cums = gcGradeCums(n);
+  return cums.map((c, i) => {
+    const cnt = c - (i ? cums[i - 1] : 0);
+    return `<span class="gc-sum-chip" title="누적 ${c}명"><span class="gc-grade gc-grade-${i + 1}">${i + 1}등급</span> ${cnt}명</span>`;
+  }).join('');
+}
+// 입력 즉시 칩만 교체 (재렌더 금지 — 포커스 보존 규칙). 판정과 같은 gcGradeCums 공유(단일 소스).
+function gcUpdatePreviewChips() {
+  const box = document.getElementById('gcPreviewChips');
+  if (box) box.innerHTML = gcPreviewChipsHtml();
 }
 
 // 결과가 화면에 떠 있는 상태에서 입력을 바꾸면(재렌더 없이) 낡은 결과 제거
@@ -195,7 +240,7 @@ function gcCsvDownload() {
   const body = src.map(st => [st.sid, st.s1, st.s2, st.sp]);
   // 예시 행: 데이터가 전혀 없을 때만 안내용 샘플 제공
   const rows = body.length ? body : [['1', '', '', ''], ['2', '', '', '']];
-  gcDownloadCsv('내신성적_입력양식.csv', [['번호', '1차점수', '2차점수', '수행점수'], ...rows]);
+  gcDownloadCsv('내신성적_입력양식.csv', [['번호', '1차점수', '2차점수', '수행점수(만점=반영비율)'], ...rows]);
 }
 
 function gcResultLines() {
@@ -296,9 +341,12 @@ function gcRowHtml(st, i, dups) {
   // 스크린리더용 행 맥락: 번호가 있으면 "N번", 없으면 "N행"
   const rowName = String(st.sid).trim() ? `${String(st.sid).trim()}번` : `${i + 1}행`;
   const CELL_LABEL = { s1: '1차 지필 점수', s2: '2차 지필 점수', sp: '수행평가 점수' };
-  const cell = (key, val) =>
-    `<input type="number" class="gc-cell-input${gcScoreInvalid(val) ? ' invalid' : ''}" min="0" max="100" value="${esc(String(val))}"
+  const cell = (key, val) => {
+    const isPerf = key === 'sp';
+    const max = isPerf ? gcPerfMax() : 100; // 수행 만점 = 반영비율
+    return `<input type="number" class="gc-cell-input${isPerf ? ' gc-perf-input' : ''}${gcScoreInvalid(val, max) ? ' invalid' : ''}" min="0" max="${max}" value="${esc(String(val))}"
       aria-label="${esc(rowName)} ${CELL_LABEL[key]}" data-oninput="gc:cell" data-args="${esc(JSON.stringify([i, key]))}">`;
+  };
   const sidDup = dups.has(String(st.sid).trim());
   const examCell = (scoreKey, atKey, sVal, checked) =>
     `<td class="gc-td-exam${checked ? '' : ' absent'}">
@@ -342,7 +390,7 @@ function gcTableHtml() {
           <th class="gc-th-sid">번호</th>
           <th class="gc-th-exam">1차 지필<div class="gc-th-sub">${allHead('a1')}</div></th>
           <th class="gc-th-exam">2차 지필<div class="gc-th-sub">${allHead('a2')}</div></th>
-          <th class="gc-th-perf">수행평가</th>
+          <th class="gc-th-perf">수행평가<div class="gc-th-sub" id="gcPerfMaxLabel">만점 ${gcPerfMax()}점</div></th>
           <th class="gc-th-del"></th>
         </tr>
       </thead>
@@ -386,7 +434,7 @@ function gcResultHtml() {
         <tbody>${body}</tbody>
       </table>
     </div>
-    <p class="gc-note">석차 백분율 기준: 누적 10%(1등급) / 34%(2등급) / 66%(3등급) / 90%(4등급) / 초과(5등급). ${tieNote} 클립보드 복사는 탭 구분이라 엑셀·한글 표에 바로 붙여넣을 수 있습니다.</p>
+    <p class="gc-note">등급은 석차백분율이 아니라 <strong>등급별 인원 경계</strong>로 판정합니다: 수강자수×누적비율(10/34/66/90/100%)을 반올림한 값(조견표 우선)이 그 등급까지의 누적 인원입니다. ${tieNote} 클립보드 복사는 탭 구분이라 엑셀·한글 표에 바로 붙여넣을 수 있습니다.</p>
   </div>`;
 }
 
@@ -395,7 +443,7 @@ function renderGradeCalc() {
   const sum = +(gcNum(e1) + gcNum(e2) + gcNum(perf)).toFixed(2);
   const ok = sum === 100;
   return `<div class="gc-wrap">
-    ${pageHead('수업/평가계획', '내신 5등급제 성적 산출기', '반영 비율과 지필·수행 점수로 환산 총점·석차·등급을 상대평가로 산출합니다.')}
+    ${pageHead('수업/평가계획', '내신 5등급제 성적 산출기', '반영 비율과 지필·수행 점수로 환산 총점·석차·등급을 상대평가로 산출합니다.', 'teal')}
     <div class="eval-settings">
       <div class="eval-settings-title">반영 비율 설정</div>
       <div class="eval-settings-row" style="align-items:flex-end">
@@ -415,15 +463,29 @@ function renderGradeCalc() {
           </div>
         </div>
       </div>
-      <p class="gc-hint">환산 총점 = 1차×비율 + 2차×비율 + 수행×비율. 세 비율의 합은 100%가 되어야 합니다. 동점자 처리 기본값은 실제 내신 산출과 같은 <strong>중간석차</strong> 방식입니다.</p>
+      <p class="gc-hint">환산 총점 = 1차×비율 + 2차×비율 + 수행점수(그대로 합산). 지필은 100점 만점으로 입력하고, 수행은 반영비율이 곧 만점입니다(예: 수행 40% → 0~40점으로 입력). 세 비율의 합은 100%가 되어야 합니다. 동점자 처리 기본값은 실제 내신 산출과 같은 <strong>중간석차</strong> 방식입니다.</p>
+      <details class="gc-explain">
+        <summary>석차·등급 산출 방식 자세히 보기</summary>
+        <div class="gc-explain-body">
+          <p><strong>① 석차 표기 (RANK.EQ)</strong> — 엑셀 RANK.EQ 함수와 같습니다. 동점자는 모두 같은(가장 높은) 석차를 받고, 다음 석차는 동점자 수만큼 건너뜁니다. 예: 95, 90, 90, 85점 → 1위, 공동 2위(2명), 4위.</p>
+          <p><strong>② 중간석차 (NEIS·학업성적관리지침)</strong> — 동점자들이 차지한 석차의 평균, 즉 <strong>석차 + (동점자수 − 1) ÷ 2</strong> 입니다. 위 예의 공동 2위는 중간석차 2.5가 되어 등급 판정용 유효 석차로 쓰입니다.</p>
+          <p><strong>③ 등급 경계 (누적인원)</strong> — 수강자수 × 누적비율(10 / 34 / 66 / 90 / 100%)을 반올림한 값이 각 등급까지의 누적 인원입니다(공식 조견표가 있는 인원수는 조견표 우선). 유효 석차가 어느 구간에 들어가는지로 등급이 정해집니다. 예: 4명 → 2·3·3·4등급 각 1명씩(1·5등급 0명), 25명 → 1등급 3명 · 2등급 6명 · 3등급 8명 · 4등급 6명 · 5등급 2명.</p>
+          <p><strong>④ 두 모드의 차이</strong> — 화면에 표시되는 석차는 항상 RANK.EQ이고, 등급 경계와 비교하는 <em>유효 석차</em>만 토글을 따릅니다. 중간석차 모드에서는 경계에 걸린 동점자 전원이 아래 등급으로, RANK.EQ 모드에서는 전원이 위 등급으로 갑니다(정원 초과 허용).</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="eval-settings gc-preview">
+      <div class="eval-settings-title">수강자수 → 등급별 인원 미리보기</div>
+      <div class="gc-preview-row">
+        <input type="number" id="gcFillN" class="eval-number" min="1" max="100" value="${esc(String(gcPreviewN))}"
+          placeholder="예: 25" aria-label="수강자수" data-oninput="gc:previewN">
+        <div id="gcPreviewChips" class="gc-preview-chips" aria-live="polite">${gcPreviewChipsHtml()}</div>
+        <button class="pbtn sec" data-onclick="gc:fill">이 인원으로 번호 생성</button>
+      </div>
     </div>
 
     <div class="gc-toolbar">
-      <div class="gc-fill-group">
-        <span class="eval-label">인원</span>
-        <input type="number" id="gcFillN" class="eval-number" min="1" max="100" value="25" aria-label="학급 인원수">
-        <button class="pbtn sec" data-onclick="gc:fill">번호 생성</button>
-      </div>
       <button class="pbtn sec" data-onclick="gc:add">＋ 행 추가</button>
       <label class="pbtn sec gc-upload-btn">CSV 업로드
         <input type="file" accept=".csv,text/csv" data-onchange="gc:csvUp" hidden>
@@ -459,10 +521,11 @@ registerActions('input', {
   'gc:ratio': function(el, e, key) { gcSetRatio(key, el.value); },
   'gc:cell':  function(el, e, i, key) {
     gcSetCell(i, key, el.value);
-    // 재렌더 없이(포커스 보존) 이상치 표시만 실시간 갱신
+    // 재렌더 없이(포커스 보존) 이상치 표시만 실시간 갱신 — 수행 열은 만점=반영비율
     if (key === 'sid') gcMarkDups();
-    else el.classList.toggle('invalid', gcScoreInvalid(el.value));
+    else el.classList.toggle('invalid', gcScoreInvalid(el.value, key === 'sp' ? gcPerfMax() : 100));
   },
+  'gc:previewN': function(el) { gcPreviewN = el.value; gcUpdatePreviewChips(); },
 });
 registerActions('change', {
   'gc:attend':    function(el, e, i, key) { gcToggleAttend(i, key, el.checked); },

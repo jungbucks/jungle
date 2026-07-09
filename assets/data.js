@@ -1477,7 +1477,7 @@ const SW_DATA = {
 const SUBJECTS = [
   {
     id:"overview", name:"교육과정", type:"overview",
-    accent:"#374151", aLight:"#F3F4F6", aDark:"#1F2937",
+    accent:"#6366F1", aLight:"#EEF2FF", aDark:"#4F46E5",
     domains:[]
   },
   {
@@ -1722,7 +1722,7 @@ const SUBJECTS = [
   { id:"simulator", name:"고교과정 설계", type:"simulator",
     accent:"#6366F1", aLight:"#EEF2FF", aDark:"#4F46E5", domains:[] },
   { id:"chasi", name:"차시 계산기", type:"chasi",
-    accent:"#0891B2", aLight:"#ECFEFF", aDark:"#0E7490", domains:[] },
+    accent:"#0D9488", aLight:"#F0FDFA", aDark:"#0F766E", domains:[] },
   { id:"fav", name:"수업 사이트", type:"fav",
     accent:"#14B8A6", aLight:"#F0FDFA", aDark:"#0D9488", domains:[] },
   { id:"textbook", name:"교과서", type:"textbook",

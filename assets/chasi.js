@@ -67,13 +67,15 @@ async function chasiLoadHolidays() {
       if (!res.ok) throw new Error('응답 오류');      
       all.push(...await res.json());    
     }    
-    const inRange = all.filter(h => h.date >= startDate && h.date <= endDate);    
-    const existing = new Set(chasiState.exceptions.map(e => e.start));    
-    let added = 0;    
-    inRange.forEach(h => {      
-      if (!existing.has(h.date)) {        
-        chasiState.exceptions.push({ id: Date.now() + added++, label: h.localName, start: h.date, end: h.date });      
-      }    
+    // 서드파티 응답 검증: 날짜 형식이 어긋난 항목은 저장하지 않음 (localStorage 데이터 무결성)
+    const isYmd = d => typeof d === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d);
+    const inRange = all.filter(h => isYmd(h.date) && h.date >= startDate && h.date <= endDate);
+    const existing = new Set(chasiState.exceptions.map(e => e.start));
+    let added = 0;
+    inRange.forEach(h => {
+      if (!existing.has(h.date)) {
+        chasiState.exceptions.push({ id: Date.now() + added++, label: String(h.localName || '공휴일'), start: h.date, end: h.date });
+      }
     });    
     if (added > 0) chasiSave();    
     chasiRerender();    
