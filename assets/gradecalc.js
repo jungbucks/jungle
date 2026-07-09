@@ -443,7 +443,7 @@ function renderGradeCalc() {
   const sum = +(gcNum(e1) + gcNum(e2) + gcNum(perf)).toFixed(2);
   const ok = sum === 100;
   return `<div class="gc-wrap">
-    ${pageHead('수업/평가계획', '내신 5등급제 성적 산출기', '반영 비율과 지필·수행 점수로 환산 총점·석차·등급을 상대평가로 산출합니다.', 'teal')}
+    ${pageHead('수업/평가계획', '내신 5등급제 성적 산출기', '반영 비율과 지필·수행 점수로 환산 총점·석차·등급을 상대평가로 산출합니다.')}
     <div class="eval-settings">
       <div class="eval-settings-title">반영 비율 설정</div>
       <div class="eval-settings-row" style="align-items:flex-end">

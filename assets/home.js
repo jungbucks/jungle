@@ -31,7 +31,7 @@ export function renderHome() {
     </button>`;
   }
   const ovCards = OV_SUBTABS.map(t =>
-    `<button class="home-card" style="--hc-accent:var(--ovr)" data-onclick="app:ovSubtab" data-args="${esc(JSON.stringify([t.key]))}">
+    `<button class="home-card" style="--hc-accent:var(--accent)" data-onclick="app:ovSubtab" data-args="${esc(JSON.stringify([t.key]))}">
       <span class="home-card-name"><span class="home-card-dot"></span>${esc(t.label)}</span>
       <span class="home-card-desc">${esc(t.desc)}</span>
     </button>`
@@ -68,7 +68,7 @@ export function renderHome() {
       <span class="home-sc-label">성취기준 검색</span>
     </button>
     <button class="home-sc-card" data-onclick="app:ovSubtab" data-args="[&quot;map&quot;]">
-      <span class="home-sc-ico" style="--sc-soft:var(--ovr-soft);--sc-color:var(--ovr)">${ICONS.compass}</span>
+      <span class="home-sc-ico" style="--sc-soft:var(--accent-light);--sc-color:var(--accent)">${ICONS.compass}</span>
       <span class="home-sc-label">교육과정 분석</span>
     </button>
     <button class="home-sc-card" data-onclick="app:subject" data-args="[${evalIdx}]">

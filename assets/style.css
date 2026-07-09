@@ -5,7 +5,7 @@
   /* 브랜드 기본색 (파랑) */
   --accent:#2563EB;--accent-light:#EFF6FF;--accent-dark:#1E40AF;--accent-line:#BFDBFE;
   /* 브랜드 딥 그린 — 워드마크·잎 로고마크 단색 */
-  --brand:#1B4D3E;
+  --brand:#1B4D3E; --brand-dark:#143D31; --brand-soft:#E9F1ED; /* 자료실 3종(수업 도구·사이트·앱스토어) 메뉴색 — 2026-07-09 5계열 체계 */
   /* 기능색 팔레트 — 각 4단: soft(배경) / line(테두리·칩) / base(강조) / dark(텍스트·호버) */
   --plan:#7C3AED;  --plan-dark:#6D28D9;  --plan-soft:#F5F3FF;  --plan-line:#DDD6FE;  /* 수업·평가 도구 */
   --book:#059669;  --book-dark:#047857;  --book-soft:#ECFDF5;  --book-line:#A7F3D0;  /* 교과서 */
@@ -1310,6 +1310,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 /* ===== DARK MODE ===== */
 [data-theme="dark"] {
   --brand: #34D399; /* 딥 그린은 다크 배경에서 안 보임 — 에메랄드로 재매핑 */
+  --brand-dark: #6EE7B7; --brand-soft: #123227;
   --g50:  #1E293B;
   --g100: #253347;
   --g150: #2C3C50;

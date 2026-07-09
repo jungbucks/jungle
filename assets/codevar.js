@@ -49,7 +49,7 @@ function renderCodeVar() {
 
   return `<div class="codevar-wrap">
     <div class="ov-head">
-      <span class="ov-eyebrow" style="color:var(--ovr);background:var(--ovr-soft)">수업/평가계획 · AI</span>
+      <span class="ov-eyebrow" style="color:var(--plan);background:var(--plan-soft)">수업/평가계획 · AI</span>
       <h2 class="ov-h2">코드 변형 생성기</h2>
       <p class="ov-sub" id="codevarIntroSub">${isVar
         ? '소스 코드를 붙여넣으면 Gemini AI가 수행평가·시험 출제용 변형 3가지를 자동 생성합니다.'

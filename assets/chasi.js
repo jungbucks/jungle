@@ -193,7 +193,7 @@ function renderChasi() {
   const wh = (cs.days || []).filter(Boolean).length;  
   const excSorted = [...cs.exceptions].sort((a,b) => a.start.localeCompare(b.start));  
   return `<div class="chasi-wrap">
-    ${pageHead('수업/평가계획', '차시 계산기', '학사일정과 수업 요일로 학기 총 수업 차시를 계산합니다.', 'teal')}
+    ${pageHead('수업/평가계획', '차시 계산기', '학사일정과 수업 요일로 학기 총 수업 차시를 계산합니다.')}
     <div class="chasi-cols">
     <div class="chasi-col">
     <div class="chasi-section">

@@ -1477,7 +1477,7 @@ const SW_DATA = {
 const SUBJECTS = [
   {
     id:"overview", name:"교육과정", type:"overview",
-    accent:"#6366F1", aLight:"#EEF2FF", aDark:"#4F46E5",
+    accent:"#2563EB", aLight:"#EFF6FF", aDark:"#1E40AF",
     domains:[]
   },
   {
@@ -1720,17 +1720,17 @@ const SUBJECTS = [
   { id:"evalplan", name:"수업/평가계획", type:"evalplan",
     accent:"#7C3AED", aLight:"#F5F3FF", aDark:"#6D28D9", domains:[] },
   { id:"simulator", name:"고교과정 설계", type:"simulator",
-    accent:"#6366F1", aLight:"#EEF2FF", aDark:"#4F46E5", domains:[] },
+    accent:"#2563EB", aLight:"#EFF6FF", aDark:"#1E40AF", domains:[] },
   { id:"chasi", name:"차시 계산기", type:"chasi",
     accent:"#0D9488", aLight:"#F0FDFA", aDark:"#0F766E", domains:[] },
   { id:"fav", name:"수업 사이트", type:"fav",
-    accent:"#14B8A6", aLight:"#F0FDFA", aDark:"#0D9488", domains:[] },
+    accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
   { id:"textbook", name:"교과서", type:"textbook",
     accent:"#059669", aLight:"#ECFDF5", aDark:"#047857", domains:[] },
   { id:"swrec", name:"수업 도구", type:"swrec",
-    accent:"#F43F5E", aLight:"#FFF1F2", aDark:"#E11D48", domains:[] },
+    accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
   { id:"appstore", name:"앱스토어", type:"appstore",
-    accent:"#D946EF", aLight:"#FDF4FF", aDark:"#A21CAF", domains:[] }
+    accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] }
 ];
 
 // --- 시뮬레이터 데이터 ---

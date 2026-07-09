@@ -32,7 +32,7 @@ function renderAiIdea() {
 
   return `<div class="aiidea-wrap">
     <div class="ov-head">
-      <span class="ov-eyebrow" style="color:var(--ovr);background:var(--ovr-soft)">수업/평가계획 · AI</span>
+      <span class="ov-eyebrow" style="color:var(--plan);background:var(--plan-soft)">수업/평가계획 · AI</span>
       <h2 class="ov-h2">AI 수업 아이디어</h2>
       <p class="ov-sub">성취기준 코드나 수업 주제를 입력하면 Gemini AI가 바로 수업에 적용할 수 있는 활동 아이디어를 제안합니다.</p>
     </div>
