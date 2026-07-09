@@ -9,7 +9,8 @@
 - **그레이 스케일**: `--g50 #F9FAFB … --g900 #111827`(다크모드는 통째 재매핑, 컴포넌트가 g토큰만 쓰면 자동 대응).
 - **accent(브랜드 파랑)**: `--accent #2563EB` / light `#EFF6FF` / dark `#1E40AF` / line `#BFDBFE`. 과목 목록 페이지만 `setAccent()`로 3종 덮어쓰고 `render()`의 `resetAccent()`가 매번 복원(이 쌍 깨면 색 오염 버그).
 - **브랜드**: `--brand #1B4D3E`(딥그린, 다크에서 `#34D399`).
-- **도구군 색**: 설계 문서(수업·평가 4종)=`--plan #7C3AED` / 교과서=`--book #059669` / **계산기(차시·성적 산출기)**·비교=`--teal #0D9488` / 교육과정개요=`--ovr #6366F1`. 각 base/dark/soft/line 4단. (U5 ⓒ 확정 2026-07-09 — 설계=plan / 계산기=teal / AI=ovr 3그룹 인코딩)
+- **도구군 색**: 설계 문서(수업·평가 4종)=`--plan #7C3AED` / 교과서=`--book #059669` / **계산기(차시·성적 산출기)**=`--teal #0D9488` / 교육과정개요=`--ovr #6366F1`. 각 base/dark/soft/line 4단. (U5 ⓒ 확정 2026-07-09 — 설계=plan / 계산기=teal / AI=ovr 3그룹 인코딩)
+- **교육과정 탭 내부 화면(한눈에·비교·가이드·dsai)의 눈썹 배지·다이어그램 정체성 색 = `--accent` 파랑 통일**(2026-07-09 사용자 지시 — 이전의 teal 잔재 제거). dsai의 DS측 데이터 인코딩(`--dac-accent`=teal)은 의미 구분용이라 유지.
 - **시맨틱**: ok `#10B981` / danger `#EF4444` / warn `#D97706`.
 - **타이포 토큰**: `--fs-caption 13px / --fs-body 15px / --fs-body-lg 16px / --fs-title 18px / --fs-heading 21px / --fs-display clamp(24,3vw,28)`.
 
