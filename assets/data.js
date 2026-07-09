@@ -1477,7 +1477,7 @@ const SW_DATA = {
 const SUBJECTS = [
   {
     id:"overview", name:"교육과정", type:"overview",
-    accent:"#2563EB", aLight:"#EFF6FF", aDark:"#1E40AF",
+    accent:"var(--curr)", aLight:"var(--curr-soft)", aDark:"var(--curr-dark)",
     domains:[]
   },
   {

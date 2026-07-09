@@ -5,7 +5,7 @@ import { esc, safeUrl } from './utils.js';
 
 function renderAppStore() {
   const TYPE_META = {
-    webapp:    { label: '웹앱',        color: 'var(--plan)' },
+    webapp:    { label: '웹앱',        color: 'var(--brand)' },
     extension: { label: '확장프로그램', color: 'var(--teal)' },
     desktop:   { label: '데스크탑앱',   color: 'var(--book)' },
     mobile:    { label: '모바일앱',     color: 'var(--warn)' },

@@ -65,7 +65,7 @@
 
 ## 형제 프로젝트 (별도 폴더·별도 배포 — 정글 규칙 끌어오지 말 것)
 
-- **코드 낙하**(`C:\Users\정벅\code-drop`): Python 타이핑 게임, 정글 임베드용. 현재 설계 문서만(GAME_DESIGN.md·TECH_SPEC.md), 구현 미착수. 순수 HTML/CSS/JS.
+- **코드 낙하**(`C:\Users\정벅\code-drop`): Python 타이핑 게임, 정글 임베드용. **구현 완료(2026-07-09)** — `index.html`(단일, ~36KB) + `snippets.js`(75문항). 순수 HTML/CSS/JS·오프라인 더블클릭. 헤드리스 프로브 20항목 PASS. 규칙·수치는 GAME_DESIGN.md·TECH_SPEC.md가 원본(수정 금지).
 - **정보카츄**: 개인 교육자료 아카이브(다크 slate + 옐로우 톤). 위치·파일은 착수 시 사용자 확인. 팔레트는 `DESIGN.md` §2-1.
 - 참고: `C:\Users\정벅\ml-lecture`(ML 특강, src→dist 빌드)·`C:\Users\정벅\markdown`(Obsidian 가이드)는 자체 CLAUDE.md 보유.
 

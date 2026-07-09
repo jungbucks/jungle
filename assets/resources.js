@@ -5,12 +5,11 @@ import { esc, safeUrl, registerActions } from './utils.js';
 
 // 카테고리 색 패밀리 — 섹션 단위 custom prop(--rs-*)으로 주입, 토큰만 사용
 const RS_FAMS = [
+  /* 자료실=딥그린 계열 재정리(2026-07-10): 메뉴색과 겹치는 plan(수업·평가)·accent(전역)·ovr(퇴역) 제거 */
+  { base: 'var(--brand)',  soft: 'var(--brand-soft)',  dark: 'var(--brand-dark)' },
   { base: 'var(--teal)',   soft: 'var(--teal-soft)',   dark: 'var(--teal-dark)' },
-  { base: 'var(--plan)',   soft: 'var(--plan-soft)',   dark: 'var(--plan-dark)' },
-  { base: 'var(--book)',   soft: 'var(--book-soft)',   dark: 'var(--book-dark)' },
-  { base: 'var(--ovr)',    soft: 'var(--ovr-soft)',    dark: 'var(--ovr-dark)' },
   { base: 'var(--warn)',   soft: 'var(--warn-soft)',   dark: 'var(--warn-dark)' },
-  { base: 'var(--accent)', soft: 'var(--accent-light)', dark: 'var(--accent-dark)' },
+  { base: 'var(--book)',   soft: 'var(--book-soft)',   dark: 'var(--book-dark)' },
   { base: 'var(--danger)', soft: 'var(--danger-soft)', dark: 'var(--danger-dark)' },
 ];
 const famAt = i => RS_FAMS[i % RS_FAMS.length];
