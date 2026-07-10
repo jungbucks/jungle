@@ -1782,6 +1782,15 @@ const APPSTORE_APPS = [
     url: 'https://jungbucks.github.io/py_visual/',
     thumb: 'images/apps/py_visual.png',
   },
+  {
+    name: '데이터 과학 학습 시리즈',
+    author: '정벅',
+    authorUrl: 'https://www.instagram.com/jungbucks',
+    desc: '고등학교 데이터 과학 4단원을 인터랙티브 데모로 배우는 학습 페이지입니다. 이상치 제거, 회귀선 학습, k-평균 군집, 장바구니 연관 분석을 직접 조작해 보고, 4단원 프로젝트 워크북으로 마무리합니다.',
+    type: 'webapp',
+    tags: ['데이터과학', '고등', '인터랙티브'],
+    url: 'https://jungbucks.github.io/data-science/',
+  },
 ];
 
 // --- 수업/평가계획 데이터 ---
