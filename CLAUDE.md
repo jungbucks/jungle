@@ -63,11 +63,19 @@
 
 `collected` · `jungle_rubric` · `jungle_lesson_plan` · `jungle_evalplan` · `jungle_gradecalc`(반영비율·동점자 설정만 — **학생 점수·번호는 비영속**) · `jungle_chasi` · `jungle_darkmode` · `jungle_visited` · `jungle_last_used` · Gemini 키(gemini.js, 평문+삭제버튼, 헤더 전송). Gemini 키는 백업 제외.
 
-## 형제 프로젝트 (별도 폴더·별도 배포 — 정글 규칙 끌어오지 말 것)
+## 형제 프로젝트 (별도 폴더·별도 배포 — 정글 규칙 끌어오지 말 것, **각 폴더의 CLAUDE.md가 그 프로젝트의 진입점**)
 
-- **코드 낙하**(`C:\Users\정벅\code-drop`): Python 타이핑 게임, 정글 임베드용. **구현 완료(2026-07-09)** — `index.html`(단일, ~36KB) + `snippets.js`(75문항). 순수 HTML/CSS/JS·오프라인 더블클릭. 헤드리스 프로브 20항목 PASS. 규칙·수치는 GAME_DESIGN.md·TECH_SPEC.md가 원본(수정 금지).
-- **정보카츄**: 개인 교육자료 아카이브(다크 slate + 옐로우 톤). 위치·파일은 착수 시 사용자 확인. 팔레트는 `DESIGN.md` §2-1.
-- 참고: `C:\Users\정벅\ml-lecture`(ML 특강, src→dist 빌드)·`C:\Users\정벅\markdown`(Obsidian 가이드)는 자체 CLAUDE.md 보유.
+| 폴더 | 내용 | 상태 (2026-07-11) |
+|---|---|---|
+| `code-drop` | Python 타이핑 게임 (비기너~고급 4난이도, v1.2 점진 패치 중) | 완성·rAF 심 프로브 보유 |
+| `data-science` | 데이터 과학 4단원 학습 시리즈 | **라이브** jungbucks.github.io/data-science + 앱스토어 등록 |
+| `sw-life` | 소프트웨어와 생활 5단원 시리즈 (데과의 형제, 웜 무드) | 완성·미배포 |
+| `sort-lab` | 한눈에 보는 정렬 실험실 (카드 5장 스텝 시각화) | 완성·미배포 |
+| `poke-ethics` | 포케 딜레마 (AI 윤리, Moral Machine 무해화) + **연구 트랙**(논문) | v1.0 + 연구 문서 6종·파일럿 도구, 배포 보류 |
+| `lightcal` | 바탕화면 반투명 캘린더 위젯 (PS+WinForms) | v0.1, 실사용 검증 대기 |
+| `info-kachu` | 정보카츄 개인 서랍 (다크 slate+옐로 — 팔레트는 DESIGN.md §2-1) | 재구축 완료 |
+| 홈 폴더 | `python-tutorial.html`·`info_science_master.html` 단일 교육 페이지 | 완성 |
+| 참고 | `ml-lecture`(src→dist 빌드)·`markdown`(Obsidian 가이드) | 자체 CLAUDE.md 보유 |
 
 ## 문서 상호 참조
 
