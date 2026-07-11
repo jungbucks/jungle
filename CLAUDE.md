@@ -35,11 +35,11 @@
 | 데이터 전역 브리지 + SW 등록 | `assets/boot.js` |
 | 스타일 전체 | `assets/style.css` |
 | 캐시 전략·CSP·정적 셸 | `sw.js` / `index.html` |
-| 배포 전 검증기 | `tools/verify.mjs` |
+| 배포 전 검증기 | `tools/verify.mjs`(정적 4) + `tools/test.mjs`(계산 단위 테스트, verify [5]가 호출) |
 
 ## 절대 규칙 (하위 모델이 자주 실수하는 곳)
 
-1. **모든 수정 후 `node tools/verify.mjs`** — 4항목(import 정합성/문법/전체 그래프 로드+init/SW 프리캐시 파일 존재) 통과 못 하면 배포 금지. 새 DOM API를 쓰면 verify.mjs의 DOM 스텁에도 추가.
+1. **모든 수정 후 `node tools/verify.mjs`** — 5항목(import 정합성/문법/그래프 로드+init/SW 프리캐시 존재/**[5] gradecalc 계산 단위 테스트**) 통과 못 하면 배포 금지. 새 DOM API를 쓰면 verify.mjs의 DOM 스텁에도 추가. **계산 로직(gradecalc·향후 chasi·evalplan)을 고치면 `tools/test.mjs`에 케이스를 먼저/함께 추가**할 것 — 실무 사고 방지선. gradecalc의 테스트용 export는 `__gcTest`(앱은 renderGradeCalc만 씀).
 2. **배포 묶음마다 `sw.js`의 `CACHE = 'jungle-vNN'` +1** (한 묶음이면 한 번만).
 3. **파일 추가/이름변경 시 두 곳 동시 갱신**: `sw.js`의 ASSETS 배열 + `index.html`의 modulepreload 목록. 빠뜨리면 verify가 잡거나 로딩 워터폴 부활.
 4. **ACHIEVEMENTS 키 접미사 체계**: 고등 `_고`, 정보과학 `_cs`(utils.js `cid` 헬퍼가 `domainName+'_고'/'_cs'` 생성, 현재 line 252). 새 과목 추가 시 **키 충돌부터 확인**. 데이터는 data.js.

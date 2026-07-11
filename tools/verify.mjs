@@ -8,6 +8,7 @@
 //   [2] 파일별 문법 — 깨진 파일을 정확히 지목
 //   [3] 전체 그래프 로드 + init 실행 — node --check가 못 잡는 런타임 초기화 오류
 //   [4] 서비스워커 프리캐시 목록의 파일 실제 존재 여부
+//   [5] 계산 로직 단위 테스트 — gradecalc 등급 판정·환산 총점 회귀 (tools/test.mjs)
 // ============================================================
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -125,6 +126,17 @@ try {
     if (!missing) ok(`캐시 ${cacheVer} — 프리캐시 ${paths.length}개 파일 모두 존재`);
   } else fail('sw.js 에서 ASSETS 배열을 찾지 못함');
 } catch(e) { fail('sw.js 읽기 실패: ' + e.message); }
+
+// ── [5] 계산 로직 단위 테스트 ───────────────────────────────
+head('[5] 계산 로직 단위 테스트 (gradecalc)');
+try {
+  const { runGradeTests } = await import(pathToFileURL(join(root, 'tools', 'test.mjs')).href);
+  const r = runGradeTests();
+  if (r.fail === 0) ok(`gradecalc ${r.pass}건 전부 통과 (등급 판정·환산 총점·동점 경계)`);
+  else r.fails.forEach(f => fail('단위테스트 — ' + f));
+} catch (e) {
+  fail('test.mjs 실행 실패 — ' + (e && e.message ? e.message : e));
+}
 
 // ── 최종 판정 ───────────────────────────────────────────────
 console.log('\n' + '─'.repeat(48));

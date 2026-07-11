@@ -504,6 +504,8 @@ function renderGradeCalc() {
 }
 
 export { renderGradeCalc };
+// 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어 참조. 앱은 renderGradeCalc만 사용.
+export const __gcTest = { state: gcState, compute: gcCompute, gradeCums: gcGradeCums, newStudent: gcNewStudent };
 
 // ── 이벤트 위임 등록 ──
 registerActions('click', {
