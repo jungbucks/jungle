@@ -336,6 +336,8 @@ function renderChasi() {
 }
 
 export { renderChasi };
+// 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어. 앱은 renderChasi만 사용.
+export const __chasiTest = { state: chasiState, calc: chasiCalc, alerts: chasiWeeklyAlerts };
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체) ──
 registerActions('click', {

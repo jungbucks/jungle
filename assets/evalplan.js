@@ -19,6 +19,27 @@ function evalSubjects() {
 
 function evalSave() { saveState('jungle_evalplan', evalState); }
 
+// --- 순수 계산 헬퍼 (앱·tools/test.mjs 공용 — 로직 단일 소스) ---
+function evalRatioSum(items) { return items.reduce((s, it) => s + (Number(it.ratio) || 0), 0); }
+function evalEssayRatio(items) {
+  let r = 0;
+  items.forEach(it => {
+    if (it.type === 'exam') {
+      const sc = Number(it.scoreChoice) || 0, se = Number(it.scoreEssay) || 0, tot = sc + se;
+      if (tot > 0) r += (Number(it.ratio) || 0) * (se / tot);
+    } else if (it.isEssay) {
+      r += Number(it.ratio) || 0;
+    }
+  });
+  return r;
+}
+// n개 항목에 100%를 고르게 분배(합=100 보장): 앞쪽 항목이 나머지 1%씩 더 가짐
+function evalDistribute(n) {
+  if (!n) return [];
+  const base = Math.floor(100 / n), rem = 100 - base * n;
+  return Array.from({ length: n }, (_, i) => base + (i < rem ? 1 : 0));
+}
+
 function evalHideSummary() {  
   const p = document.getElementById('evalSumPanel');  
   if (p) p.classList.remove('visible');
@@ -43,22 +64,14 @@ function evalLinkedSet() {
   return s;
 }
 
-function evalSummaryHtml() {  
-  const total = evalState.items.reduce((s, it) => s + (Number(it.ratio)||0), 0);  
-  const all = evalAllCodes();  
-  const linked = evalLinkedSet();  
-  const uncov = all.filter(c => !linked.has(c));  
-  const ok = total === 100;  
-  let essayRatio = 0;  
-  evalState.items.forEach(it => {    
-    if (it.type === 'exam') {      
-      const sc = Number(it.scoreChoice)||0, se = Number(it.scoreEssay)||0, tot = sc + se;      
-      if (tot > 0) essayRatio += (Number(it.ratio)||0) * (se / tot);    
-    } else if (it.isEssay) {      
-      essayRatio += Number(it.ratio)||0;    
-    }  
-  });  
-  const hasExam = evalState.items.some(it => it.type === 'exam');  
+function evalSummaryHtml() {
+  const total = evalRatioSum(evalState.items);
+  const all = evalAllCodes();
+  const linked = evalLinkedSet();
+  const uncov = all.filter(c => !linked.has(c));
+  const ok = total === 100;
+  const essayRatio = evalEssayRatio(evalState.items);
+  const hasExam = evalState.items.some(it => it.type === 'exam');
   let uncovHtml = '';  
   if (uncov.length) {    
     uncovHtml = `<div class="sum-sep"></div>      
@@ -203,12 +216,11 @@ function evalGenItems() {
   const items = [];  
   for (let i=0;i<ec;i++) items.push({type:'exam', name: ec===1 ? '2차 정기시험' : `${i+1}차 정기시험`, ratio:0, linkedCodes:[], scoreChoice:0, scoreEssay:0, elements:'', period:''});  
   for (let i=0;i<pc;i++) items.push({type:'perf', name:`수행평가 ${i+1}`, ratio:0, linkedCodes:[], elements:'', period:'', isEssay:false});  
-  if (items.length) {    
-    const base = Math.floor(100/items.length);    
-    const rem = 100 - base*items.length;    
-    items.forEach((it,i) => { it.ratio = base + (i<rem?1:0); });  
-  }  
-  evalState.items = items;  
+  if (items.length) {
+    const r = evalDistribute(items.length);
+    items.forEach((it, i) => { it.ratio = r[i]; });
+  }
+  evalState.items = items;
   evalState.generated = true;  
   evalSave(); evalRerender();
 }
@@ -413,6 +425,8 @@ export {
   renderEvalPlan, evalSubjects, evalHideSummary, evalShowSummary,
   evalReset, evalOpenPreview, evalClosePreview
 };
+// 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어. 앱 렌더는 위 함수만 사용.
+export const __evalTest = { ratioSum: evalRatioSum, essayRatio: evalEssayRatio, distribute: evalDistribute };
 // index.html 정적 모달 버튼(app.js bindStaticHandlers)이 참조 — 유지
 window.evalClosePreview = evalClosePreview;
 window.evalCopyPreviewTable = evalCopyPreviewTable;

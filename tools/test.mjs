@@ -8,6 +8,8 @@
 //  (로직 복제 금지 — 복제하면 테스트가 자기 사본만 검증하게 됨).
 // ============================================================
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 
 // ── 브라우저 환경 최소 스텁 (verify.mjs 와 동일 패턴 — gradecalc/utils 로드용) ──
 function node() {
@@ -37,8 +39,21 @@ if (!globalThis.document) {
   try { Object.defineProperty(globalThis, 'navigator', { value: { clipboard: { writeText() { return Promise.resolve(); } } }, configurable: true }); } catch (e) {}
 }
 
+// data.js 전역(SUBJECTS 등)을 로드 — state.js/evalplan.js가 모듈 평가 시 참조.
+// (verify.mjs가 먼저 로드한 경우 중복이지만 무해)
+if (!globalThis.SUBJECTS) {
+  try {
+    const assetsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets');
+    const dataSrc = readFileSync(join(assetsDir, 'data.js'), 'utf8');
+    const g = ['SUBJECTS', 'ACHIEVEMENTS', 'HS_SEMS', 'HS_SUBJECTS', 'HS_TYPE_COLOR', 'APPSTORE_APPS', 'RECOMMENDED_SITES', 'SW_DATA', 'LP_METHODS', 'LP_EVAL_METHODS'];
+    (0, eval)(dataSrc + '\n' + g.map(n => `try{globalThis.${n}=${n};}catch(e){}`).join(''));
+  } catch (e) { console.error('data.js 로드 실패:', e.message); }
+}
+
 const { __gcTest } = await import('../assets/gradecalc.js');
 const { state, compute, gradeCums, newStudent } = __gcTest;
+const { __chasiTest } = await import('../assets/chasi.js');
+const { __evalTest } = await import('../assets/evalplan.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
 function makeStudents(rows) {
@@ -110,12 +125,89 @@ export function runGradeTests() {
   return { pass, fail: fails.length, fails };
 }
 
+// ============================================================
+//  chasi (차시 계산) — chasiCalc·chasiWeeklyAlerts
+//  ※ Date+toISOString의 TZ 시프트는 제외일·루프가 동일하게 적용돼
+//    total/주당시수는 TZ 불변. 테스트는 TZ 불변 값으로만 단언.
+//  (2026-01-05=월 … 01-09=금, 01-10=토, 01-11=일)
+// ============================================================
+export function runChasiTests() {
+  const { state, calc, alerts } = __chasiTest;
+  const snap = JSON.stringify({ s: state.startDate, e: state.endDate, d: state.days, x: state.exceptions, sem: state.semester });
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { const g = JSON.stringify(got), w = JSON.stringify(want); if (g === w) pass++; else fails.push(`${name}: got ${g} · want ${w}`); };
+  const set = (s, e, d, x) => { state.startDate = s; state.endDate = e; state.days = d; state.exceptions = x || []; };
+
+  // 주당 시수 = days 합
+  set('2026-01-05', '2026-01-09', [1, 1, 0, 0, 0]); eq('주당시수 2', calc().weeklyHours, 2);
+  set('2026-01-05', '2026-01-09', [2, 0, 2, 0, 0]); eq('주당시수 4(블록)', calc().weeklyHours, 4);
+  // 한 주(월~금) 매일 1시수 → 5차시
+  set('2026-01-05', '2026-01-09', [1, 1, 1, 1, 1]); eq('한 주 5일 → 5차시', calc().total, 5);
+  // 블록타임 월·수 → 4차시
+  set('2026-01-05', '2026-01-09', [2, 0, 2, 0, 0]); eq('월·수 블록 → 4차시', calc().total, 4);
+  // 주말만 선택된 범위 → 0 (요일 스킵)
+  set('2026-01-10', '2026-01-11', [1, 1, 1, 1, 1]); eq('주말 범위 → 0', calc().total, 0);
+  // 예외일이 수업일(수요일) 제거 → 4차시
+  set('2026-01-05', '2026-01-09', [1, 1, 1, 1, 1], [{ id: 1, label: '행사', start: '2026-01-07', end: '2026-01-07' }]);
+  eq('수요일 제외 → 4차시', calc().total, 4);
+  // 잘못된 범위·빈 요일 → 0
+  set('2026-01-09', '2026-01-05', [1, 1, 1, 1, 1]); eq('시작>종료 → 0', calc().total, 0);
+  set('2026-01-05', '2026-01-09', [0, 0, 0, 0, 0]); eq('요일 0 → 0', calc().total, 0);
+  // 월별 합 = 총계 (TZ로 월 경계가 흔들려도 합은 total과 일치)
+  set('2026-03-02', '2026-04-30', [1, 1, 1, 1, 1]);
+  { const r = calc(); eq('월별 합 == 총계', r.monthly.reduce((s, m) => s + m.hours, 0), r.total); }
+  // 주별 변동 경고: 예외 없으면 0, 수요일 제외면 1건(lost 1)
+  set('2026-01-05', '2026-01-09', [1, 1, 1, 1, 1]); eq('경고 없음', alerts().length, 0);
+  set('2026-01-05', '2026-01-09', [1, 1, 1, 1, 1], [{ id: 1, label: '행사', start: '2026-01-07', end: '2026-01-07' }]);
+  { const a = alerts(); eq('경고 1건 lost=1', [a.length, a[0] && a[0].lost], [1, 1]); }
+
+  const b = JSON.parse(snap); state.startDate = b.s; state.endDate = b.e; state.days = b.d; state.exceptions = b.x; state.semester = b.sem;
+  return { pass, fail: fails.length, fails };
+}
+
+// ============================================================
+//  evalplan (평가계획 비율) — 비율 합계·자동 분배·논술형 반영비율
+// ============================================================
+export function runEvalTests() {
+  const { ratioSum, essayRatio, distribute } = __evalTest;
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { const g = JSON.stringify(got), w = JSON.stringify(want); if (g === w) pass++; else fails.push(`${name}: got ${g} · want ${w}`); };
+
+  // 비율 합계
+  eq('합계 100', ratioSum([{ ratio: 30 }, { ratio: 30 }, { ratio: 40 }]), 100);
+  eq('합계 미달 90', ratioSum([{ ratio: 40 }, { ratio: 50 }]), 90);
+  eq('빈/문자 무시', ratioSum([{ ratio: 50 }, { ratio: '' }, {}]), 50);
+  // 자동 분배: 합이 항상 100, 앞쪽이 나머지 흡수
+  eq('분배 3개 = [34,33,33]', distribute(3), [34, 33, 33]);
+  eq('분배 4개 = [25,25,25,25]', distribute(4), [25, 25, 25, 25]);
+  eq('분배 7개 합 100', distribute(7).reduce((s, x) => s + x, 0), 100);
+  eq('분배 6개 = [17,17,17,17,16,16]', distribute(6), [17, 17, 17, 17, 16, 16]);
+  eq('분배 0개 = []', distribute(0), []);
+  // 논술형 반영비율: 정기시험은 논술 배점 비중 × 반영비율, 수행은 isEssay면 전액
+  eq('시험 논술 절반', essayRatio([{ type: 'exam', ratio: 40, scoreChoice: 50, scoreEssay: 50 }]), 20);
+  eq('시험 논술 0', essayRatio([{ type: 'exam', ratio: 40, scoreChoice: 100, scoreEssay: 0 }]), 0);
+  eq('수행 논술형 전액', essayRatio([{ type: 'perf', ratio: 30, isEssay: true }]), 30);
+  eq('수행 비논술 0', essayRatio([{ type: 'perf', ratio: 30, isEssay: false }]), 0);
+  eq('혼합 20+30=50', essayRatio([{ type: 'exam', ratio: 40, scoreChoice: 50, scoreEssay: 50 }, { type: 'perf', ratio: 30, isEssay: true }]), 50);
+
+  return { pass, fail: fails.length, fails };
+}
+
+// 전체 집계 (verify [5]가 호출)
+export function runAllTests() {
+  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()]];
+  let pass = 0; const fails = [];
+  for (const [name, r] of parts) { pass += r.pass; r.fails.forEach(f => fails.push(name + ' — ' + f)); }
+  return { pass, fail: fails.length, fails, parts };
+}
+
 // ── 단독 실행 ───────────────────────────────────────────────
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const r = runGradeTests();
-  console.log('\n\x1b[1m계산 로직 단위 테스트 (gradecalc)\x1b[0m');
+  const r = runAllTests();
+  console.log('\n\x1b[1m계산 로직 단위 테스트 (gradecalc · chasi · evalplan)\x1b[0m');
+  r.parts.forEach(([name, p]) => console.log(`   ${p.fail === 0 ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${name}: ${p.pass}건 ${p.fail === 0 ? '통과' : `· ${p.fail}건 실패`}`));
   if (r.fail === 0) {
-    console.log(`   \x1b[32m✓\x1b[0m ${r.pass}건 전부 통과`);
+    console.log(`   \x1b[32m✓\x1b[0m 합계 ${r.pass}건 전부 통과`);
     process.exit(0);
   } else {
     r.fails.forEach((f) => console.log('   \x1b[31m✗\x1b[0m ' + f));
