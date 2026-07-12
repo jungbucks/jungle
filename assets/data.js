@@ -1339,7 +1339,7 @@ const RECOMMENDED_SITES = [
       { name: "에듀넷",          url: "https://edunet.net",      desc: "교육부 공식 교육 자료 포털" },
       { name: "국가교육과정 정보센터", url: "https://ncic.re.kr", desc: "2022 개정 교육과정 원문 열람" },
       { name: "KERIS",           url: "https://keris.or.kr",     desc: "교육학술정보원, 에듀테크 정책 자료" },
-      { name: "소프트웨어야 놀자", url: "https://swcoding.org",  desc: "SW 교육 자료 모음, 엔트리 기반 수업 자료 풍부" },
+      { name: "소프트웨어야 놀자", url: "https://playsw.or.kr",  desc: "SW 교육 자료 모음, 엔트리 기반 수업 자료 풍부" },
       { name: "커리어넷",        url: "https://career.go.kr",    desc: "미래 IT 진로 및 기술 변화 연계 수업 설계 참고" }
     ]
   },
@@ -1790,6 +1790,7 @@ const APPSTORE_APPS = [
     type: 'webapp',
     tags: ['데이터과학', '고등', '인터랙티브'],
     url: 'https://jungbucks.github.io/data-science/',
+    thumb: 'images/apps/data-science.png',
   },
 ];
 

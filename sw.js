@@ -1,4 +1,4 @@
-const CACHE = 'jungle-v26';
+const CACHE = 'jungle-v27';
 
 const ASSETS = [
   './',
@@ -37,6 +37,7 @@ const ASSETS = [
   './images/icon-maskable-512.png',
   './images/apps/markdown.png',
   './images/apps/py_visual.png',
+  './images/apps/data-science.png',
 ];
 
 // ── install: 개별 캐싱 (파일 하나가 404여도 나머지는 캐시) ──

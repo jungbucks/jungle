@@ -935,8 +935,9 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .tbk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
 .tbk-card{background:#fff;border:1px solid var(--g200);border-top:3px solid var(--tbk,var(--g300));border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:5px;transition:box-shadow .15s,transform .12s}
 .tbk-card:hover{box-shadow:0 6px 18px -6px rgba(17,24,39,.14);transform:translateY(-2px)}
+.tbk-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
 .tbk-pub{font-size:16px;font-weight:700;color:var(--g900);line-height:1.35}
-.tbk-meta{font-size:13px;color:var(--g500);display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tbk-author{font-size:13px;color:var(--g500);line-height:1.35}
 .tbk-year{background:var(--g100);border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600;color:var(--g600)}
 .tbk-btn{margin-top:auto;display:block;text-align:center;background:var(--tbk-soft,var(--g100));color:var(--tbk-dark,var(--g700));font-size:14px;font-weight:700;border-radius:8px;padding:8px 0;text-decoration:none;transition:background .15s,color .15s}
 .tbk-btn:hover{background:var(--tbk);color:#fff}

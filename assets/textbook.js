@@ -215,8 +215,8 @@ function renderTextbook() {
     if (!list || !list.length) return '<div class="msub-empty">목록 준비 중입니다.</div>';
     return `<div class="tbk-grid">${list.map(b => `
       <div class="tbk-card" style="--tbk:${s.accent};--tbk-soft:${s.aLight};--tbk-dark:${s.aDark}">
-        <div class="tbk-pub">${esc(b.publisher)}</div>
-        <div class="tbk-meta">${b.author ? `<span>${esc(b.author)}</span>` : ''}<span class="tbk-year">${b.year}</span></div>
+        <div class="tbk-head"><span class="tbk-pub">${esc(b.publisher)}</span>${b.author ? `<span class="tbk-author">${esc(b.author)}</span>` : ''}</div>
+        <div class="tbk-yearline"><span class="tbk-year">${b.year}</span></div>
         ${b.ebook
           ? `<a class="tbk-btn" href="${safeUrl(b.ebook)}" target="_blank" rel="noopener noreferrer">교과서 보기</a>`
           : '<span class="tbk-btn off">준비 중</span>'}
