@@ -489,30 +489,30 @@ function renderOverview() {
         <tbody>
           <tr>
             <td class="ov-cat-cell">일반선택</td>
-            <td><span class="ov-subj-badge" style="background:#ECFDF5;border-left-color:#10B981">정보</span></td>
+            <td><span class="ov-subj-badge" style="background:#ECFDF5">정보</span></td>
             <td>중학교 '정보'와 동일한 영역으로 구성하여 일관성을 유지하면서, 진로선택 과목의 기초 공통이 되도록 내용을 구성</td>
           </tr>
           <tr>
             <td rowspan="3" class="ov-cat-cell" style="vertical-align:middle">진로선택</td>
-            <td><span class="ov-subj-badge" style="background:#F5F3FF;border-left-color:#8B5CF6">인공지능 기초</span></td>
+            <td><span class="ov-subj-badge" style="background:#F5F3FF">인공지능 기초</span></td>
             <td>컴퓨터과학, 데이터 과학, 정보시스템 분야의 지식으로 구성하여 해당 진로와 연계</td>
           </tr>
           <tr>
-            <td><span class="ov-subj-badge" style="background:#FFFBEB;border-left-color:#F59E0B">데이터 과학</span></td>
+            <td><span class="ov-subj-badge" style="background:#FFFBEB">데이터 과학</span></td>
             <td>컴퓨터과학, 데이터 과학 분야의 기초 지식으로 구성하여 해당 진로와 연계</td>
           </tr>
           <tr>
-            <td><span class="ov-subj-badge" style="background:#F0F9FF;border-left-color:#0EA5E9">정보과학</span></td>
+            <td><span class="ov-subj-badge" style="background:#F0F9FF">정보과학</span></td>
             <td>컴퓨터과학과 소프트웨어 공학 분야에 관한 지식으로 구성하여 해당 진로와 연계</td>
           </tr>
           <tr>
             <td class="ov-cat-cell">융합선택</td>
-            <td><span class="ov-subj-badge" style="background:#FDF2F8;border-left-color:#EC4899">소프트웨어와 생활</span></td>
+            <td><span class="ov-subj-badge" style="background:#FDF2F8">소프트웨어와 생활</span></td>
             <td>다양한 학문 분야와의 융합을 통해 문제 해결을 경험할 수 있는 프로젝트 형태로 각 영역을 구성</td>
           </tr>
           <tr>
             <td class="ov-cat-cell">전문교과</td>
-            <td><span class="ov-subj-badge" style="background:#FFF7ED;border-left-color:#F97316">프로그래밍</span></td>
+            <td><span class="ov-subj-badge" style="background:#FFF7ED">프로그래밍</span></td>
             <td>프로그래밍 언어, 기초 문법, 프로그램 설계와 구현 전 과정을 다루며 산업 현장과 연계된 실무 중심으로 구성</td>
           </tr>
         </tbody>

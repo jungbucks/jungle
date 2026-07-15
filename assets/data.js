@@ -1792,6 +1792,36 @@ const APPSTORE_APPS = [
     url: 'https://jungbucks.github.io/data-science/',
     thumb: 'images/apps/data-science.png',
   },
+  {
+    name: '한눈에 보는 정렬 실험실',
+    author: '정벅',
+    authorUrl: 'https://www.instagram.com/jungbucks',
+    desc: '버블·선택·삽입·퀵 정렬과 순차·이진 탐색을 카드 5장으로 배우는 시각화 도구입니다. 한 스텝씩 실행하며 비교·교환 과정을 눈으로 따라가고, 직접 입력한 수열로도 실험할 수 있습니다.',
+    type: 'webapp',
+    tags: ['정렬', '알고리즘', '시각화'],
+    url: 'https://jungbucks.github.io/sort-lab/',
+    thumb: 'images/apps/sort-lab.svg',
+  },
+  {
+    name: '소프트웨어와 생활 학습 시리즈',
+    author: '정벅',
+    authorUrl: 'https://www.instagram.com/jungbucks',
+    desc: '융합선택 「소프트웨어와 생활」 5단원을 체험형 데모로 배우는 시리즈입니다. SW 사냥, 컴퓨터 조립 시뮬레이터, 왜곡 그래프 판별, 감염 확산 시뮬레이션, 스타트업 워크북까지 단원별로 직접 만져 봅니다.',
+    type: 'webapp',
+    tags: ['소프트웨어와생활', '고등', '인터랙티브'],
+    url: 'https://jungbucks.github.io/sw-life/',
+    thumb: 'images/apps/sw-life.svg',
+  },
+  {
+    name: '암호의 세계',
+    author: '정벅',
+    authorUrl: 'https://www.instagram.com/jungbucks',
+    desc: '시저·레일 펜스·열 전치부터 대칭 키·공개 키·해시 함수까지, 암호화 과정을 직접 조작하며 배우는 시각화 페이지입니다. 열쇠 25개를 전부 시도하는 브루트포스 해독 도전과 SHA-256 눈사태 데모로 "왜 현대 암호가 필요한지"까지 잇습니다.',
+    type: 'webapp',
+    tags: ['암호', '정보보호', '시각화'],
+    url: 'https://jungbucks.github.io/cipher/',
+    thumb: 'images/apps/cipher.svg',
+  },
 ];
 
 // --- 수업/평가계획 데이터 ---
