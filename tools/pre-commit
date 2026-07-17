@@ -1,0 +1,10 @@
+#!/bin/sh
+# 정글 절대 규칙 1 자동 강제 (2026-07-17 설치): verify 5항목 통과 없이는 커밋 불가.
+# 원본은 tools/pre-commit (버전 관리됨) — 새 클론에서는 이 파일을 .git/hooks/pre-commit 으로 복사할 것.
+# --no-verify 로 우회하지 말 것 (CLAUDE.md 규칙 1).
+echo "[pre-commit] node tools/verify.mjs 실행 중..."
+node tools/verify.mjs
+if [ $? -ne 0 ]; then
+  echo "[pre-commit] verify 실패 — 커밋을 차단합니다. 문제를 고친 뒤 다시 커밋하세요."
+  exit 1
+fi

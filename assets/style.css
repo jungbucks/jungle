@@ -17,6 +17,8 @@
   --ok:#10B981;
   --danger:#EF4444;--danger-dark:#B91C1C;--danger-soft:#FEF2F2;--danger-line:#FECACA;
   --warn:#D97706;  --warn-dark:#92400E;  --warn-soft:#FFFBEB;  --warn-line:#FDE68A;
+  /* 과목 배지 배경(교육과정 개요 비교표) 전용 — 2026-07-17 신설: overview.js 인라인 hex 제거용(규칙 5), 다크 쌍은 다크 블록에 */
+  --sbj-info:#ECFDF5; --sbj-ai:#F5F3FF; --sbj-ds:#FFFBEB; --sbj-cs:#F0F9FF; --sbj-sw:#FDF2F8; --sbj-pg:#FFF7ED;
   /* 타이포 스케일 — 13px 미만 텍스트 금지 (12px는 배지·캡션 전용 하한) */
   --fs-caption:13px;--fs-body:15px;--fs-body-lg:16px;--fs-title:18px;--fs-heading:21px;--fs-display:clamp(24px,3vw,28px);
   /* 그레이 */
@@ -1316,6 +1318,8 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
   --brand-dark: #6EE7B7; --brand-soft: #123227; --brand-line: #1E4A3A;
   --curr: #FB923C; /* 번트 오렌지도 다크에서 어두움 — 밝은 오렌지로 재매핑 */
   --curr-dark: #FDBA74; --curr-soft: #3B2413; --curr-line: #7C3A1D;
+  /* 과목 배지 다크 쌍 — 밝은 파스텔을 같은 색상 계열의 딥 톤으로 (g900 텍스트와 대비 확보) */
+  --sbj-info:#0E2A21; --sbj-ai:#2A2144; --sbj-ds:#332608; --sbj-cs:#0E2536; --sbj-sw:#331B29; --sbj-pg:#33200F;
   --g50:  #1E293B;
   --g100: #253347;
   --g150: #2C3C50;
