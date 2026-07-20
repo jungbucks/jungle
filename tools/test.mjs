@@ -54,6 +54,7 @@ const { __gcTest } = await import('../assets/gradecalc.js');
 const { state, compute, gradeCums, newStudent } = __gcTest;
 const { __chasiTest } = await import('../assets/chasi.js');
 const { __evalTest } = await import('../assets/evalplan.js');
+const { __achvTest } = await import('../assets/achv.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
 function makeStudents(rows) {
@@ -168,6 +169,47 @@ export function runChasiTests() {
 // ============================================================
 //  evalplan (평가계획 비율) — 비율 합계·자동 분배·논술형 반영비율
 // ============================================================
+export function runAchvTests() {
+  const { mergeLevelTexts } = __achvTest;
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { const g = JSON.stringify(got), w = JSON.stringify(want); if (g === w) pass++; else fails.push(`${name}: got ${g} · want ${w}`); };
+
+  // join: 마지막 문장만 종결형으로 남고, 앞 문장은 으며 → 고 순으로 교대
+  eq('join 2개 (있다)',
+    mergeLevelTexts(['가를 설명할 수 있다.', '나를 분석할 수 있다.'], 'join'),
+    '가를 설명할 수 있으며, 나를 분석할 수 있다.');
+  eq('join 3개 어미 교대',
+    mergeLevelTexts(['가할 수 있다.', '나할 수 있다.', '다할 수 있다.'], 'join'),
+    '가할 수 있으며, 나할 수 있고, 다할 수 있다.');
+  eq('join 4개 어미 교대 반복',
+    mergeLevelTexts(['가할 수 있다.', '나할 수 있다.', '다할 수 있다.', '라할 수 있다.'], 'join'),
+    '가할 수 있으며, 나할 수 있고, 다할 수 있으며, 라할 수 있다.');
+  // "한다." 종결 (컴퓨팅 시스템 영역 12건이 이 형태)
+  eq('join 한다 종결',
+    mergeLevelTexts(['시스템을 구성한다.', '시스템을 효과적으로 구성한다.'], 'join'),
+    '시스템을 구성하며, 시스템을 효과적으로 구성한다.');
+  eq('join 있다+한다 혼합',
+    mergeLevelTexts(['가할 수 있다.', '나를 구성한다.', '다할 수 있다.'], 'join'),
+    '가할 수 있으며, 나를 구성하고, 다할 수 있다.');
+  // 규칙 밖 어미는 원문 보존 (데이터가 늘어도 문장이 깨지지 않게 하는 안전판)
+  eq('join 규칙 밖 어미 원문 보존',
+    mergeLevelTexts(['알 수 없음', '가할 수 있다.'], 'join'),
+    '알 수 없음 가할 수 있다.');
+  // 1개만 선택하면 연결이 일어나지 않는다
+  eq('join 1개 = 원문', mergeLevelTexts(['가할 수 있다.'], 'join'), '가할 수 있다.');
+  eq('raw 1개 = 원문', mergeLevelTexts(['가할 수 있다.'], 'raw'), '가할 수 있다.');
+  // raw: 원문을 공백 1칸으로만 잇는다
+  eq('raw 2개 공백 연결',
+    mergeLevelTexts(['가할 수 있다.', '나할 수 있다.'], 'raw'),
+    '가할 수 있다. 나할 수 있다.');
+  // 빈 값·공백 처리
+  eq('빈 배열 = 빈 문자열', mergeLevelTexts([], 'join'), '');
+  eq('빈 문자열 항목 제거', mergeLevelTexts(['', '  ', '가할 수 있다.'], 'join'), '가할 수 있다.');
+  eq('mode 생략 시 join', mergeLevelTexts(['가할 수 있다.', '나할 수 있다.']), '가할 수 있으며, 나할 수 있다.');
+
+  return { pass, fail: fails.length, fails };
+}
+
 export function runEvalTests() {
   const { ratioSum, essayRatio, distribute } = __evalTest;
   let pass = 0; const fails = [];
@@ -195,7 +237,7 @@ export function runEvalTests() {
 
 // 전체 집계 (verify [5]가 호출)
 export function runAllTests() {
-  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()]];
+  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()]];
   let pass = 0; const fails = [];
   for (const [name, r] of parts) { pass += r.pass; r.fails.forEach(f => fails.push(name + ' — ' + f)); }
   return { pass, fail: fails.length, fails, parts };
@@ -204,7 +246,7 @@ export function runAllTests() {
 // ── 단독 실행 ───────────────────────────────────────────────
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const r = runAllTests();
-  console.log('\n\x1b[1m계산 로직 단위 테스트 (gradecalc · chasi · evalplan)\x1b[0m');
+  console.log('\n\x1b[1m계산 로직 단위 테스트 (gradecalc · chasi · evalplan · achv)\x1b[0m');
   r.parts.forEach(([name, p]) => console.log(`   ${p.fail === 0 ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${name}: ${p.pass}건 ${p.fail === 0 ? '통과' : `· ${p.fail}건 실패`}`));
   if (r.fail === 0) {
     console.log(`   \x1b[32m✓\x1b[0m 합계 ${r.pass}건 전부 통과`);

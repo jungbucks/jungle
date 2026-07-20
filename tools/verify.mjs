@@ -128,7 +128,7 @@ try {
 } catch(e) { fail('sw.js 읽기 실패: ' + e.message); }
 
 // ── [5] 계산 로직 단위 테스트 ───────────────────────────────
-head('[5] 계산 로직 단위 테스트 (gradecalc · chasi · evalplan)');
+head('[5] 계산 로직 단위 테스트 (gradecalc · chasi · evalplan · achv)');
 try {
   const { runAllTests } = await import(pathToFileURL(join(root, 'tools', 'test.mjs')).href);
   const r = runAllTests();

@@ -1,4 +1,30 @@
 import { esc, trapFocus, releaseFocus, registerActions, clipboardWriteHTML, uiToast, getAchvKey } from './utils.js';
+import { openStdPicker } from './stdpicker.js';
+
+// ── 학기 단위 성취수준 세션 상태 (localStorage 미사용 — 새로고침하면 초기화) ──
+let _semSubjId = '';      // 직전에 연 과목. 과목이 바뀌면 선택을 비운다.
+let _semAccent = '';
+let _semSelected = [];    // 선택된 성취기준 코드
+let _semMode = 'join';    // 'join' | 'raw'
+
+// ── 학기 단위 성취수준: 레벨 문장 병합 (순수 함수 — DOM 모름) ──
+// 마지막 문장은 원문 그대로 두고, 앞 문장의 종결어미만 연결어미로 바꾼다.
+// 어미는 '으며,' → '고,' 순으로 교대해 단조로움을 피한다.
+// 규칙(있다./한다.) 밖 어미는 변환하지 않는다 — 데이터가 늘어도 문장이 깨지지 않게.
+function achvToConnective(sentence, i) {
+  const useEuMyeo = i % 2 === 0;
+  const s = sentence.replace(/\s+$/, '');
+  if (/있다\.$/.test(s)) return s.replace(/있다\.$/, useEuMyeo ? '있으며,' : '있고,');
+  if (/한다\.$/.test(s)) return s.replace(/한다\.$/, useEuMyeo ? '하며,' : '하고,');
+  return s;
+}
+
+function mergeLevelTexts(texts, mode = 'join') {
+  const list = (texts || []).map(t => (t || '').trim()).filter(Boolean);
+  if (!list.length) return '';
+  if (mode === 'raw') return list.join(' ');
+  return list.map((t, i) => (i === list.length - 1 ? t : achvToConnective(t, i))).join(' ');
+}
 
 function openAchvModal(domainName, accent) {
   const data = ACHIEVEMENTS[domainName];
@@ -201,6 +227,8 @@ function achvCopyAllSem(subjId) {
 }
 
 export { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvModal, achvCopyAllSem };
+
+export const __achvTest = { mergeLevelTexts };
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체) ──
 registerActions('click', {
