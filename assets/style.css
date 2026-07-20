@@ -334,6 +334,24 @@ mark{background:#FEF08A;color:var(--g900);border-radius:2px;padding:0 1px}
 .achv-copy-std:hover { border-color: var(--accent); color: var(--accent); }
 .achv-copy-std.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
 
+/* 학기 단위 성취수준 — 모드 토글 */
+.achv-seg-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+.achv-seg {
+  background: var(--g50); border: 1px solid var(--g200); color: var(--g500);
+  border-radius: 7px; padding: 6px 12px; font-size: 13px; font-weight: 500;
+  font-family: inherit; cursor: pointer; transition: background .15s, color .15s, border-color .15s;
+}
+.achv-seg:hover { background: var(--g100); }
+.achv-seg.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+.achv-seg-note { font-size: 13px; color: var(--g500); margin-left: auto; }
+
+/* 학기 단위 성취수준 — 레벨별 문단 */
+.achv-para { padding: 14px 0; border-bottom: 1px solid var(--g100); }
+.achv-para:last-child { border-bottom: none; }
+.achv-para-hd { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+.achv-para-tx { font-size: 15px; line-height: 1.75; color: var(--g900); margin: 0; word-break: keep-all; }
+.achv-para-src { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 12px; }
+
 /* COLLECT PANEL */
 .collect-panel{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--accent);box-shadow:0 -4px 20px rgba(0,0,0,.15);z-index:200;transition:transform .3s ease;transform:translateY(100%);max-height:65vh;display:flex;flex-direction:column}
 .collect-panel.open{transform:translateY(0)}
