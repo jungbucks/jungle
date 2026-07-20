@@ -207,6 +207,28 @@ export function runAchvTests() {
   eq('빈 문자열 항목 제거', mergeLevelTexts(['', '  ', '가할 수 있다.'], 'join'), '가할 수 있다.');
   eq('mode 생략 시 join', mergeLevelTexts(['가할 수 있다.', '나할 수 있다.']), '가할 수 있으며, 나할 수 있다.');
 
+  // ── 실제 데이터로 수집·조립 (데이터가 바뀌면 잡히도록 실제 ACHIEVEMENTS 사용) ──
+  const { collectSelectedStds, buildLevelParagraphs } = __achvTest;
+
+  const picked = collectSelectedStds('middle', ['[9정03-01]', '[9정03-02]']);
+  eq('수집 2건', picked.stds.length, 2);
+  eq('수집 순서 = 코드순', picked.stds.map(s => s.code), ['[9정03-01]', '[9정03-02]']);
+  eq('과목명', picked.subj.name, '중학교 정보');
+  eq('없는 코드는 무시', collectSelectedStds('middle', ['[9정03-01]', '[9정99-99]']).stds.length, 1);
+  eq('빈 선택', collectSelectedStds('middle', []).stds.length, 0);
+  eq('없는 과목 = null', collectSelectedStds('nope', ['[9정03-01]']), null);
+
+  // 고등학교는 getAchvKey가 '_고' 접미사를 붙여야 찾힌다 (키 접미사 회귀 방지)
+  eq('고등 과목 수집', collectSelectedStds('high', ['[12정03-01]']).stds.length, 1);
+
+  const paras = buildLevelParagraphs(picked.stds, 'join');
+  eq('5개 레벨 모두 생성', Object.keys(paras), ['A', 'B', 'C', 'D', 'E']);
+  eq('A 문단은 마지막만 종결형', /있다\.$/.test(paras.A.text), true);
+  eq('A 문단에 연결어미 등장', paras.A.text.includes('있으며,'), true);
+  eq('A 출처 코드 2건', paras.A.codes, ['[9정03-01]', '[9정03-02]']);
+  eq('raw 모드는 연결어미 없음', buildLevelParagraphs(picked.stds, 'raw').A.text.includes('있으며,'), false);
+  eq('빈 선택이면 빈 문단', buildLevelParagraphs([], 'join').A.text, '');
+
   return { pass, fail: fails.length, fails };
 }
 

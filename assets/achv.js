@@ -125,63 +125,86 @@ function achvCopyStd(btn, domainName, idx) {
   });
 }
 
-// ── 학기(과목) 단위 성취수준 — 모든 단원의 ABCDE를 레벨별로 재편성 ──
-function collectSemesterRows(subjId) {
+// ── 학기 단위 성취수준: 선택된 성취기준 수집 ──
+// stdpicker가 코드순으로 정렬해 넘기지만, 여기서는 단원 순회 순서를 따른다
+// (같은 과목 안에서 두 순서는 일치한다).
+function collectSelectedStds(subjId, codes) {
   const subj = SUBJECTS.find(s => s.id === subjId);
   if (!subj || !subj.domains) return null;
-  const groups = { A: [], B: [], C: [], D: [], E: [] };
-  let any = false;
+  const want = new Set(codes || []);
+  const stds = [];
   subj.domains.forEach(d => {
-    const stds = ACHIEVEMENTS[getAchvKey(subjId, d.name)];
-    if (!stds) return;
-    stds.forEach(std => {
-      ['A','B','C','D','E'].forEach(g => {
-        const txt = std.levels[g] || '';
-        if (txt) { groups[g].push({ code: std.code, txt }); any = true; }
-      });
-    });
+    const arr = ACHIEVEMENTS[getAchvKey(subjId, d.name)];
+    if (!arr) return;
+    arr.forEach(std => { if (want.has(std.code)) stds.push(std); });
   });
-  return any ? { subj, groups } : null;
+  return { subj, stds };
 }
 
-function achvBuildSemesterHtml(groups) {
-  let rows = '';
-  ['A','B','C','D','E'].forEach(g => {
-    const items = groups[g];
-    if (!items.length) return;
-    items.forEach((r, i) => {
-      rows += '<tr>' + (i === 0 ? `<td rowspan="${items.length}">${g}</td>` : '')
-        + `<td>${r.code}</td><td>${r.txt}</td></tr>`;
-    });
+// 레벨별로 한 문단씩 조립. codes는 화면에 표시할 출처 배지용(복사본에는 안 들어감).
+function buildLevelParagraphs(stds, mode) {
+  const out = {};
+  ['A', 'B', 'C', 'D', 'E'].forEach(g => {
+    const has = (stds || []).filter(s => ((s.levels && s.levels[g]) || '').trim());
+    out[g] = {
+      text: mergeLevelTexts(has.map(s => s.levels[g]), mode),
+      codes: has.map(s => s.code),
+    };
   });
-  return '<table><tbody>' + rows + '</tbody></table>';
+  return out;
 }
 
-function achvBuildSemesterPlain(groups) {
-  return ['A','B','C','D','E'].map(g => {
-    const items = groups[g];
-    if (!items.length) return null;
-    return [`[${g}]`].concat(items.map(r => `${r.code} ${r.txt}`)).join('\n');
-  }).filter(Boolean).join('\n\n');
+// 복사본은 레벨·문단 2열만. 출처 코드는 넣지 않는다(설계 §6).
+// 한글 붙여넣기용 HTML이라 CSS 변수 대신 리터럴 hex를 쓴다(규칙 5 예외).
+function achvBuildSemesterHtml(paras) {
+  const rows = ['A','B','C','D','E']
+    .filter(g => paras[g].text)
+    .map(g => `<tr><td style="text-align:center;font-weight:bold">${g}</td><td>${paras[g].text}</td></tr>`)
+    .join('');
+  return '<table border="1" style="border-collapse:collapse"><tbody>' + rows + '</tbody></table>';
 }
 
-function openSemesterAchvModal(subjId, accent) {
-  const res = collectSemesterRows(subjId);
+function achvBuildSemesterPlain(paras) {
+  return ['A','B','C','D','E'].filter(g => paras[g].text).map(g => `${g}\t${paras[g].text}`).join('\n');
+}
+
+// 진입점: 성취기준 선택기를 먼저 연다. 확인하면 결과 모달로 넘어간다.
+function openSemesterAchvPicker(subjId, accent) {
+  // 과목이 바뀌면 이전 과목의 코드를 들고 있으면 안 된다 (조용히 틀린 결과 방지)
+  if (subjId !== _semSubjId) { _semSelected = []; _semSubjId = subjId; }
+  _semAccent = accent;
+  const subjectIdx = SUBJECTS.findIndex(s => s.id === subjId);
+  openStdPicker({
+    title: '학기 단위 성취수준 — 성취기준 선택',
+    subjectIdx: subjectIdx < 0 ? 1 : subjectIdx,
+    preselected: _semSelected,
+    selectAll: true,
+    onConfirm: (codes, subjIdx) => {
+      const picked = SUBJECTS[subjIdx];
+      if (picked && picked.id !== _semSubjId) { _semSubjId = picked.id; _semAccent = picked.accent; }
+      _semSelected = codes;
+      openSemesterAchvModal(_semSubjId, _semAccent, codes);
+    },
+  });
+}
+
+function openSemesterAchvModal(subjId, accent, codes) {
+  const res = collectSelectedStds(subjId, codes);
   if (!res) return;
-  const { subj, groups } = res;
+  const { subj, stds } = res;
+  if (!stds.length) { uiToast('성취기준을 하나 이상 선택하세요.', { isErr: true }); openSemesterAchvPicker(subjId, accent); return; }
+  _semSubjId = subjId; _semAccent = accent; _semSelected = codes;
+  const paras = buildLevelParagraphs(stds, _semMode);
   const gradeColors = { A:'var(--ok)', B:'var(--accent)', C:'var(--plan)', D:'var(--warn)', E:'var(--danger)' };
   let bodyHtml = '';
   ['A','B','C','D','E'].forEach(g => {
-    const items = groups[g];
-    if (!items.length) return;
-    bodyHtml += `<div class="achv-table-wrap">
-    <div class="achv-table-code" style="color:${gradeColors[g]};margin-bottom:6px">${g} 수준 · ${items.length}개</div>
-    <table class="achv-table"><tbody>`
-      + items.map(r => `<tr>
-      <th style="color:${accent};white-space:nowrap">${esc(r.code)}</th>
-      <td>${esc(r.txt)}</td>
-    </tr>`).join('')
-      + `</tbody></table></div>`;
+    const p = paras[g];
+    if (!p.text) return;
+    bodyHtml += `<div class="achv-para">
+      <div class="achv-para-hd" style="color:${gradeColors[g]}">${g}</div>
+      <p class="achv-para-tx">${esc(p.text)}</p>
+      <div class="achv-para-src">${p.codes.map(c => `<span style="color:${accent}">${esc(c)}</span>`).join('')}</div>
+    </div>`;
   });
   let overlay = document.getElementById('achvOverlay');
   if (!overlay) {
@@ -191,18 +214,21 @@ function openSemesterAchvModal(subjId, accent) {
     overlay.onclick = function(e) { if (e.target === overlay) closeAchvModal(); };
     document.body.appendChild(overlay);
   }
+  const seg = (m, label) => `<button class="achv-seg${_semMode === m ? ' on' : ''}" data-onclick="achv:semMode" data-args="${esc(JSON.stringify([m]))}" aria-pressed="${_semMode === m}">${label}</button>`;
   overlay.innerHTML = `
     <div class="achv-modal" role="dialog" aria-modal="true" aria-labelledby="achvModalTitle">
       <div class="achv-modal-hd">
         <span class="achv-modal-title" id="achvModalTitle" style="color:${accent}">📊 ${esc(subj.name)} — 학기 단위 성취수준</span>
         <button class="cmp-close-btn" data-onclick="achv:close" aria-label="닫기">✕</button>
       </div>
-      <div style="font-size:12px;color:var(--g500);padding:8px 12px;background:var(--g50);border-radius:7px;margin-bottom:14px;line-height:1.6">
-        💡 모든 단원의 성취수준을 <strong>레벨(A~E)별로</strong> 모았습니다. <strong>전체 복사</strong> 후 한글 표에 붙여넣기 (HTML 형식으로 복사됨)
+      <div class="achv-seg-bar" role="group" aria-label="문장 연결 방식">
+        ${seg('join', '연결어미로 잇기')}${seg('raw', '원문 그대로')}
+        <span class="achv-seg-note">성취기준 ${stds.length}개</span>
       </div>
       <div class="achv-modal-body">${bodyHtml}</div>
       <div class="achv-modal-ft">
-        <button class="achv-copy-all pri" id="achvCopyAllBtn" data-onclick="achv:copyAllSem" data-args="${esc(JSON.stringify([subjId]))}">전체 복사</button>
+        <button class="achv-copy-all pri" id="achvCopyAllBtn" data-onclick="achv:copyAllSem">전체 복사</button>
+        <button class="achv-copy-all sec" data-onclick="achv:semRepick">↩ 성취기준 다시 고르기</button>
         <button class="achv-copy-all sec" data-onclick="achv:close">닫기</button>
         <span id="achvCopyMsg" style="font-size:12px;color:var(--ok);display:none">✓ 복사됨</span>
       </div>
@@ -211,10 +237,11 @@ function openSemesterAchvModal(subjId, accent) {
   trapFocus(overlay.querySelector('.achv-modal'));
 }
 
-function achvCopyAllSem(subjId) {
-  const res = collectSemesterRows(subjId);
-  if (!res) return;
-  achvClipWrite(achvBuildSemesterHtml(res.groups), achvBuildSemesterPlain(res.groups), () => {
+function achvCopyAllSem() {
+  const res = collectSelectedStds(_semSubjId, _semSelected);
+  if (!res || !res.stds.length) return;
+  const paras = buildLevelParagraphs(res.stds, _semMode);   // 보이는 모드 그대로 복사
+  achvClipWrite(achvBuildSemesterHtml(paras), achvBuildSemesterPlain(paras), () => {
     const btn = document.getElementById('achvCopyAllBtn');
     const msg = document.getElementById('achvCopyMsg');
     if (btn) btn.textContent = '✓ 복사됨';
@@ -226,14 +253,22 @@ function achvCopyAllSem(subjId) {
   });
 }
 
-export { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvModal, achvCopyAllSem };
+function achvSetSemMode(mode) {
+  if (mode !== 'join' && mode !== 'raw') return;
+  _semMode = mode;
+  openSemesterAchvModal(_semSubjId, _semAccent, _semSelected);   // 즉시 재렌더
+}
 
-export const __achvTest = { mergeLevelTexts };
+export { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvPicker, openSemesterAchvModal, achvCopyAllSem };
+
+export const __achvTest = { mergeLevelTexts, collectSelectedStds, buildLevelParagraphs };
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체) ──
 registerActions('click', {
   'achv:close':   function() { closeAchvModal(); },
   'achv:copyAll': function(el, e, domainName) { achvCopyAll(domainName); },
   'achv:copyStd': function(el, e, domainName, si) { achvCopyStd(el, domainName, si); },
-  'achv:copyAllSem': function(el, e, subjId) { achvCopyAllSem(subjId); },
+  'achv:copyAllSem': function() { achvCopyAllSem(); },
+  'achv:semMode':    function(el, e, mode) { achvSetSemMode(mode); },
+  'achv:semRepick':  function() { openSemesterAchvPicker(_semSubjId, _semAccent); },
 });

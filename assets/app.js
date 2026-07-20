@@ -13,7 +13,7 @@ import { renderTextbook } from './textbook.js';
 import { renderAppStore } from './appstore.js';
 import { renderFav, renderSWRec } from './resources.js';
 import { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOverview } from './overview.js';
-import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvModal } from './achv.js';
+import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvPicker } from './achv.js';
 import { renderHome } from './home.js';
 import { collected, updatePanel, togglePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
 import { backupExport, backupImport } from './backup.js';
@@ -608,7 +608,7 @@ registerActions('click', {
   'app:toggleDomain':   function(el) { toggleDomain(el.dataset.key); },
   'app:copyDomain':     function(el, e, secId) { copyDomain(secId, el); },
   'app:achv':           function(el, e, key, accent) { openAchvModal(key, accent); },
-  'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvModal(subjId, accent); },
+  'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvPicker(subjId, accent); },
   'app:focusSearch':    function() { focusSearch(); },
   'app:lucky':          function() { luckyJump(); },
   'app:downloadTxt':    function() { downloadTxt(); },
