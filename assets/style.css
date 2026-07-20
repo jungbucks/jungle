@@ -26,10 +26,6 @@
   --g50:#F9FAFB;--g100:#F3F4F6;--g150:#EBEBEB;--g200:#E5E7EB;--g300:#D1D5DB;
   --g400:#9CA3AF;--g500:#6B7280;--g600:#4B5563;--g700:#374151;
   --g800:#1F2937;--g900:#111827;
-  /* 성취수준 A~E 전용 (2026-07-21). 의미 토큰(--ok/--accent/--plan)은 과목 강조색과
-     값이 겹쳐(--ok = 고등학교 정보 #10B981, --plan = 프로그래밍 #7C3AED) 레벨이 과목색처럼
-     보였다. 과목색(400~500톤)보다 진한 700톤으로 잡아 확실히 구분한다. */
-  --achv-a:#047857;--achv-b:#1D4ED8;--achv-c:#6D28D9;--achv-d:#B45309;--achv-e:#B91C1C;
 }
 html{scrollbar-gutter:stable}
 body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--g50);color:var(--g800);min-height:100vh}
@@ -1362,8 +1358,6 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
   /* 과목 배지 다크 쌍 — 같은 색상 계열의 딥 배경 + 과목 원색(accent) 글자로 정체성 유지 */
   --sbj-info:#0E2A21; --sbj-ai:#2A2144; --sbj-ds:#332608; --sbj-cs:#0E2536; --sbj-sw:#331B29; --sbj-pg:#33200F;
   --sbj-info-ink:#34D399; --sbj-ai-ink:#A78BFA; --sbj-ds-ink:#FBBF24; --sbj-cs-ink:#38BDF8; --sbj-sw-ink:#F472B6; --sbj-pg-ink:#FB923C;
-  /* 성취수준 A~E — 700톤은 다크 배경에서 안 읽힘. 300~400톤으로 재매핑 */
-  --achv-a:#34D399; --achv-b:#60A5FA; --achv-c:#A78BFA; --achv-d:#FBBF24; --achv-e:#F87171;
   --g50:  #1E293B;
   --g100: #253347;
   --g150: #2C3C50;

@@ -29,7 +29,8 @@ function mergeLevelTexts(texts, mode = 'join') {
 function openAchvModal(domainName, accent) {
   const data = ACHIEVEMENTS[domainName];
   if (!data || !data.length) return;
-  const gradeColors = { A:'var(--ok)', B:'var(--accent)', C:'var(--plan)', D:'var(--warn)', E:'var(--danger)' };
+  // 레벨 색은 과목 대표색으로 통일(학기 단위 모달과 동일 원칙). 의미 토큰(--ok/--accent/--plan)은
+  // 과목 강조색과 값이 겹쳐(--ok = 고등학교 정보, --plan = 프로그래밍) 레벨이 과목색처럼 보였다.
   let bodyHtml = '';
   data.forEach((std, si) => {
     bodyHtml += `<div class="achv-table-wrap">
@@ -42,7 +43,7 @@ function openAchvModal(domainName, accent) {
     ['A','B','C','D','E'].forEach(g => {
       const txt = std.levels[g] || '';
       bodyHtml += `<tr>
-      <th style="color:${gradeColors[g]}">${g}</th>
+      <th style="color:${accent}">${g}</th>
       <td>${esc(txt)}</td>
     </tr>`;
     });
@@ -197,15 +198,16 @@ function openSemesterAchvModal(subjId, accent, codes) {
   if (!stds.length) { uiToast('성취기준을 하나 이상 선택하세요.', { isErr: true }); openSemesterAchvPicker(subjId, accent); return; }
   _semSubjId = subjId; _semAccent = accent; _semSelected = codes;
   const paras = buildLevelParagraphs(stds, _semMode);
-  // 성취수준 전용 색. 의미 토큰(--ok/--accent/--plan)은 과목 강조색과 값이 겹쳐
-  // (예: --ok #10B981 = 고등학교 정보, --plan #7C3AED = 프로그래밍) 레벨이 과목색처럼 보였다.
-  const gradeColors = { A:'var(--achv-a)', B:'var(--achv-b)', C:'var(--achv-c)', D:'var(--achv-d)', E:'var(--achv-e)' };
+  // A~E는 순서 척도라 색상으로 나눌 이유가 없다. 등급을 구분하는 건 글자 자체다.
+  // 다섯 레벨 모두 과목 대표색으로 통일 — 모달 제목과 같은 색이라 "이 과목의 것"으로 묶이고,
+  // 출처 코드 배지가 중립 회색이라 모달 안에서 색이 경쟁하지 않는다.
+  // (5색을 쓰던 시절엔 --ok가 고등학교 정보와, --plan이 프로그래밍과 값이 같아 충돌했다.)
   let bodyHtml = '';
   ['A','B','C','D','E'].forEach(g => {
     const p = paras[g];
     if (!p.text) return;
     bodyHtml += `<div class="achv-para">
-      <div class="achv-para-hd" style="color:${gradeColors[g]}">${g}</div>
+      <div class="achv-para-hd" style="color:${accent}">${g}</div>
       <p class="achv-para-tx">${esc(p.text)}</p>
       <div class="achv-para-src">${p.codes.map(c => `<span>${esc(c)}</span>`).join('')}</div>
     </div>`;
