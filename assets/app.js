@@ -13,7 +13,7 @@ import { renderTextbook } from './textbook.js';
 import { renderAppStore } from './appstore.js';
 import { renderFav, renderSWRec } from './resources.js';
 import { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOverview } from './overview.js';
-import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd } from './achv.js';
+import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvModal } from './achv.js';
 import { renderHome } from './home.js';
 import { collected, updatePanel, togglePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
 import { backupExport, backupImport } from './backup.js';
@@ -495,11 +495,15 @@ function render() {
     totalVis += items.length;    
     return {...d, items};  
   }).filter(d => d.items.length > 0);  
-  let html = `<div class="subject-meta">    
-    <span class="level-badge" style="background:${s.aLight};color:${s.accent}">${s.level}</span>    
-    <span class="count-info">${(q||domainFilter)?`<strong>${totalVis}</strong> / ${totalAll}개 성취기준`:`총 <strong>${totalAll}</strong>개 성취기준`}</span>    
-    <button class="dl-btn" data-onclick="app:downloadTxt">⬇ 전체 저장 (.txt)</button>  
-  </div>`;  
+  const hasAchv = s.domains.some(d => ACHIEVEMENTS[getAchvKey(s.id, d.name)]);
+  let html = `<div class="subject-meta">
+    <span class="level-badge" style="background:${s.aLight};color:${s.accent}">${s.level}</span>
+    <span class="count-info">${(q||domainFilter)?`<strong>${totalVis}</strong> / ${totalAll}개 성취기준`:`총 <strong>${totalAll}</strong>개 성취기준`}</span>
+    <span class="meta-actions">
+      ${hasAchv ? `<button class="dl-btn" data-onclick="app:semAchv" data-args="${esc(JSON.stringify([s.id, s.accent]))}">📊 학기 단위 성취수준</button>` : ''}
+      <button class="dl-btn" data-onclick="app:downloadTxt">⬇ 전체 저장 (.txt)</button>
+    </span>
+  </div>`;
   if (!filtered.length) {
     html += noResHtml(query || domainFilter || '');
   } else {
@@ -604,6 +608,7 @@ registerActions('click', {
   'app:toggleDomain':   function(el) { toggleDomain(el.dataset.key); },
   'app:copyDomain':     function(el, e, secId) { copyDomain(secId, el); },
   'app:achv':           function(el, e, key, accent) { openAchvModal(key, accent); },
+  'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvModal(subjId, accent); },
   'app:focusSearch':    function() { focusSearch(); },
   'app:lucky':          function() { luckyJump(); },
   'app:downloadTxt':    function() { downloadTxt(); },
