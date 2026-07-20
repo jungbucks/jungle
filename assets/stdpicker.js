@@ -11,7 +11,7 @@ let _onConfirm = null;
 let _selectAll = false;        // 도메인별 "단원 모두 포함" 버튼 표시 여부
 let _highlightDomain = '';     // 강조 + 자동 스크롤할 도메인명
 
-export function openStdPicker({ title = '성취기준 선택', subjectIdx = 1, preselected = [], onConfirm, selectAll = false, highlightDomain = '' } = {}) {
+export function openStdPicker({ title = '성취기준 선택', subjectIdx = 1, preselected = [], onConfirm, selectAll = false, highlightDomain = '', hint = '' } = {}) {
   _subjectIdx = subjectIdx || 1;
   _selected = new Set((preselected || []).filter(Boolean));
   _onConfirm = onConfirm;
@@ -19,6 +19,9 @@ export function openStdPicker({ title = '성취기준 선택', subjectIdx = 1, p
   _highlightDomain = highlightDomain || '';
   const t = document.getElementById('stdPickerTitle');
   if (t) t.textContent = title;
+  // 호출한 도구가 안내 문구를 줄 수 있다. 안 주면 숨긴다(다른 도구의 잔상 방지).
+  const h = document.getElementById('stdPickerHint');
+  if (h) { h.textContent = hint; h.style.display = hint ? '' : 'none'; }
   stdPickerRenderBody();
   openModal('stdPickerModal');
   if (_highlightDomain) {

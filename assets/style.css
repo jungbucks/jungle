@@ -26,6 +26,10 @@
   --g50:#F9FAFB;--g100:#F3F4F6;--g150:#EBEBEB;--g200:#E5E7EB;--g300:#D1D5DB;
   --g400:#9CA3AF;--g500:#6B7280;--g600:#4B5563;--g700:#374151;
   --g800:#1F2937;--g900:#111827;
+  /* 성취수준 A~E 전용 (2026-07-21). 의미 토큰(--ok/--accent/--plan)은 과목 강조색과
+     값이 겹쳐(--ok = 고등학교 정보 #10B981, --plan = 프로그래밍 #7C3AED) 레벨이 과목색처럼
+     보였다. 과목색(400~500톤)보다 진한 700톤으로 잡아 확실히 구분한다. */
+  --achv-a:#047857;--achv-b:#1D4ED8;--achv-c:#6D28D9;--achv-d:#B45309;--achv-e:#B91C1C;
 }
 html{scrollbar-gutter:stable}
 body{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--g50);color:var(--g800);min-height:100vh}
@@ -148,9 +152,17 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .std-card:last-child{border-bottom:none}
 .std-card:hover{background:var(--g50)}
 .card-chk{margin-top:3px;width:17px;height:17px;flex-shrink:0;cursor:pointer}
-.card-body{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+/* flex-wrap 금지: 코드 배지가 길면([12소생01-03]·[프그03-01]) 본문이 통째로 다음 줄로
+   내려가 배지 아래에서 시작하던 문제. std-text가 줄어들게 해 항상 배지 옆에서 시작한다. */
+.card-body{flex:1;min-width:0;display:flex;align-items:baseline;gap:8px}
 .code-badge{display:inline-block;font-size:14px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:.3px;flex-shrink:0;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-.std-text{font-size:16px;line-height:1.65;color:var(--g700)}
+.std-text{flex:1;min-width:0;font-size:16px;line-height:1.65;color:var(--g700)}
+/* 좁은 화면에선 배지(길면 110px)+복사 버튼이 가로를 다 먹어 본문이 한 글자 폭으로
+   짓눌린다(360px 실측: 본문 9px·카드 1482px). 이때만 줄바꿈을 되살려 본문을 다음 줄로 내린다. */
+@media(max-width:820px){
+  .card-body{flex-wrap:wrap}
+  .std-text{flex-basis:100%}
+}
 .card-btns{display:flex;flex-direction:row;gap:5px;flex-shrink:0;align-items:flex-start}
 .cbtn{padding:4px 10px;border:1px solid var(--g200);border-radius:8px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:var(--g600);transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;min-height:36px}
 .cbtn:hover:not(.ok){background:var(--accent,var(--g400));border-color:var(--accent,var(--g400));color:#fff}
@@ -334,8 +346,11 @@ mark{background:#FEF08A;color:var(--g900);border-radius:2px;padding:0 1px}
 .achv-copy-std:hover { border-color: var(--accent); color: var(--accent); }
 .achv-copy-std.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
 
-/* 학기 단위 성취수준 — 모드 토글 */
-.achv-seg-bar { display: flex; align-items: center; gap: 6px; margin-bottom: 14px; flex-wrap: wrap; }
+/* 학기 단위 성취수준 — 모드 토글.
+   .achv-modal의 세로 flex 자식이므로 헤더·본문과 같은 20px 좌우 패딩을 줘야
+   가장자리에 붙지 않는다(붙으면 모달 밖으로 새는 것처럼 보임). */
+.achv-seg-bar { display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+  padding: 12px 20px; border-bottom: 1px solid var(--g100); flex-shrink: 0; }
 .achv-seg {
   background: var(--g50); border: 1px solid var(--g200); color: var(--g500);
   border-radius: 7px; padding: 6px 12px; font-size: 13px; font-weight: 500;
@@ -350,7 +365,13 @@ mark{background:#FEF08A;color:var(--g900);border-radius:2px;padding:0 1px}
 .achv-para:last-child { border-bottom: none; }
 .achv-para-hd { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
 .achv-para-tx { font-size: 15px; line-height: 1.75; color: var(--g900); margin: 0; word-break: keep-all; }
-.achv-para-src { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 12px; }
+/* 출처 코드는 부차 정보라 중립 회색. 과목 강조색을 쓰면 레벨 색과 경쟁한다. */
+.achv-para-src { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; font-size: 12px; color: var(--g500); }
+
+/* stdpicker 안내 문구 — 호출한 도구가 hint를 줄 때만 보인다 */
+.std-picker-hint { margin: 0 20px 12px; padding: 9px 12px; border-radius: 7px;
+  background: var(--g50); border: 1px solid var(--g100);
+  font-size: 13px; line-height: 1.6; color: var(--g600); flex-shrink: 0; }
 
 /* COLLECT PANEL */
 .collect-panel{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--accent);box-shadow:0 -4px 20px rgba(0,0,0,.15);z-index:200;transition:transform .3s ease;transform:translateY(100%);max-height:65vh;display:flex;flex-direction:column}
@@ -1341,6 +1362,8 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
   /* 과목 배지 다크 쌍 — 같은 색상 계열의 딥 배경 + 과목 원색(accent) 글자로 정체성 유지 */
   --sbj-info:#0E2A21; --sbj-ai:#2A2144; --sbj-ds:#332608; --sbj-cs:#0E2536; --sbj-sw:#331B29; --sbj-pg:#33200F;
   --sbj-info-ink:#34D399; --sbj-ai-ink:#A78BFA; --sbj-ds-ink:#FBBF24; --sbj-cs-ink:#38BDF8; --sbj-sw-ink:#F472B6; --sbj-pg-ink:#FB923C;
+  /* 성취수준 A~E — 700톤은 다크 배경에서 안 읽힘. 300~400톤으로 재매핑 */
+  --achv-a:#34D399; --achv-b:#60A5FA; --achv-c:#A78BFA; --achv-d:#FBBF24; --achv-e:#F87171;
   --g50:  #1E293B;
   --g100: #253347;
   --g150: #2C3C50;

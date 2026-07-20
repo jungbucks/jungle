@@ -170,12 +170,14 @@ function achvBuildSemesterPlain(paras) {
 
 // 진입점: 성취기준 선택기를 먼저 연다. 확인하면 결과 모달로 넘어간다.
 function openSemesterAchvPicker(subjId, accent) {
+  closeAchvModal();   // 결과 모달이 떠 있으면 먼저 닫는다 (겹쳐 보이던 문제)
   // 과목이 바뀌면 이전 과목의 코드를 들고 있으면 안 된다 (조용히 틀린 결과 방지)
   if (subjId !== _semSubjId) { _semSelected = []; _semSubjId = subjId; }
   _semAccent = accent;
   const subjectIdx = SUBJECTS.findIndex(s => s.id === subjId);
   openStdPicker({
     title: '학기 단위 성취수준 — 성취기준 선택',
+    hint: '성취기준을 선택하고 확인을 누르면 학기별 성취수준이 만들어집니다.',
     subjectIdx: subjectIdx < 0 ? 1 : subjectIdx,
     preselected: _semSelected,
     selectAll: true,
@@ -195,7 +197,9 @@ function openSemesterAchvModal(subjId, accent, codes) {
   if (!stds.length) { uiToast('성취기준을 하나 이상 선택하세요.', { isErr: true }); openSemesterAchvPicker(subjId, accent); return; }
   _semSubjId = subjId; _semAccent = accent; _semSelected = codes;
   const paras = buildLevelParagraphs(stds, _semMode);
-  const gradeColors = { A:'var(--ok)', B:'var(--accent)', C:'var(--plan)', D:'var(--warn)', E:'var(--danger)' };
+  // 성취수준 전용 색. 의미 토큰(--ok/--accent/--plan)은 과목 강조색과 값이 겹쳐
+  // (예: --ok #10B981 = 고등학교 정보, --plan #7C3AED = 프로그래밍) 레벨이 과목색처럼 보였다.
+  const gradeColors = { A:'var(--achv-a)', B:'var(--achv-b)', C:'var(--achv-c)', D:'var(--achv-d)', E:'var(--achv-e)' };
   let bodyHtml = '';
   ['A','B','C','D','E'].forEach(g => {
     const p = paras[g];
@@ -203,7 +207,7 @@ function openSemesterAchvModal(subjId, accent, codes) {
     bodyHtml += `<div class="achv-para">
       <div class="achv-para-hd" style="color:${gradeColors[g]}">${g}</div>
       <p class="achv-para-tx">${esc(p.text)}</p>
-      <div class="achv-para-src">${p.codes.map(c => `<span style="color:${accent}">${esc(c)}</span>`).join('')}</div>
+      <div class="achv-para-src">${p.codes.map(c => `<span>${esc(c)}</span>`).join('')}</div>
     </div>`;
   });
   let overlay = document.getElementById('achvOverlay');
