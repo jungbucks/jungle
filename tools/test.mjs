@@ -55,6 +55,7 @@ const { state, compute, gradeCums, newStudent } = __gcTest;
 const { __chasiTest } = await import('../assets/chasi.js');
 const { __evalTest } = await import('../assets/evalplan.js');
 const { __achvTest } = await import('../assets/achv.js');
+const { getAchvKey } = await import('../assets/utils.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
 function makeStudents(rows) {
@@ -228,6 +229,18 @@ export function runAchvTests() {
   eq('A 출처 코드 2건', paras.A.codes, ['[9정03-01]', '[9정03-02]']);
   eq('raw 모드는 연결어미 없음', buildLevelParagraphs(picked.stds, 'raw').A.text.includes('있으며,'), false);
   eq('빈 선택이면 빈 문단', buildLevelParagraphs([], 'join').A.text, '');
+
+  // ── data.js 정합성: 모든 과목의 모든 도메인명이 ACHIEVEMENTS 키와 매칭되어야 한다 ──
+  // 하나라도 어긋나면 그 단원이 학기 단위 성취수준·ABCDE 모달에서 통째로 누락된다
+  // (2026-07-21 실사고: 소프트웨어와 생활 3개 단원의 " 영역" 접미사 불일치로 19개 중 7개만 반영).
+  SUBJECTS.filter(s => s.domains && s.domains.length).forEach(s => {
+    // 도메인이 하나도 매칭 안 되면 성취수준 미보유 과목(예: 프로그래밍 — 데이터 부재는 의도됨). 스킵.
+    // 하나라도 매칭되면 성취수준을 가진 과목이므로 나머지도 전부 매칭돼야 한다(부분 불일치 = 오타).
+    if (!s.domains.some(d => ACHIEVEMENTS[getAchvKey(s.id, d.name)])) return;
+    s.domains.forEach(d => {
+      eq(`도메인 키 매칭 ${s.id}/${d.name}`, !!ACHIEVEMENTS[getAchvKey(s.id, d.name)], true);
+    });
+  });
 
   return { pass, fail: fails.length, fails };
 }
