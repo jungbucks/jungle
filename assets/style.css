@@ -972,6 +972,9 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .tbk-section{scroll-margin-top:112px;margin-bottom:34px}
 .tbk-sec-note{font-size:13px;font-weight:500;opacity:.75;margin-left:6px}
 .tbk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
+/* 좁은 폰(≤480px)에선 auto-fill minmax(180px)가 180*2+gap=370>360이라 1열로 떨어져
+   세로가 크게 낭비된다. 이 구간만 2열 고정(320px에서도 카드 폭 ~150px 확보). */
+@media(max-width:480px){.tbk-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
 .tbk-card{background:#fff;border:1px solid var(--g200);border-top:3px solid var(--tbk,var(--g300));border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:5px;transition:box-shadow .15s,transform .12s}
 .tbk-card:hover{box-shadow:0 6px 18px -6px rgba(17,24,39,.14);transform:translateY(-2px)}
 .tbk-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
