@@ -1822,6 +1822,16 @@ const APPSTORE_APPS = [
     url: 'https://jungbucks.github.io/cipher/',
     thumb: 'images/apps/cipher.svg',
   },
+  {
+    name: '교사 수당 계산기',
+    author: '정벅',
+    authorUrl: 'https://www.instagram.com/jungbucks',
+    desc: '근무연수와 호봉만 고르면 정근수당·정근수당 가산금·명절휴가비가 즉시 계산됩니다. 호봉 승급월을 반영해 지급월별로 나눠 보여주고, 월별 지급 시점 타임라인과 연차별 지급표, 명세서 이미지 저장까지 지원합니다. 2026년 교원 봉급표 기준.',
+    type: 'webapp',
+    tags: ['교사', '수당', '급여계산'],
+    url: 'https://jungbucks.github.io/teacher-pay/',
+    thumb: 'images/apps/teacher-pay.png',
+  },
 ];
 
 // --- 수업/평가계획 데이터 ---
