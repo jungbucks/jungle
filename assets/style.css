@@ -369,6 +369,30 @@ mark{background:#FEF08A;color:var(--g900);border-radius:2px;padding:0 1px}
   background: var(--g50); border: 1px solid var(--g100);
   font-size: 13px; line-height: 1.6; color: var(--g600); flex-shrink: 0; }
 
+/* 정의적 영역 평가 표 */
+.aff-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 8px 0 4px; }
+.aff-title { font-size: 18px; font-weight: 700; color: var(--g900); }
+.aff-flag { font-size: 12px; font-weight: 700; color: var(--warn-dark); background: var(--warn-soft); border-radius: 6px; padding: 2px 8px; margin-left: 8px; }
+.aff-tools { display: flex; gap: 8px; align-items: center; }
+.aff-sub { font-size: 13px; color: var(--g500); margin: 0 0 14px; line-height: 1.6; }
+.aff-table { width: 100%; border-collapse: collapse; }
+.aff-table th, .aff-table td { border: 1px solid var(--g200); padding: 10px 12px; text-align: left; vertical-align: top; }
+.aff-table th { background: var(--g50); font-size: 13px; font-weight: 700; color: var(--g700); }
+.aff-c-domain { width: 24%; } .aff-c-code { width: 20%; white-space: nowrap; }
+.aff-domain { font-size: 15px; font-weight: 700; color: var(--g900); margin-bottom: 6px; }
+.aff-val { font-size: 14px; color: var(--g700); line-height: 1.6; }
+.aff-code { display: inline-block; font-size: 13px; font-weight: 700; padding: 2px 7px; border-radius: 5px; margin: 0 2px 2px 0; }
+.aff-assess { font-size: 14px; color: var(--g700); line-height: 1.65; margin-bottom: 6px; }
+.aff-assess:last-child { margin-bottom: 0; }
+@media(max-width:640px){
+  .aff-table, .aff-table thead, .aff-table tbody, .aff-table tr, .aff-table td { display: block; width: auto; }
+  .aff-table thead { display: none; }
+  .aff-table tr { border: 1px solid var(--g200); border-radius: 8px; margin-bottom: 10px; padding: 4px; }
+  .aff-table td { border: none; border-bottom: 1px solid var(--g100); }
+  .aff-table td:last-child { border-bottom: none; }
+  .aff-c-domain, .aff-c-code { width: auto; }
+}
+
 /* COLLECT PANEL */
 .collect-panel{position:fixed;bottom:0;left:0;right:0;background:#fff;border-top:2px solid var(--accent);box-shadow:0 -4px 20px rgba(0,0,0,.15);z-index:200;transition:transform .3s ease;transform:translateY(100%);max-height:65vh;display:flex;flex-direction:column}
 .collect-panel.open{transform:translateY(0)}

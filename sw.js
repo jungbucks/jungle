@@ -1,4 +1,4 @@
-const CACHE = 'jungle-v39';
+const CACHE = 'jungle-v40';
 
 const ASSETS = [
   './',
@@ -42,6 +42,7 @@ const ASSETS = [
   './images/apps/sw-life.svg',
   './images/apps/cipher.svg',
   './images/apps/teacher-pay.png',
+  './assets/affective.js',
 ];
 
 // ── install: 개별 캐싱 (파일 하나가 404여도 나머지는 캐시) ──
