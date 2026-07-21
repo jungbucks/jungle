@@ -54,7 +54,7 @@ try { Object.defineProperty(globalThis,'navigator',{ value:{ clipboard:{ writeTe
 // data.js 전역을 실제 파일에서 로드 (classic script → eval)
 try {
   const dataSrc = readFileSync(join(assetsDir,'data.js'),'utf8');
-  const g = ['SUBJECTS','ACHIEVEMENTS','HS_SEMS','HS_SUBJECTS','HS_TYPE_COLOR','APPSTORE_APPS','RECOMMENDED_SITES','SW_DATA','LP_METHODS','LP_EVAL_METHODS'];
+  const g = ['SUBJECTS','ACHIEVEMENTS','HS_SEMS','HS_SUBJECTS','HS_TYPE_COLOR','APPSTORE_APPS','RECOMMENDED_SITES','SW_DATA','LP_METHODS','LP_EVAL_METHODS','AFFECTIVE','AFFECTIVE_VERIFIED'];
   eval(dataSrc + '\n' + g.map(n=>`try{globalThis.${n}=${n};}catch(e){}`).join(''));
 } catch(e) {
   console.log('data.js 로드 실패:', e.message);
@@ -128,7 +128,7 @@ try {
 } catch(e) { fail('sw.js 읽기 실패: ' + e.message); }
 
 // ── [5] 계산 로직 단위 테스트 ───────────────────────────────
-head('[5] 계산 로직 단위 테스트 (gradecalc · chasi · evalplan · achv)');
+head('[5] 계산 로직 단위 테스트 (gradecalc · chasi · evalplan · achv · affective)');
 try {
   const { runAllTests } = await import(pathToFileURL(join(root, 'tools', 'test.mjs')).href);
   const r = runAllTests();

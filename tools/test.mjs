@@ -45,7 +45,7 @@ if (!globalThis.SUBJECTS) {
   try {
     const assetsDir = join(dirname(fileURLToPath(import.meta.url)), '..', 'assets');
     const dataSrc = readFileSync(join(assetsDir, 'data.js'), 'utf8');
-    const g = ['SUBJECTS', 'ACHIEVEMENTS', 'HS_SEMS', 'HS_SUBJECTS', 'HS_TYPE_COLOR', 'APPSTORE_APPS', 'RECOMMENDED_SITES', 'SW_DATA', 'LP_METHODS', 'LP_EVAL_METHODS'];
+    const g = ['SUBJECTS', 'ACHIEVEMENTS', 'HS_SEMS', 'HS_SUBJECTS', 'HS_TYPE_COLOR', 'APPSTORE_APPS', 'RECOMMENDED_SITES', 'SW_DATA', 'LP_METHODS', 'LP_EVAL_METHODS', 'AFFECTIVE', 'AFFECTIVE_VERIFIED'];
     (0, eval)(dataSrc + '\n' + g.map(n => `try{globalThis.${n}=${n};}catch(e){}`).join(''));
   } catch (e) { console.error('data.js 로드 실패:', e.message); }
 }
@@ -55,6 +55,7 @@ const { state, compute, gradeCums, newStudent } = __gcTest;
 const { __chasiTest } = await import('../assets/chasi.js');
 const { __evalTest } = await import('../assets/evalplan.js');
 const { __achvTest } = await import('../assets/achv.js');
+const { __affTest } = await import('../assets/affective.js');
 const { getAchvKey } = await import('../assets/utils.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
@@ -245,6 +246,41 @@ export function runAchvTests() {
   return { pass, fail: fails.length, fails };
 }
 
+export function runAffectiveTests() {
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { const g = JSON.stringify(got), w = JSON.stringify(want); if (g === w) pass++; else fails.push(`${name}: got ${g} · want ${w}`); };
+
+  const { affectiveSubjects, affectiveRows } = __affTest;
+
+  // 데이터 있는 과목만 노출
+  const subs = affectiveSubjects();
+  eq('과목 목록은 배열', Array.isArray(subs), true);
+  eq('middle 포함', subs.some(s => s.id === 'middle'), true);
+  eq('프로그래밍 제외', subs.some(s => s.id === 'prog'), false);
+
+  // 조회
+  const rows = affectiveRows('middle');
+  eq('middle 행 존재', Array.isArray(rows) && rows.length > 0, true);
+  eq('행 필드', Object.keys(rows[0]).sort(), ['assess', 'codes', 'domain', 'values']);
+  eq('없는 과목 = null', affectiveRows('nope'), null);
+
+  // 정합성: 모든 과목의 domain이 SUBJECTS에 실재, codes가 성취기준에 실재
+  affectiveSubjects().forEach(s => {
+    const subj = SUBJECTS.find(x => x.id === s.id);
+    const domainNames = new Set(subj.domains.map(d => d.name));
+    const allCodes = new Set(subj.domains.flatMap(d => d.items.map(it => it.code)));
+    affectiveRows(s.id).forEach(r => {
+      eq(`정합 ${s.id}/${r.domain} 도메인실재`, domainNames.has(r.domain), true);
+      eq(`정합 ${s.id}/${r.domain} 성취수준키`, !!ACHIEVEMENTS[getAchvKey(s.id, r.domain)], true);
+      (r.codes || []).forEach(c => eq(`정합 ${s.id}/${r.domain} 코드 ${c}`, allCodes.has(c), true));
+      eq(`정합 ${s.id}/${r.domain} values 비지않음`, (r.values || []).length > 0, true);
+      eq(`정합 ${s.id}/${r.domain} assess 비지않음`, (r.assess || []).length > 0, true);
+    });
+  });
+
+  return { pass, fail: fails.length, fails };
+}
+
 export function runEvalTests() {
   const { ratioSum, essayRatio, distribute } = __evalTest;
   let pass = 0; const fails = [];
@@ -272,7 +308,7 @@ export function runEvalTests() {
 
 // 전체 집계 (verify [5]가 호출)
 export function runAllTests() {
-  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()]];
+  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()]];
   let pass = 0; const fails = [];
   for (const [name, r] of parts) { pass += r.pass; r.fails.forEach(f => fails.push(name + ' — ' + f)); }
   return { pass, fail: fails.length, fails, parts };
@@ -281,7 +317,7 @@ export function runAllTests() {
 // ── 단독 실행 ───────────────────────────────────────────────
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const r = runAllTests();
-  console.log('\n\x1b[1m계산 로직 단위 테스트 (gradecalc · chasi · evalplan · achv)\x1b[0m');
+  console.log('\n\x1b[1m계산 로직 단위 테스트 (gradecalc · chasi · evalplan · achv · affective)\x1b[0m');
   r.parts.forEach(([name, p]) => console.log(`   ${p.fail === 0 ? '\x1b[32m✓\x1b[0m' : '\x1b[31m✗\x1b[0m'} ${name}: ${p.pass}건 ${p.fail === 0 ? '통과' : `· ${p.fail}건 실패`}`));
   if (r.fail === 0) {
     console.log(`   \x1b[32m✓\x1b[0m 합계 ${r.pass}건 전부 통과`);
