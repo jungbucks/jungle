@@ -14,6 +14,7 @@ import { renderAppStore } from './appstore.js';
 import { renderFav, renderSWRec } from './resources.js';
 import { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOverview } from './overview.js';
 import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvPicker } from './achv.js';
+import { renderAffective } from './affective.js';
 import { renderHome } from './home.js';
 import { collected, updatePanel, togglePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
 import { backupExport, backupImport } from './backup.js';
@@ -158,6 +159,7 @@ function renderTabs() {
     document.getElementById('subtabBarInner').innerHTML = [      
       {key:'lesson',  label:'수업계획'},
       {key:'eval',    label:'평가계획'},
+      {key:'affective', label:'정의적 영역 평가'},
       {key:'rubric',  label:'수행평가 루브릭 설계'},
       {key:'regexam',   label:'정기시험 출제 계획'},
       {key:'grade',   label:'내신 5등급제 성적 산출기'},
@@ -464,6 +466,8 @@ function render() {
     if (evalPlanSubtab === 'eval') {
       document.getElementById('main').innerHTML = renderEvalPlan();
       if (evalState.generated) evalShowSummary();
+    } else if (evalPlanSubtab === 'affective') {
+      document.getElementById('main').innerHTML = renderAffective();
     } else if (evalPlanSubtab === 'rubric') {
       document.getElementById('main').innerHTML = renderRubric();
     } else if (evalPlanSubtab === 'chasi') {
