@@ -1089,7 +1089,10 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .chasi-alert-item.zero .chasi-alert-msg{color:var(--danger-dark)}
 .chasi-alert-reason{font-size:13px;color:var(--warn-dark);background:var(--warn-line);padding:2px 8px;border-radius:20px;white-space:nowrap}
 
-@media(max-width:768px){
+/* 탭 9개는 한 줄에 ~1050px가 필요하다. 768px에서만 햄버거로 바꾸면 769~1049px
+   (태블릿 가로·작은 노트북)에서 탭바가 뷰포트를 넘쳐 가로 스크롤이 생긴다.
+   → 1049px 이하는 전부 햄버거로 전환해 넘침을 없앤다. */
+@media(max-width:1049px){
   .tabs{display:none}
   .hamburger{display:flex}
   .header-brand{border-right:none;padding-right:0;margin-right:0}
