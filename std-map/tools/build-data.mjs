@@ -89,7 +89,7 @@ const SUBJECT_IDS = ['middle', 'high', 'ai', 'ds', 'sw', 'cs', 'prog'];
 /* 초등 실과 — 정글 SUBJECTS 밖의 별도 소스(정글 성취기준 탭엔 넣지 않고 그래프에만 반영).
    2022 개정 실과 5·6학년 '디지털 사회와 인공지능' 영역 [6실05-01~05]. level='초등학교' → tier 0. */
 const ELEM_SUBJECT = {
-  id: 'elem', name: '초등 실과', level: '초등학교', accent: '#0D9488',
+  id: 'elem', name: '초등 실과', level: '초등학교', accent: '#84CC16',
   domains: [{
     name: '디지털 사회와 인공지능',
     items: [

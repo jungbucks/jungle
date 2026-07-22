@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>성취기준 은하 — 정보 교과 개념 지도</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⭐</text></svg>">
 <meta name="description" content="중학교 정보부터 고등학교 7과목까지, 성취기준 137개가 개념으로 이어지는 인터랙티브 지식 그래프">
 <meta name="theme-color" content="#0E1116">
 <style>
@@ -82,6 +83,8 @@ body{background:var(--bg);color:var(--ink);font-family:'Pretendard','Malgun Goth
 .nd:not(.tag):hover text,.nd:not(.tag).hl text{opacity:1}
 .faded{opacity:.08}
 .lk.hl{stroke:var(--accent);stroke-opacity:.9;stroke-width:1.6}
+/* 클릭한 노드 glow */
+.nd.sel circle{stroke:var(--accent);stroke-width:2.4;filter:drop-shadow(0 0 5px var(--accent)) drop-shadow(0 0 11px var(--accent))}
 footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:11.5px;color:var(--dim)}
 @media (prefers-reduced-motion:reduce){#panel{transition:none}}
 </style>
@@ -91,7 +94,7 @@ footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:11.5px;color:va
 
 <div id="hud">
   <h1>성취기준 <b>은하</b></h1>
-  <p class="hook">초등 6학년 '알고리즘'은 어디까지 여행할까?<br>왼쪽 초등학교에서 오른쪽 전문교과까지 — 성취기준 142개가 28개의 개념으로 이어집니다. 별을 끌어보세요.</p>
+  <p class="hook">초등 6학년 '알고리즘'은 어디까지 여행할까?<br>왼쪽 초등학교에서 오른쪽 전문교과까지 — 성취기준 142개가 28개의 핵심 개념으로 이어집니다. 별을 끌어보세요.</p>
   <input id="search" type="search" placeholder="🔍 검색: 재귀, 12정03, 딥러닝…" autocomplete="off">
   <div id="searchHint"></div>
 </div>
@@ -146,7 +149,7 @@ const sim = d3.forceSimulation(nodes)
   .force('charge', d3.forceManyBody().strength(-105))
   .force('x', d3.forceX(d=> d.type==='std' ? tierX(tierOf(d)) : W/2)
     // 초등 실과 5개는 개념을 중학교와 공유해 링크에 끌려 tier1로 새어든다 → 초등만 강하게 tier0 고정
-    .strength(d=> d.type!=='std' ? .02 : (SUBJ[d.subject].level==='초등학교' ? .97 : .62)))
+    .strength(d=> d.type!=='std' ? .07 : (SUBJ[d.subject].level==='초등학교' ? .97 : .62)))
   .force('y', d3.forceY(H/2).strength(.1))
   .force('collide', d3.forceCollide().radius(d=>d.type==='tag'?rOf(d)+16:rOf(d)+4).strength(.9));
 
@@ -215,11 +218,12 @@ G.subjects.forEach(s=>{
 });
 const tagLg=document.createElement('div');
 tagLg.className='lg lg-tag'; tagLg.style.cursor='default';
-tagLg.innerHTML=`<span class="sw"></span>개념 <small>${nodes.filter(n=>n.type==='tag').length}</small>`;
+tagLg.innerHTML=`<span class="sw"></span>핵심 개념 <small>${nodes.filter(n=>n.type==='tag').length}</small>`;
 lg.appendChild(tagLg);
 
 /* 상세 패널 */
 function focusNode(d){
+  nd.classed('sel', n=>n===d);   // 클릭한 노드만 glow
   const t=d3.zoomTransform(svg.node());
   svg.transition().duration(500).call(zoom.transform,
     d3.zoomIdentity.translate(W/2-(W>760?170:0)-d.x*1.8, H/2-d.y*1.8).scale(1.8));
@@ -242,7 +246,7 @@ function openPanel(d){
       .sort((a,b)=>a.id.localeCompare(b.id,'ko'));
     const bySub={};
     stds.forEach(n=>{ (bySub[n.subject]=bySub[n.subject]||[]).push(n); });
-    body.innerHTML=`<div class="p-eyebrow">개념</div>
+    body.innerHTML=`<div class="p-eyebrow">핵심 개념</div>
       <div class="p-code"># ${esc(d.label)}</div>
       <div class="p-domain">${stds.length}개 성취기준이 이 개념으로 이어집니다 — 중학교에서 고등학교까지.</div>
       ${G.subjects.filter(s=>bySub[s.id]).map(s=>`
@@ -255,7 +259,7 @@ function openPanel(d){
 }
 nd.on('click',(e,d)=>{ e.stopPropagation(); focusNode(d); });
 $('#panelClose').onclick=()=>{ $('#panel').classList.remove('on'); highlight(null); };
-svg.on('click',()=>{ $('#panel').classList.remove('on'); highlight(null); });
+svg.on('click',()=>{ $('#panel').classList.remove('on'); highlight(null); nd.classed('sel',false); });
 
 /* 검색 */
 $('#search').addEventListener('input',function(){
