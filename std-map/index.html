@@ -87,6 +87,19 @@ body{background:var(--bg);color:var(--ink);font-family:'Pretendard','Malgun Goth
 .nd.sel circle{stroke:var(--accent);stroke-width:2.4;filter:drop-shadow(0 0 5px var(--accent)) drop-shadow(0 0 11px var(--accent))}
 footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:11.5px;color:var(--dim)}
 @media (prefers-reduced-motion:reduce){#panel{transition:none}}
+
+/* 모바일: 오버레이가 그래프를 덜 가리도록 축소. 훅 2줄·검색 폭 유연·범례 2열 */
+@media (max-width:600px){
+  #hud{top:10px;left:12px;right:12px;max-width:none}
+  #hud h1{font-size:17px}
+  #hud .hook{font-size:12px;margin:3px 0 8px;line-height:1.5;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+  #search{width:100%;max-width:none}
+  #legend{left:10px;right:10px;bottom:10px;padding:9px 11px;
+    display:grid;grid-template-columns:1fr 1fr;gap:4px 12px}
+  .lg{font-size:12px;padding:1px 2px}
+  footer{display:none}   /* 좁은 화면에선 출처 배지 숨김(범례가 공간 점유) */
+}
 </style>
 </head>
 <body>
@@ -119,6 +132,8 @@ const $ = s=>document.querySelector(s);
 const esc = s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 
 const W = innerWidth, H = innerHeight;
+// 논리 캔버스(그래프 배치)를 화면과 분리 — 좁은 모바일에서도 노드가 넓게 퍼지고, 화면엔 fit(줌아웃)으로 표시
+const GW = Math.max(1320, W), GH = Math.max(780, H);
 const svg = d3.select('#stage').attr('viewBox',[0,0,W,H]);
 const root = svg.append('g');
 
@@ -139,7 +154,7 @@ const tierOfLevel = lv => lv==='초등학교' ? 0
   : lv.includes('일반') ? 2
   : (lv.includes('과학계열')||lv.includes('전문')) ? 4 : 3;
 const tierOf = d => d.type==='std' ? tierOfLevel(SUBJ[d.subject].level) : null;
-const tierX = t => W*(0.11 + t*0.1925);
+const tierX = t => GW*(0.11 + t*0.1925);
 // 초등 5개는 개념 링크에 끌려 tier1로 새어든다 → x를 tier0에 완전 고정(y만 자유). 드래그하면 풀림.
 nodes.forEach(n=>{ if(n.type==='std' && SUBJ[n.subject] && SUBJ[n.subject].level==='초등학교') n.fx = tierX(0); });
 
@@ -147,23 +162,23 @@ nodes.forEach(n=>{ if(n.type==='std' && SUBJ[n.subject] && SUBJ[n.subject].level
 const sim = d3.forceSimulation(nodes)
   .force('link', d3.forceLink(links).id(d=>d.id).distance(52).strength(.32))
   .force('charge', d3.forceManyBody().strength(-105))
-  .force('x', d3.forceX(d=> d.type==='std' ? tierX(tierOf(d)) : W/2)
+  .force('x', d3.forceX(d=> d.type==='std' ? tierX(tierOf(d)) : GW/2)
     // 초등 실과 5개는 개념을 중학교와 공유해 링크에 끌려 tier1로 새어든다 → 초등만 강하게 tier0 고정
     .strength(d=> d.type!=='std' ? .04 : (SUBJ[d.subject].level==='초등학교' ? .97 : .62)))
-  .force('y', d3.forceY(H/2).strength(.1))
+  .force('y', d3.forceY(GH/2).strength(.1))
   .force('collide', d3.forceCollide().radius(d=>d.type==='tag'?rOf(d)+16:rOf(d)+4).strength(.9));
 
 /* 배경 가이드: 단계 라벨 + 경계선 (그래프 좌표계 — 팬·줌을 따라감) */
 const bands = root.append('g');
 TIERS.forEach((t,i)=>{
   bands.append('text').attr('class','band-label')
-    .attr('x',tierX(i)).attr('y',H*.09).attr('text-anchor','middle').text(t);
+    .attr('x',tierX(i)).attr('y',GH*.07).attr('text-anchor','middle').text(t);
   if(i<TIERS.length-1){
-    const sepX = W*(0.206+i*0.1925);   // tierX(i)와 tierX(i+1)의 중간
+    const sepX = GW*(0.206+i*0.1925);   // tierX(i)와 tierX(i+1)의 중간
     bands.append('line').attr('class','band-sep')
-      .attr('x1',sepX).attr('x2',sepX).attr('y1',-H).attr('y2',H*2);
+      .attr('x1',sepX).attr('x2',sepX).attr('y1',-GH).attr('y2',GH*2);
     bands.append('text').attr('class','band-arrow')
-      .attr('x',sepX).attr('y',H*.09).attr('text-anchor','middle').text('⟶');
+      .attr('x',sepX).attr('y',GH*.07).attr('text-anchor','middle').text('⟶');
   }
 });
 
@@ -190,6 +205,28 @@ const zoom = d3.zoom().scaleExtent([.25,5]).on('zoom',e=>{
 });
 svg.call(zoom);
 nd.filter(d=>d.type==='std').select('text').style('display','none');
+
+/* 초기: 애니 없이 안정화 → 그래프 전체를 화면에 fit(줌아웃). 모바일에서 노드가 화면 밖으로 나가는 문제 해소 */
+function fitView(animate){
+  const xs=nodes.map(n=>n.x), ys=nodes.map(n=>n.y);
+  const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+  const gw=Math.max(1,x1-x0), gh=Math.max(1,y1-y0);
+  const mob = W<600;
+  const pad = mob ? 14 : 48;
+  // 모바일: 상단 훅·하단 범례가 가리는 띠를 피해 가용 세로 영역 안에 맞춘다
+  const top = mob ? 150 : pad, bot = mob ? 118 : pad;
+  const availW = W-pad*2, availH = H-top-bot;
+  const k = Math.min(availW/gw, availH/gh, 1.4);
+  const cx = pad + availW/2, cy = top + availH/2;
+  const tr = d3.zoomIdentity.translate(cx-(x0+gw/2)*k, cy-(y0+gh/2)*k).scale(k);
+  (animate ? svg.transition().duration(450) : svg).call(zoom.transform, tr);
+}
+sim.stop();
+for(let i=0;i<320;i++) sim.tick();
+lk.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+nd.attr('transform',d=>`translate(${d.x},${d.y})`);
+fitView(false);
+sim.alpha(0.03).restart();   // 드래그 반응용 약한 재개
 
 /* 호버 = 이웃 강조 */
 function highlight(id){
