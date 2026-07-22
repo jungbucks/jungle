@@ -72,11 +72,14 @@ body{background:var(--bg);color:var(--ink);font-family:'Pretendard','Malgun Goth
 .band-label{fill:#4A5878;font-size:16px;font-weight:900;letter-spacing:.18em}
 .band-arrow{fill:#242D40;font-size:14px}
 .band-sep{stroke:#1B2230;stroke-dasharray:3 9}
-.lk{stroke:#2E3850;stroke-width:1;stroke-opacity:.55}
+.lk{stroke:#2E3850;stroke-width:.9;stroke-opacity:.38}
 .nd{cursor:pointer}
 .nd circle{stroke:#0E1116;stroke-width:1.4}
 .nd text{fill:var(--dim);font-size:9px;pointer-events:none;font-family:'Pretendard','Malgun Gothic',sans-serif}
 .nd.tag text{fill:var(--tag);font-size:11px;font-weight:700}
+/* 성취기준(별) 코드 라벨은 평소 숨김 — 142개 코드가 다 뜨면 개념 구조가 안 보인다. hover·강조 시만 표시 */
+.nd:not(.tag) text{opacity:0;transition:opacity .12s}
+.nd:not(.tag):hover text,.nd:not(.tag).hl text{opacity:1}
 .faded{opacity:.08}
 .lk.hl{stroke:var(--accent);stroke-opacity:.9;stroke-width:1.6}
 footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:11.5px;color:var(--dim)}
@@ -123,7 +126,7 @@ const byId = new Map(nodes.map(n=>[n.id,n]));
 const neighbors = new Map(nodes.map(n=>[n.id,new Set()]));
 links.forEach(l=>{ neighbors.get(l.source).add(l.target); neighbors.get(l.target).add(l.source); });
 
-const rOf = d => d.type==='tag' ? Math.min(16, 6+Math.sqrt(d.deg)*1.9) : 5.2;
+const rOf = d => d.type==='tag' ? Math.min(20, 5.5+Math.sqrt(d.deg)*2.3) : 4.8;
 const colorOf = d => d.type==='tag' ? '#9AA5BC' : SUBJ[d.subject].color;
 
 /* 학교급 밴드 — 왼쪽 중학교에서 출발해 오른쪽으로 갈수록 깊어진다 */
@@ -137,12 +140,12 @@ const tierX = t => W*(0.11 + t*0.1925);
 
 /* 시뮬레이션 — forceX가 성취기준을 학교급 열로 끌어당긴다(개념 태그는 이웃을 따라 떠다님) */
 const sim = d3.forceSimulation(nodes)
-  .force('link', d3.forceLink(links).id(d=>d.id).distance(46).strength(.32))
-  .force('charge', d3.forceManyBody().strength(-85))
+  .force('link', d3.forceLink(links).id(d=>d.id).distance(52).strength(.32))
+  .force('charge', d3.forceManyBody().strength(-105))
   .force('x', d3.forceX(d=> d.type==='std' ? tierX(tierOf(d)) : W/2)
     .strength(d=> d.type==='std' ? .62 : .02))
-  .force('y', d3.forceY(H/2).strength(.09))
-  .force('collide', d3.forceCollide().radius(d=>rOf(d)+3));
+  .force('y', d3.forceY(H/2).strength(.1))
+  .force('collide', d3.forceCollide().radius(d=>d.type==='tag'?rOf(d)+16:rOf(d)+4).strength(.9));
 
 /* 배경 가이드: 단계 라벨 + 경계선 (그래프 좌표계 — 팬·줌을 따라감) */
 const bands = root.append('g');
