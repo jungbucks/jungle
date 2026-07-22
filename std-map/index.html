@@ -149,7 +149,7 @@ const sim = d3.forceSimulation(nodes)
   .force('charge', d3.forceManyBody().strength(-105))
   .force('x', d3.forceX(d=> d.type==='std' ? tierX(tierOf(d)) : W/2)
     // 초등 실과 5개는 개념을 중학교와 공유해 링크에 끌려 tier1로 새어든다 → 초등만 강하게 tier0 고정
-    .strength(d=> d.type!=='std' ? .07 : (SUBJ[d.subject].level==='초등학교' ? .97 : .62)))
+    .strength(d=> d.type!=='std' ? .04 : (SUBJ[d.subject].level==='초등학교' ? .97 : .62)))
   .force('y', d3.forceY(H/2).strength(.1))
   .force('collide', d3.forceCollide().radius(d=>d.type==='tag'?rOf(d)+16:rOf(d)+4).strength(.9));
 
