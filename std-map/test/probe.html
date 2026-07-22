@@ -10,11 +10,11 @@ document.getElementById('f').onload=async()=>{
   const W=document.getElementById('f').contentWindow;
   await sleep(2000); // 시뮬레이션 안정화
   log('노드 렌더(160+): '+(D.querySelectorAll('.nd').length>=160));
-  log('학교급 밴드 라벨 4종: '+(D.querySelectorAll('.band-label').length===4));
+  log('학교급 밴드 라벨 5종: '+(D.querySelectorAll('.band-label').length===5));
   const avgX=t=>{const a=W.STDMAP.nodes.filter(n=>n.type==='std'&&W.STDMAP.tierOf(n)===t);return a.reduce((s,n)=>s+n.x,0)/a.length;};
-  log('중→고→진로→전문 좌→우 흐름: '+(avgX(0)<avgX(1)&&avgX(1)<avgX(2)&&avgX(2)<avgX(3)));
+  log('초→중→일반→진로→전문 좌→우 흐름: '+(avgX(0)<avgX(1)&&avgX(1)<avgX(2)&&avgX(2)<avgX(3)&&avgX(3)<avgX(4)));
   log('링크 렌더(215+): '+(D.querySelectorAll('.lk').length>=215));
-  log('범례 과목 7+개념 1: '+(D.querySelectorAll('#legend .lg').length===8));
+  log('범례 과목 8+개념 1: '+(D.querySelectorAll('#legend .lg').length===9));
   W.STDMAP.focus('[12정01-01]'); await sleep(700);
   log('상세 패널 열림: '+D.getElementById('panel').classList.contains('on'));
   log('패널에 성취기준 전문: '+D.getElementById('panelBody').textContent.includes('유무선 네트워크'));

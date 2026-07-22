@@ -14,7 +14,7 @@ const stds = G.nodes.filter(n => n.type === 'std');
 const tags = G.nodes.filter(n => n.type === 'tag');
 const ids = new Set(G.nodes.map(n => n.id));
 
-t('과목 7종', G.subjects.length === 7);
+t('과목 8종(초등 포함)', G.subjects.length === 8);
 t('성취기준 130+개', stds.length >= 130, String(stds.length));
 t('코드 중복 없음', new Set(stds.map(n => n.id)).size === stds.length);
 t('전 성취기준 태그 ≥1 (커버리지 100%)', stds.every(n => n.tags.length > 0));

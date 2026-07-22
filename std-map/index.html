@@ -88,7 +88,7 @@ footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:11.5px;color:va
 
 <div id="hud">
   <h1>성취기준 <b>은하</b></h1>
-  <p class="hook">중1의 '변수'는 어디까지 여행할까?<br>왼쪽 중학교에서 오른쪽 전문교과까지 — 성취기준 137개가 28개의 개념으로 이어집니다. 별을 끌어보세요.</p>
+  <p class="hook">초등 6학년 '알고리즘'은 어디까지 여행할까?<br>왼쪽 초등학교에서 오른쪽 전문교과까지 — 성취기준 142개가 28개의 개념으로 이어집니다. 별을 끌어보세요.</p>
   <input id="search" type="search" placeholder="🔍 검색: 재귀, 12정03, 딥러닝…" autocomplete="off">
   <div id="searchHint"></div>
 </div>
@@ -127,12 +127,13 @@ const rOf = d => d.type==='tag' ? Math.min(16, 6+Math.sqrt(d.deg)*1.9) : 5.2;
 const colorOf = d => d.type==='tag' ? '#9AA5BC' : SUBJ[d.subject].color;
 
 /* 학교급 밴드 — 왼쪽 중학교에서 출발해 오른쪽으로 갈수록 깊어진다 */
-const TIERS = ['중학교','일반선택','진로·융합선택','심화·전문'];
-const tierOfLevel = lv => lv==='중학교' ? 0
-  : lv.includes('일반') ? 1
-  : (lv.includes('과학계열')||lv.includes('전문')) ? 3 : 2;
+const TIERS = ['초등','중학교','일반선택','진로·융합선택','심화·전문'];
+const tierOfLevel = lv => lv==='초등학교' ? 0
+  : lv==='중학교' ? 1
+  : lv.includes('일반') ? 2
+  : (lv.includes('과학계열')||lv.includes('전문')) ? 4 : 3;
 const tierOf = d => d.type==='std' ? tierOfLevel(SUBJ[d.subject].level) : null;
-const tierX = t => W*(0.14 + t*0.24);
+const tierX = t => W*(0.11 + t*0.1925);
 
 /* 시뮬레이션 — forceX가 성취기준을 학교급 열로 끌어당긴다(개념 태그는 이웃을 따라 떠다님) */
 const sim = d3.forceSimulation(nodes)
@@ -149,10 +150,11 @@ TIERS.forEach((t,i)=>{
   bands.append('text').attr('class','band-label')
     .attr('x',tierX(i)).attr('y',H*.09).attr('text-anchor','middle').text(t);
   if(i<TIERS.length-1){
+    const sepX = W*(0.206+i*0.1925);   // tierX(i)와 tierX(i+1)의 중간
     bands.append('line').attr('class','band-sep')
-      .attr('x1',W*(.26+i*.24)).attr('x2',W*(.26+i*.24)).attr('y1',-H).attr('y2',H*2);
+      .attr('x1',sepX).attr('x2',sepX).attr('y1',-H).attr('y2',H*2);
     bands.append('text').attr('class','band-arrow')
-      .attr('x',W*(.26+i*.24)).attr('y',H*.09).attr('text-anchor','middle').text('⟶');
+      .attr('x',sepX).attr('y',H*.09).attr('text-anchor','middle').text('⟶');
   }
 });
 

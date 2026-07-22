@@ -86,12 +86,29 @@ const canon = t => (t in MERGE ? MERGE[t] : t);
 
 const SUBJECT_IDS = ['middle', 'high', 'ai', 'ds', 'sw', 'cs', 'prog'];
 
+/* 초등 실과 — 정글 SUBJECTS 밖의 별도 소스(정글 성취기준 탭엔 넣지 않고 그래프에만 반영).
+   2022 개정 실과 5·6학년 '디지털 사회와 인공지능' 영역 [6실05-01~05]. level='초등학교' → tier 0. */
+const ELEM_SUBJECT = {
+  id: 'elem', name: '초등 실과', level: '초등학교', accent: '#0D9488',
+  domains: [{
+    name: '디지털 사회와 인공지능',
+    items: [
+      { code: '[6실05-01]', text: '컴퓨터를 활용한 생활 속 문제해결 사례를 탐색하고 일상생활 속 문제를 해결하기 위한 알고리즘을 다양한 방법으로 표현한다.' },
+      { code: '[6실05-02]', text: '컴퓨터에게 명령하는 방법을 체험하고, 주어진 문제를 해결하는 프로그램을 작성한다.' },
+      { code: '[6실05-03]', text: '실생활의 문제를 해결하는 프로그램을 협력하여 작성하고, 산출물을 타인과 공유한다.' },
+      { code: '[6실05-04]', text: '디지털 데이터와 아날로그 데이터의 특징을 이해하고, 인공지능에 활용할 수 있는 데이터의 유형이나 형태를 탐색한다.' },
+      { code: '[6실05-05]', text: '인공지능이 만들어지는 과정을 체험하고, 인공지능이 사회에 미치는 영향을 탐색한다.' },
+    ],
+  }],
+};
+
 /* 정글 data.js 로드 (classic script → VM) */
 const ctx = {};
 vm.createContext(ctx);
 // classic script의 top-level const는 VM 전역에 안 붙는다(어휘 스코프) → 브리지 한 줄을 뒤에 이어 평가
 vm.runInContext(readFileSync(JUNGLE_DATA, 'utf8') + '\n;this.__SUBJECTS = SUBJECTS;', ctx, { filename: 'jungle-data.js' });
-const SUBJECTS = ctx.__SUBJECTS.filter(s => SUBJECT_IDS.includes(s.id));
+// 초등(맨 앞) + 정글 7과목
+const SUBJECTS = [ELEM_SUBJECT, ...ctx.__SUBJECTS.filter(s => SUBJECT_IDS.includes(s.id))];
 
 const subjects = SUBJECTS.map(s => ({
   id: s.id, name: s.name, level: s.level,
