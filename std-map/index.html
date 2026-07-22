@@ -126,7 +126,7 @@ const byId = new Map(nodes.map(n=>[n.id,n]));
 const neighbors = new Map(nodes.map(n=>[n.id,new Set()]));
 links.forEach(l=>{ neighbors.get(l.source).add(l.target); neighbors.get(l.target).add(l.source); });
 
-const rOf = d => d.type==='tag' ? Math.min(20, 5.5+Math.sqrt(d.deg)*2.3) : 4.8;
+const rOf = d => d.type==='tag' ? Math.min(30, 5+d.deg*0.85) : 4.8;
 const colorOf = d => d.type==='tag' ? '#9AA5BC' : SUBJ[d.subject].color;
 
 /* 학교급 밴드 — 왼쪽 중학교에서 출발해 오른쪽으로 갈수록 깊어진다 */
@@ -137,13 +137,16 @@ const tierOfLevel = lv => lv==='초등학교' ? 0
   : (lv.includes('과학계열')||lv.includes('전문')) ? 4 : 3;
 const tierOf = d => d.type==='std' ? tierOfLevel(SUBJ[d.subject].level) : null;
 const tierX = t => W*(0.11 + t*0.1925);
+// 초등 5개는 개념 링크에 끌려 tier1로 새어든다 → x를 tier0에 완전 고정(y만 자유). 드래그하면 풀림.
+nodes.forEach(n=>{ if(n.type==='std' && SUBJ[n.subject] && SUBJ[n.subject].level==='초등학교') n.fx = tierX(0); });
 
 /* 시뮬레이션 — forceX가 성취기준을 학교급 열로 끌어당긴다(개념 태그는 이웃을 따라 떠다님) */
 const sim = d3.forceSimulation(nodes)
   .force('link', d3.forceLink(links).id(d=>d.id).distance(52).strength(.32))
   .force('charge', d3.forceManyBody().strength(-105))
   .force('x', d3.forceX(d=> d.type==='std' ? tierX(tierOf(d)) : W/2)
-    .strength(d=> d.type==='std' ? .62 : .02))
+    // 초등 실과 5개는 개념을 중학교와 공유해 링크에 끌려 tier1로 새어든다 → 초등만 강하게 tier0 고정
+    .strength(d=> d.type!=='std' ? .02 : (SUBJ[d.subject].level==='초등학교' ? .97 : .62)))
   .force('y', d3.forceY(H/2).strength(.1))
   .force('collide', d3.forceCollide().radius(d=>d.type==='tag'?rOf(d)+16:rOf(d)+4).strength(.9));
 
