@@ -143,8 +143,11 @@ function renderTabs() {
       return `<button class="subtab${active ? ' active' : ''}" role="tab" aria-selected="${active}" data-text="${label}" data-onclick="app:ovSubtabSel" data-onkeydown="app:subtabKey" data-args="${esc(JSON.stringify([key]))}"
         style="${active ? `color:${ovAccent};border-bottom-color:${ovAccent}` : ''}">
         ${label}</button>`;
-    }).join('');    
-    subtabBar.classList.add('visible');  
+    }).join('')
+    // 새 창으로 여는 외부 링크 — 탭(role=tab)이 아니라 실제 <a>로 두어 시맨틱 오용을 피한다.
+    + `<a class="subtab subtab-ext" href="std-map/" target="_blank" rel="noopener" aria-label="교육과정 그래프 (새 창에서 열림)" title="성취기준이 어떻게 연결되는지 그래프로 봅니다 (새 창)">
+        <svg class="subtab-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="2.3"/><circle cx="18" cy="8.5" r="2.3"/><circle cx="9" cy="18" r="2.3"/><path d="M8.1 6.6l7.8 1.5M7.6 8.1l1.6 8"/></svg>교육과정 그래프<span class="subtab-ext-arrow" aria-hidden="true">↗</span></a>`;
+    subtabBar.classList.add('visible');
   } else if (isHS) {    
     document.getElementById('subtabBarInner').innerHTML = HS_SUBTAB_ORDER.map((idx, i) => {      
       const s = SUBJECTS[idx];      

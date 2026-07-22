@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>성취기준 은하 — 정보 교과 개념 지도</title>
+<meta name="description" content="중학교 정보부터 고등학교 7과목까지, 성취기준 137개가 개념으로 이어지는 인터랙티브 지식 그래프">
+<meta name="theme-color" content="#0E1116">
+<style>
+/* 옵시디언 그래프 뷰 무드 — 어두운 우주에 과목색 별들 */
+:root{
+  --bg:#0E1116; --panel:#161B24; --panel2:#1D2430; --line:#2A3342;
+  --ink:#DEE4EF; --dim:#8B93A8; --tag:#9AA5BC; --accent:#7C9BFF;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;overflow:hidden}
+body{background:var(--bg);color:var(--ink);font-family:'Pretendard','Malgun Gothic',-apple-system,sans-serif}
+#stage{position:fixed;inset:0;cursor:grab}
+#stage:active{cursor:grabbing}
+
+/* 좌상단: 타이틀·검색 */
+#hud{position:fixed;top:18px;left:20px;z-index:10;max-width:340px;pointer-events:none}
+#hud>*{pointer-events:auto}
+#hud h1{font-size:20px;font-weight:900;letter-spacing:-.01em}
+#hud h1 b{color:var(--accent)}
+#hud .hook{font-size:13px;color:var(--dim);margin:4px 0 10px;line-height:1.6}
+#search{width:280px;padding:9px 13px;border-radius:10px;border:1px solid var(--line);
+  background:var(--panel);color:var(--ink);font-family:inherit;font-size:14px}
+#search:focus{outline:2px solid var(--accent);border-color:transparent}
+#searchHint{font-size:12px;color:var(--dim);margin-top:5px}
+
+/* 좌하단: 과목 범례(토글 필터) */
+#legend{position:fixed;left:20px;bottom:18px;z-index:10;background:rgba(22,27,36,.92);
+  border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+.lg{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;border:none;background:none;
+  color:var(--ink);font-family:inherit;padding:2px 4px;border-radius:6px;text-align:left}
+.lg:hover{background:var(--panel2)}
+.lg .sw{width:11px;height:11px;border-radius:50%;flex-shrink:0}
+.lg.off{opacity:.32}
+.lg small{color:var(--dim)}
+#legend .lg-tag .sw{background:var(--tag)}
+
+/* 우측: 상세 패널 */
+#panel{position:fixed;top:0;right:0;bottom:0;width:min(340px,88vw);z-index:20;
+  background:var(--panel);border-left:1px solid var(--line);padding:22px 20px;overflow-y:auto;
+  transform:translateX(100%);transition:transform .25s ease}
+#panel.on{transform:none}
+#panelClose{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--line);
+  color:var(--dim);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px}
+#panelClose:hover{color:var(--ink);border-color:var(--accent)}
+.p-eyebrow{font-size:12px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+.p-code{font-size:19px;font-weight:900;margin:4px 0 2px;font-variant-numeric:tabular-nums}
+.p-subj{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;
+  border:1px solid var(--line);border-radius:99px;padding:4px 12px;margin:8px 0}
+.p-subj .sw{width:9px;height:9px;border-radius:50%}
+.p-domain{font-size:12.5px;color:var(--dim);margin-bottom:10px}
+.p-text{font-size:15px;line-height:1.8;background:var(--panel2);border-radius:12px;padding:14px 16px}
+.p-sec{font-size:12px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin:18px 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:7px}
+.chip{font-size:12.5px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;
+  background:none;color:var(--ink);cursor:pointer;font-family:inherit}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.p-list{display:flex;flex-direction:column;gap:6px}
+.p-item{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.55;
+  background:none;border:none;color:var(--ink);cursor:pointer;font-family:inherit;text-align:left;
+  padding:7px 9px;border-radius:9px}
+.p-item:hover{background:var(--panel2)}
+.p-item .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
+.p-item b{font-variant-numeric:tabular-nums;font-weight:800;white-space:nowrap}
+
+/* 그래프 요소 */
+.band-label{fill:#4A5878;font-size:16px;font-weight:900;letter-spacing:.18em}
+.band-arrow{fill:#242D40;font-size:14px}
+.band-sep{stroke:#1B2230;stroke-dasharray:3 9}
+.lk{stroke:#2E3850;stroke-width:1;stroke-opacity:.55}
+.nd{cursor:pointer}
+.nd circle{stroke:#0E1116;stroke-width:1.4}
+.nd text{fill:var(--dim);font-size:9px;pointer-events:none;font-family:'Pretendard','Malgun Gothic',sans-serif}
+.nd.tag text{fill:var(--tag);font-size:11px;font-weight:700}
+.faded{opacity:.08}
+.lk.hl{stroke:var(--accent);stroke-opacity:.9;stroke-width:1.6}
+footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:11.5px;color:var(--dim)}
+@media (prefers-reduced-motion:reduce){#panel{transition:none}}
+</style>
+</head>
+<body>
+<svg id="stage"></svg>
+
+<div id="hud">
+  <h1>성취기준 <b>은하</b></h1>
+  <p class="hook">중1의 '변수'는 어디까지 여행할까?<br>왼쪽 중학교에서 오른쪽 전문교과까지 — 성취기준 137개가 28개의 개념으로 이어집니다. 별을 끌어보세요.</p>
+  <input id="search" type="search" placeholder="🔍 검색: 재귀, 12정03, 딥러닝…" autocomplete="off">
+  <div id="searchHint"></div>
+</div>
+
+<div id="legend"></div>
+
+<aside id="panel" aria-live="polite">
+  <button id="panelClose" aria-label="닫기">✕</button>
+  <div id="panelBody"></div>
+</aside>
+
+<footer>성취기준 은하 · 데이터: 2022 개정 정보과 교육과정(정글 등록본) · 노드를 드래그해 보세요</footer>
+
+<script src="lib/d3.v7.min.js"></script>
+<script src="data/graph-data.js"></script>
+<script>
+'use strict';
+(function(){
+const G = window.STD_GRAPH;
+const SUBJ = Object.fromEntries(G.subjects.map(s=>[s.id,s]));
+const $ = s=>document.querySelector(s);
+const esc = s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+const W = innerWidth, H = innerHeight;
+const svg = d3.select('#stage').attr('viewBox',[0,0,W,H]);
+const root = svg.append('g');
+
+/* 데이터 사본 (d3가 source/target을 객체로 치환) */
+const nodes = G.nodes.map(d=>({...d}));
+const links = G.links.map(d=>({...d}));
+const byId = new Map(nodes.map(n=>[n.id,n]));
+const neighbors = new Map(nodes.map(n=>[n.id,new Set()]));
+links.forEach(l=>{ neighbors.get(l.source).add(l.target); neighbors.get(l.target).add(l.source); });
+
+const rOf = d => d.type==='tag' ? Math.min(16, 6+Math.sqrt(d.deg)*1.9) : 5.2;
+const colorOf = d => d.type==='tag' ? '#9AA5BC' : SUBJ[d.subject].color;
+
+/* 학교급 밴드 — 왼쪽 중학교에서 출발해 오른쪽으로 갈수록 깊어진다 */
+const TIERS = ['중학교','일반선택','진로·융합선택','심화·전문'];
+const tierOfLevel = lv => lv==='중학교' ? 0
+  : lv.includes('일반') ? 1
+  : (lv.includes('과학계열')||lv.includes('전문')) ? 3 : 2;
+const tierOf = d => d.type==='std' ? tierOfLevel(SUBJ[d.subject].level) : null;
+const tierX = t => W*(0.14 + t*0.24);
+
+/* 시뮬레이션 — forceX가 성취기준을 학교급 열로 끌어당긴다(개념 태그는 이웃을 따라 떠다님) */
+const sim = d3.forceSimulation(nodes)
+  .force('link', d3.forceLink(links).id(d=>d.id).distance(46).strength(.32))
+  .force('charge', d3.forceManyBody().strength(-85))
+  .force('x', d3.forceX(d=> d.type==='std' ? tierX(tierOf(d)) : W/2)
+    .strength(d=> d.type==='std' ? .62 : .02))
+  .force('y', d3.forceY(H/2).strength(.09))
+  .force('collide', d3.forceCollide().radius(d=>rOf(d)+3));
+
+/* 배경 가이드: 단계 라벨 + 경계선 (그래프 좌표계 — 팬·줌을 따라감) */
+const bands = root.append('g');
+TIERS.forEach((t,i)=>{
+  bands.append('text').attr('class','band-label')
+    .attr('x',tierX(i)).attr('y',H*.09).attr('text-anchor','middle').text(t);
+  if(i<TIERS.length-1){
+    bands.append('line').attr('class','band-sep')
+      .attr('x1',W*(.26+i*.24)).attr('x2',W*(.26+i*.24)).attr('y1',-H).attr('y2',H*2);
+    bands.append('text').attr('class','band-arrow')
+      .attr('x',W*(.26+i*.24)).attr('y',H*.09).attr('text-anchor','middle').text('⟶');
+  }
+});
+
+const lk = root.append('g').selectAll('line').data(links).join('line').attr('class','lk');
+const nd = root.append('g').selectAll('g').data(nodes).join('g')
+  .attr('class',d=>'nd'+(d.type==='tag'?' tag':''))
+  .call(d3.drag()
+    .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(.25).restart(); d.fx=d.x; d.fy=d.y; })
+    .on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('end',(e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
+nd.append('circle').attr('r',rOf).attr('fill',colorOf);
+nd.append('text').attr('dy',d=>rOf(d)+11).attr('text-anchor','middle')
+  .text(d=>d.type==='tag'?d.label:d.id.replace(/\[|\]/g,''));
+
+sim.on('tick',()=>{
+  lk.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+  nd.attr('transform',d=>`translate(${d.x},${d.y})`);
+});
+
+/* 줌·팬 (성취기준 라벨은 확대 시에만) */
+const zoom = d3.zoom().scaleExtent([.25,5]).on('zoom',e=>{
+  root.attr('transform',e.transform);
+  nd.filter(d=>d.type==='std').select('text').style('display', e.transform.k>=1.4?null:'none');
+});
+svg.call(zoom);
+nd.filter(d=>d.type==='std').select('text').style('display','none');
+
+/* 호버 = 이웃 강조 */
+function highlight(id){
+  if(id===null){ nd.classed('faded',false); lk.classed('faded',false).classed('hl',false); return; }
+  const nb = neighbors.get(id);
+  nd.classed('faded',d=>d.id!==id && !nb.has(d.id));
+  lk.classed('faded',l=>l.source.id!==id && l.target.id!==id)
+    .classed('hl',l=>l.source.id===id || l.target.id===id);
+}
+nd.on('mouseenter',(e,d)=>highlight(d.id)).on('mouseleave',()=>highlight(null));
+
+/* 과목 필터 */
+const hidden = new Set();
+function applyFilter(){
+  const vis = d=> d.type==='tag' ? [...neighbors.get(d.id)].some(x=>!hidden.has(byId.get(x).subject)) : !hidden.has(d.subject);
+  nd.style('display',d=>vis(d)?null:'none');
+  lk.style('display',l=>(vis(l.source)&&vis(l.target))?null:'none');
+}
+const lg = $('#legend');
+G.subjects.forEach(s=>{
+  const b=document.createElement('button');
+  b.className='lg';
+  b.innerHTML=`<span class="sw" style="background:${s.color}"></span>${esc(s.name)} <small>${nodes.filter(n=>n.subject===s.id).length}</small>`;
+  b.onclick=()=>{ hidden.has(s.id)?hidden.delete(s.id):hidden.add(s.id); b.classList.toggle('off'); applyFilter(); };
+  lg.appendChild(b);
+});
+const tagLg=document.createElement('div');
+tagLg.className='lg lg-tag'; tagLg.style.cursor='default';
+tagLg.innerHTML=`<span class="sw"></span>개념 <small>${nodes.filter(n=>n.type==='tag').length}</small>`;
+lg.appendChild(tagLg);
+
+/* 상세 패널 */
+function focusNode(d){
+  const t=d3.zoomTransform(svg.node());
+  svg.transition().duration(500).call(zoom.transform,
+    d3.zoomIdentity.translate(W/2-(W>760?170:0)-d.x*1.8, H/2-d.y*1.8).scale(1.8));
+  openPanel(d);
+  highlight(d.id);
+}
+function openPanel(d){
+  const body=$('#panelBody');
+  if(d.type==='std'){
+    const s=SUBJ[d.subject];
+    body.innerHTML=`<div class="p-eyebrow">성취기준</div>
+      <div class="p-code">${esc(d.id)}</div>
+      <span class="p-subj"><span class="sw" style="background:${s.color}"></span>${esc(s.name)}</span>
+      <div class="p-domain">${esc(s.level)} · ${esc(d.domain)}</div>
+      <div class="p-text">${esc(d.text)}</div>
+      <div class="p-sec">이어지는 개념</div>
+      <div class="chips">${d.tags.map(t=>`<button class="chip" data-id="tag:${esc(t)}"># ${esc(t)}</button>`).join('')}</div>`;
+  }else{
+    const stds=[...neighbors.get(d.id)].map(id=>byId.get(id))
+      .sort((a,b)=>a.id.localeCompare(b.id,'ko'));
+    const bySub={};
+    stds.forEach(n=>{ (bySub[n.subject]=bySub[n.subject]||[]).push(n); });
+    body.innerHTML=`<div class="p-eyebrow">개념</div>
+      <div class="p-code"># ${esc(d.label)}</div>
+      <div class="p-domain">${stds.length}개 성취기준이 이 개념으로 이어집니다 — 중학교에서 고등학교까지.</div>
+      ${G.subjects.filter(s=>bySub[s.id]).map(s=>`
+        <div class="p-sec">${esc(s.name)}</div>
+        <div class="p-list">${bySub[s.id].map(n=>
+          `<button class="p-item" data-id="${esc(n.id)}"><span class="sw" style="background:${s.color}"></span><span><b>${esc(n.id)}</b> ${esc(n.text.length>52?n.text.slice(0,52)+'…':n.text)}</span></button>`).join('')}</div>`).join('')}`;
+  }
+  body.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>{ const n=byId.get(el.dataset.id); if(n) focusNode(n); });
+  $('#panel').classList.add('on');
+}
+nd.on('click',(e,d)=>{ e.stopPropagation(); focusNode(d); });
+$('#panelClose').onclick=()=>{ $('#panel').classList.remove('on'); highlight(null); };
+svg.on('click',()=>{ $('#panel').classList.remove('on'); highlight(null); });
+
+/* 검색 */
+$('#search').addEventListener('input',function(){
+  const q=this.value.trim().toLowerCase();
+  const hint=$('#searchHint');
+  if(!q){ hint.textContent=''; highlight(null); return; }
+  const hits=nodes.filter(n=> n.type==='tag'
+    ? n.label.toLowerCase().includes(q)
+    : (n.id.toLowerCase().includes(q) || n.text.toLowerCase().includes(q)));
+  hint.textContent=hits.length?`${hits.length}개 일치 — Enter로 첫 결과 이동`:'일치 없음';
+  nd.classed('faded',d=>!hits.includes(d));
+  lk.classed('faded',true);
+  this._hits=hits;
+});
+$('#search').addEventListener('keydown',function(e){
+  if(e.key==='Enter' && this._hits && this._hits.length) focusNode(this._hits[0]);
+  if(e.key==='Escape'){ this.value=''; $('#searchHint').textContent=''; highlight(null); }
+});
+
+window.STDMAP={ nodes, links, tierOf, focus:id=>{const n=byId.get(id); if(n)focusNode(n);} };   // 프로브용
+})();
+</script>
+</body>
+</html>

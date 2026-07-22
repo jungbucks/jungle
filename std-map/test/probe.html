@@ -1,0 +1,30 @@
+<!DOCTYPE html><meta charset="utf-8">
+<pre id="out">PENDING</pre>
+<iframe id="f" src="../index.html" style="width:1200px;height:800px;border:0"></iframe>
+<script>
+const out=[]; const log=m=>{out.push(m); document.getElementById('out').textContent=out.join('\n');};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+document.getElementById('f').onload=async()=>{
+ try{
+  const D=document.getElementById('f').contentDocument;
+  const W=document.getElementById('f').contentWindow;
+  await sleep(2000); // 시뮬레이션 안정화
+  log('노드 렌더(160+): '+(D.querySelectorAll('.nd').length>=160));
+  log('학교급 밴드 라벨 4종: '+(D.querySelectorAll('.band-label').length===4));
+  const avgX=t=>{const a=W.STDMAP.nodes.filter(n=>n.type==='std'&&W.STDMAP.tierOf(n)===t);return a.reduce((s,n)=>s+n.x,0)/a.length;};
+  log('중→고→진로→전문 좌→우 흐름: '+(avgX(0)<avgX(1)&&avgX(1)<avgX(2)&&avgX(2)<avgX(3)));
+  log('링크 렌더(215+): '+(D.querySelectorAll('.lk').length>=215));
+  log('범례 과목 7+개념 1: '+(D.querySelectorAll('#legend .lg').length===8));
+  W.STDMAP.focus('[12정01-01]'); await sleep(700);
+  log('상세 패널 열림: '+D.getElementById('panel').classList.contains('on'));
+  log('패널에 성취기준 전문: '+D.getElementById('panelBody').textContent.includes('유무선 네트워크'));
+  log('개념 칩 존재: '+(D.querySelectorAll('#panelBody .chip').length>=1));
+  D.querySelector('#panelBody .chip').click(); await sleep(700);
+  log('개념 노드로 이동(연결 목록): '+D.getElementById('panelBody').textContent.includes('성취기준이 이 개념으로'));
+  const inp=D.getElementById('search');
+  inp.value='재귀'; inp.dispatchEvent(new W.Event('input',{bubbles:true})); await sleep(200);
+  log('검색 매칭 힌트: '+D.getElementById('searchHint').textContent.includes('일치'));
+  log('DONE');
+ }catch(e){ log('ERR '+e.message); }
+};
+</script>
