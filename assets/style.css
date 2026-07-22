@@ -935,7 +935,7 @@ span.astore-card-author{color:var(--brand)}
 .eval-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:300;display:flex;align-items:center;justify-content:center;padding:20px}
 .eval-modal{background:#fff;border-radius:14px;width:100%;max-width:640px;max-height:88vh;display:flex;flex-direction:column;box-shadow:0 8px 40px rgba(0,0,0,.18)}
 .eval-modal-hd{padding:14px 18px;border-bottom:1px solid var(--g200);flex-shrink:0;display:flex;align-items:center;gap:10px}
-.eval-modal-title{font-size:16px;font-weight:700;color:var(--g900);flex-shrink:0}
+.eval-modal-title{font-size:16px;font-weight:700;color:var(--g900);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .eval-modal-body{overflow-y:auto;flex:1;padding:10px 18px}
 .eval-modal-ft{padding:11px 18px;border-top:1px solid var(--g200);flex-shrink:0;display:flex;align-items:center;justify-content:space-between}
 .eval-modal-sel-count{font-size:13px;color:var(--g500)}

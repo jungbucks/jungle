@@ -248,7 +248,7 @@ function openPanel(d){
     stds.forEach(n=>{ (bySub[n.subject]=bySub[n.subject]||[]).push(n); });
     body.innerHTML=`<div class="p-eyebrow">핵심 개념</div>
       <div class="p-code"># ${esc(d.label)}</div>
-      <div class="p-domain">${stds.length}개 성취기준이 이 개념으로 이어집니다 — 중학교에서 고등학교까지.</div>
+      <div class="p-domain">${stds.length}개 성취기준이 이 개념으로 이어집니다 — 초등학교에서 고등학교까지.</div>
       ${G.subjects.filter(s=>bySub[s.id]).map(s=>`
         <div class="p-sec">${esc(s.name)}</div>
         <div class="p-list">${bySub[s.id].map(n=>
