@@ -8,6 +8,7 @@ if ('serviceWorker' in navigator) {
 /* ES 모듈에서 classic script const 변수에 접근하려면 window에 명시적으로 등록 */
 window.SUBJECTS = SUBJECTS;
 window.ACHIEVEMENTS = ACHIEVEMENTS;
+window.ACHV_EXPL = ACHV_EXPL;
 window.HS_SEMS = HS_SEMS;
 window.HS_SUBJECTS = HS_SUBJECTS;
 window.HS_TYPE_COLOR = HS_TYPE_COLOR;
