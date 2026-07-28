@@ -367,16 +367,27 @@ function domainSectionHtml(subj, d, collectedSet) {
   const achvBtn = ACHIEVEMENTS[achvKey]
     ? `<span class="achv-btn" role="button" tabindex="0" data-onclick="app:achv" data-onkeydown="app:achv" data-args="${achvArgs}">ABCDE 성취수준</span>`
     : '';
+  // 단원 단위 성취기준 해설: 해설이 있는 성취기준만 모아 헤더의 개수 옆 토글로 펼친다.
+  const explItems = (typeof ACHV_EXPL !== 'undefined') ? d.items.filter(it => ACHV_EXPL[it.code]) : [];
+  const explId = 'dexpl_' + cid(key);
+  const explBtn = explItems.length
+    ? `<span class="domain-expl-btn" role="button" tabindex="0" aria-expanded="false" aria-controls="${explId}" data-onclick="app:toggleDomainExpl" data-onkeydown="app:toggleDomainExpl" data-args="${esc(JSON.stringify([explId]))}">📖 해설 ${explItems.length}</span>`
+    : '';
+  const explBox = explItems.length
+    ? `<div class="domain-expl" id="${explId}" hidden>${explItems.map(it => `<div class="domain-expl-item"><span class="domain-expl-code" style="color:${subj.accent}">${esc(it.code)}</span><span class="domain-expl-tx">${esc(ACHV_EXPL[it.code])}</span></div>`).join('')}</div>`
+    : '';
   return `<div class="domain-section${col?' collapsed':''}" id="d_${cid(key)}">
     <button type="button" class="domain-header" data-key="${esc(key)}" data-onclick="app:toggleDomain" aria-expanded="${col?'false':'true'}" aria-controls="d_body_${cid(key)}">
       <div class="domain-left">
         <span class="domain-dot" style="background:${subj.accent}"></span>
         <span class="domain-name">${esc(d.name)}</span>
         <span class="domain-cnt">${d.items.length}개</span>
+        ${explBtn}
       </div>
       ${achvBtn}
       <span class="domain-copy-btn" role="button" tabindex="0" data-onclick="app:copyDomain" data-onkeydown="app:copyDomain" data-args="${esc(JSON.stringify(['d_' + cid(key)]))}">단원 모두 복사</span>
     </button>
+    ${explBox}
     <div class="domain-body" id="d_body_${cid(key)}">${d.items.map(it => stdCardHtml(subj, it, collectedSet)).join('')}</div>
   </div>`;
 }
@@ -615,6 +626,7 @@ registerActions('click', {
   'app:toggleDomain':   function(el) { toggleDomain(el.dataset.key); },
   'app:copyDomain':     function(el, e, secId) { copyDomain(secId, el); },
   'app:achv':           function(el, e, key, accent) { openAchvModal(key, accent); },
+  'app:toggleDomainExpl': function(el, e, id) { const b = document.getElementById(id); if (!b) return; const o = b.hidden; b.hidden = !o; el.setAttribute('aria-expanded', o ? 'true' : 'false'); el.classList.toggle('on', o); },
   'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvPicker(subjId, accent); },
   'app:focusSearch':    function() { focusSearch(); },
   'app:lucky':          function() { luckyJump(); },
@@ -623,6 +635,7 @@ registerActions('click', {
 registerActions('keydown', {
   'app:achv':       function(el, e, key, accent) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAchvModal(key, accent); } },
   'app:copyDomain': function(el, e, secId) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyDomain(secId, el); } },
+  'app:toggleDomainExpl': function(el, e, id) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const b = document.getElementById(id); if (!b) return; const o = b.hidden; b.hidden = !o; el.setAttribute('aria-expanded', o ? 'true' : 'false'); el.classList.toggle('on', o); } },
   // role="tablist" 키보드 규약: 좌우 화살표로 서브탭 이동 (data-args는 무시)
   'app:subtabKey':  function(el, e) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;

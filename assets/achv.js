@@ -33,16 +33,11 @@ function openAchvModal(domainName, accent) {
   // 과목 강조색과 값이 겹쳐(--ok = 고등학교 정보, --plan = 프로그래밍) 레벨이 과목색처럼 보였다.
   let bodyHtml = '';
   data.forEach((std, si) => {
-    const expl = (typeof ACHV_EXPL !== 'undefined' && ACHV_EXPL[std.code]) ? ACHV_EXPL[std.code] : '';
     bodyHtml += `<div class="achv-table-wrap">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
       <div class="achv-table-code" style="color:${accent};margin-bottom:0">${esc(std.code)}</div>
-      <div class="achv-code-btns">
-        ${expl ? `<button class="achv-expl-btn" data-onclick="achv:toggleExpl" data-args="${esc(JSON.stringify([si]))}" aria-expanded="false" aria-controls="achvExpl${si}">📖 해설</button>` : ''}
-        <button class="achv-copy-std" data-onclick="achv:copyStd" data-args="${esc(JSON.stringify([domainName, si]))}">복사</button>
-      </div>
+      <button class="achv-copy-std" data-onclick="achv:copyStd" data-args="${esc(JSON.stringify([domainName, si]))}">복사</button>
     </div>
-    ${expl ? `<div class="achv-expl" id="achvExpl${si}" hidden>${esc(expl)}</div>` : ''}
     <table class="achv-table">
       <tbody>`;
     ['A','B','C','D','E'].forEach(g => {
@@ -129,16 +124,6 @@ function achvCopyStd(btn, domainName, idx) {
     btn.classList.add('ok');
     setTimeout(() => { btn.textContent = '복사'; btn.classList.remove('ok'); }, 1500);
   });
-}
-
-// 성취기준 해설 펼치기/접기 (해설이 있는 성취기준에만 버튼이 렌더된다)
-function achvToggleExpl(btn, si) {
-  const box = document.getElementById('achvExpl' + si);
-  if (!box) return;
-  const open = box.hidden;
-  box.hidden = !open;
-  btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-  btn.classList.toggle('on', open);
 }
 
 // ── 학기 단위 성취수준: 선택된 성취기준 수집 ──
@@ -289,7 +274,6 @@ registerActions('click', {
   'achv:close':   function() { closeAchvModal(); },
   'achv:copyAll': function(el, e, domainName) { achvCopyAll(domainName); },
   'achv:copyStd': function(el, e, domainName, si) { achvCopyStd(el, domainName, si); },
-  'achv:toggleExpl': function(el, e, si) { achvToggleExpl(el, si); },
   'achv:copyAllSem': function() { achvCopyAllSem(); },
   'achv:semMode':    function(el, e, mode) { achvSetSemMode(mode); },
   'achv:semRepick':  function() { openSemesterAchvPicker(_semSubjId, _semAccent); },

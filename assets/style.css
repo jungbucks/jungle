@@ -166,6 +166,14 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
   .std-text{flex-basis:100%}
 }
 .card-btns{display:flex;flex-direction:row;gap:5px;flex-shrink:0;align-items:flex-start}
+/* 단원 해설 — 헤더의 개수 옆 토글 칩 + 인라인 아코디언 (해설 있는 단원에만) */
+.domain-expl-btn{font-size:12px;font-weight:600;color:var(--g500);background:var(--g100);border:1px solid transparent;border-radius:10px;padding:2px 9px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.domain-expl-btn:hover{border-color:var(--accent);color:var(--accent)}
+.domain-expl-btn.on{background:var(--accent);color:#fff}
+.domain-expl{border-top:1px solid var(--g100);padding:14px 18px;display:flex;flex-direction:column;gap:14px;background:var(--g50)}
+.domain-expl-item{display:flex;flex-direction:column;gap:4px}
+.domain-expl-code{font-size:12px;font-weight:700;letter-spacing:.03em}
+.domain-expl-tx{font-size:15px;line-height:1.7;color:var(--g600);word-break:keep-all}
 .cbtn{padding:4px 10px;border:1px solid var(--g200);border-radius:8px;background:#fff;font-size:13px;font-weight:500;cursor:pointer;color:var(--g600);transition:all .15s;white-space:nowrap;display:inline-flex;align-items:center;min-height:36px}
 .cbtn:hover:not(.ok){background:var(--accent,var(--g400));border-color:var(--accent,var(--g400));color:#fff}
 .cbtn.sm{font-size:12px;padding:4px 9px;color:var(--adark,var(--g600));border-color:var(--alight,var(--g200));min-height:36px}
@@ -347,39 +355,6 @@ mark{background:#FEF08A;color:var(--g900);border-radius:2px;padding:0 1px}
 }
 .achv-copy-std:hover { border-color: var(--accent); color: var(--accent); }
 .achv-copy-std.ok { background: var(--ok); color: #fff; border-color: var(--ok); }
-.achv-code-btns {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  flex-shrink: 0;
-}
-.achv-expl-btn {
-  background: none;
-  border: 1px solid var(--g200);
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--g500);
-  cursor: pointer;
-  padding: 3px 10px;
-  white-space: nowrap;
-  transition: all .12s;
-  font-family: inherit;
-  flex-shrink: 0;
-}
-.achv-expl-btn:hover { border-color: var(--accent); color: var(--accent); }
-.achv-expl-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
-.achv-expl {
-  font-size: 14px;
-  line-height: 1.75;
-  color: var(--g700);
-  background: var(--g50);
-  border: 1px solid var(--g200);
-  border-radius: 8px;
-  padding: 12px 14px;
-  margin-bottom: 10px;
-  word-break: keep-all;
-}
 
 /* 학기 단위 성취수준 — 모드 토글.
    .achv-modal의 세로 flex 자식이므로 헤더·본문과 같은 20px 좌우 패딩을 줘야
@@ -1484,8 +1459,9 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 [data-theme="dark"] .achv-modal { background: #1E293B; }
 [data-theme="dark"] .achv-copy-all.sec { background: #253347; color: #CBD5E1; border-color: #334155; }
 [data-theme="dark"] .achv-copy-std { border-color: #334155; color: #94A3B8; }
-[data-theme="dark"] .achv-expl-btn { border-color: #334155; color: #94A3B8; }
-[data-theme="dark"] .achv-expl { background: #1E293B; border-color: #334155; color: #CBD5E1; }
+[data-theme="dark"] .domain-expl-btn { background: #253347; color: #94A3B8; }
+[data-theme="dark"] .domain-expl { background: #1b2636; border-top-color: #1f2b3d; }
+[data-theme="dark"] .domain-expl-tx { color: #CBD5E1; }
 
 /* --- Mark / highlight --- */
 [data-theme="dark"] mark { background: var(--warn-dark); color: #FEF3C7; }
