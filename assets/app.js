@@ -387,8 +387,8 @@ function domainSectionHtml(subj, d, collectedSet) {
       ${achvBtn}
       <span class="domain-copy-btn" role="button" tabindex="0" data-onclick="app:copyDomain" data-onkeydown="app:copyDomain" data-args="${esc(JSON.stringify(['d_' + cid(key)]))}">단원 모두 복사</span>
     </button>
-    ${explBox}
     <div class="domain-body" id="d_body_${cid(key)}">${d.items.map(it => stdCardHtml(subj, it, collectedSet)).join('')}</div>
+    ${explBox}
   </div>`;
 }
 

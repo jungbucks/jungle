@@ -171,6 +171,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .domain-expl-btn:hover{border-color:var(--accent);color:var(--accent)}
 .domain-expl-btn.on{background:var(--accent);color:#fff}
 .domain-expl{border-top:1px solid var(--g100);padding:14px 18px;display:flex;flex-direction:column;gap:14px;background:var(--g50)}
+.domain-expl[hidden]{display:none}
 .domain-expl-item{display:flex;flex-direction:column;gap:4px}
 .domain-expl-code{font-size:12px;font-weight:700;letter-spacing:.03em}
 .domain-expl-tx{font-size:15px;line-height:1.7;color:var(--g600);word-break:keep-all}
