@@ -138,6 +138,18 @@ try {
   fail('test.mjs 실행 실패 — ' + (e && e.message ? e.message : e));
 }
 
+// ── [6] 외부 링크 생존 (--links 플래그 시에만) ──────────────
+//  네트워크 의존이라 기본 게이트(pre-commit)에서 제외. 릴리스 전 `node tools/verify.mjs --links`.
+if (process.argv.includes('--links')) {
+  head('[6] 외부 링크 생존 (--links)');
+  try {
+    const { checkLinks } = await import(pathToFileURL(join(root, 'tools', 'linkcheck.mjs')).href);
+    const r = await checkLinks();
+    if (r.dead.length === 0) ok(`외부 링크 ${r.checked}개 전부 생존 (하드 다운 0 · 소프트 로트는 수동)`);
+    else r.dead.forEach(d => fail(`죽은 링크 ${d.code}: ${d.url}`));
+  } catch (e) { fail('링크 체크 실패 — ' + (e && e.message ? e.message : e)); }
+}
+
 // ── 최종 판정 ───────────────────────────────────────────────
 console.log('\n' + '─'.repeat(48));
 if (failures === 0) {
