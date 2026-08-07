@@ -337,7 +337,7 @@ function evalPreviewTableHtml() {
       const tot = sc + se, ratio = Number(it.ratio)||0;      
       const scPct = tot > 0 ? (sc/tot*ratio).toFixed(1) : 0;      
       const sePct = tot > 0 ? (se/tot*ratio).toFixed(1) : 0;      
-      return `<td ${tdStyle('line-height:1.8')}>선택형 ${sc}점(${scPct}%)<br>논술형 ${se}점(${sePct}%)</td>`;    
+      return `<td ${tdStyle('line-height:1.8;text-align:center')}>선택형 ${sc}점(${scPct}%)<br>논술형 ${se}점(${sePct}%)</td>`;
     }).join('')}    
     ${perfItems.map(it => `<td ${tdStyle('text-align:center')}>${it.ratio}%</td>`).join('')}    
     <td ${tdStyle('text-align:center;font-weight:700')}>100%</td>  
