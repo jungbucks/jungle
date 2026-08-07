@@ -26,7 +26,9 @@ function mergeLevelTexts(texts, mode = 'join') {
   return list.map((t, i) => (i === list.length - 1 ? t : achvToConnective(t, i))).join(' ');
 }
 
-function openAchvModal(domainName, accent) {
+// domainName = ACHIEVEMENTS 조회용 키(고등 '_고'·정보과학 '_cs' 접미사 포함).
+// 제목엔 절대 쓰지 말 것 — 접미사가 그대로 노출돼 단원명과 어긋난다. 표시는 label로.
+function openAchvModal(domainName, accent, label) {
   const data = ACHIEVEMENTS[domainName];
   if (!data || !data.length) return;
   // 레벨 색은 과목 대표색으로 통일(학기 단위 모달과 동일 원칙). 의미 토큰(--ok/--accent/--plan)은
@@ -60,7 +62,7 @@ function openAchvModal(domainName, accent) {
   overlay.innerHTML = `
     <div class="achv-modal" role="dialog" aria-modal="true" aria-labelledby="achvModalTitle">
       <div class="achv-modal-hd">
-        <span class="achv-modal-title" id="achvModalTitle" style="color:${accent}">📊 ${esc(domainName)} — ABCDE 성취수준</span>
+        <span class="achv-modal-title" id="achvModalTitle" style="color:${accent}">📊 ${esc(label || domainName)} — ABCDE 성취수준</span>
         <button class="cmp-close-btn" data-onclick="achv:close" aria-label="닫기">✕</button>
       </div>
       <div style="font-size:12px;color:var(--g500);padding:8px 12px;background:var(--g50);border-radius:7px;margin-bottom:14px;line-height:1.6">

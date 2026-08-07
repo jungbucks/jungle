@@ -228,6 +228,8 @@ function hashDecode(hash) {
   if (idx < 0) { homeMode = true; return; }
   homeMode = false;
   curIdx = idx;
+  // 시뮬레이터는 교육과정(overview)의 하위 탭으로 렌더된다 → orphan '#simulator' 딥링크를 정규화(북마크·새로고침 견고성)
+  if (base === 'simulator') { const ov = SUBJECTS.findIndex(s => s.id === 'overview'); if (ov >= 0) { curIdx = ov; overviewSubtab = 'simulator'; } }
   if (base === 'overview' && sub) overviewSubtab = sub;
   if (base === 'evalplan' && sub) setEvalPlanSubtab(sub);
 }
@@ -351,10 +353,10 @@ function stdCardHtml(subj, it, collectedSet) {
       <div class="std-text">${hi(it.text,query)}</div>
     </div>
     <div class="card-btns">
-      <button class="cbtn sm" data-code="${esc(it.code)}" data-text="" data-mode="code"
-        style="--accent:${subj.accent};--alight:${subj.aLight};--adark:${subj.aDark}" data-onclick="app:copy">코드만</button>
-      <button class="cbtn" data-code="${esc(it.code)}" data-text="${esc(it.text)}" data-mode="full"
-        style="--accent:${subj.accent}" data-onclick="app:copy">복사</button>
+      <button class="cbtn sm" aria-label="성취기준 코드만 복사" data-code="${esc(it.code)}" data-text="" data-mode="code"
+        style="--accent:${subj.accent};--alight:${subj.aLight};--adark:${subj.aDark}" data-onclick="app:copy"><svg class="cbtn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 6 3 12l5 6M16 6l5 6-5 6"/></svg><span class="cbtn-label">코드만</span></button>
+      <button class="cbtn" aria-label="성취기준 전체 복사" data-code="${esc(it.code)}" data-text="${esc(it.text)}" data-mode="full"
+        style="--accent:${subj.accent}" data-onclick="app:copy"><svg class="cbtn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg><span class="cbtn-label">복사</span></button>
     </div>
   </div>`;
 }
@@ -363,7 +365,8 @@ function domainSectionHtml(subj, d, collectedSet) {
   const key = subj.id + '||' + d.name;
   const col = collapsed.has(key);
   const achvKey = getAchvKey(subj.id, d.name);
-  const achvArgs = esc(JSON.stringify([achvKey, subj.accent]));
+  // 3번째 인자 = 모달 제목용 표시 라벨. achvKey는 '_고'/'_cs'가 붙어 제목에 쓰면 단원명과 어긋난다.
+  const achvArgs = esc(JSON.stringify([achvKey, subj.accent, subj.name + ' · ' + d.name]));
   const achvBtn = ACHIEVEMENTS[achvKey]
     ? `<span class="achv-btn" role="button" tabindex="0" data-onclick="app:achv" data-onkeydown="app:achv" data-args="${achvArgs}">ABCDE 성취수준</span>`
     : '';
@@ -548,11 +551,11 @@ function doCopy(btn) {
     ? btn.dataset.code    
     : btn.dataset.code + ' ' + btn.dataset.text;  
   clipboardWriteText(text);  
-  const orig = btn.textContent;  
-  btn.textContent = '복사됨!'; btn.classList.add('ok'); announce('복사됨');  
-  btn.style.background = 'var(--ok)'; btn.style.borderColor = 'var(--ok)'; btn.style.color = '#fff';  
-  setTimeout(() => {    
-    btn.textContent = orig; btn.classList.remove('ok');    
+  const orig = btn.innerHTML;
+  btn.textContent = '복사됨!'; btn.classList.add('ok'); announce('복사됨');
+  btn.style.background = 'var(--ok)'; btn.style.borderColor = 'var(--ok)'; btn.style.color = '#fff';
+  setTimeout(() => {
+    btn.innerHTML = orig; btn.classList.remove('ok');
     btn.style.background = btn.style.borderColor = btn.style.color = '';  
   }, 1400);
 }
@@ -625,7 +628,7 @@ registerActions('click', {
   'app:copy':           function(el) { doCopy(el); },
   'app:toggleDomain':   function(el) { toggleDomain(el.dataset.key); },
   'app:copyDomain':     function(el, e, secId) { copyDomain(secId, el); },
-  'app:achv':           function(el, e, key, accent) { openAchvModal(key, accent); },
+  'app:achv':           function(el, e, key, accent, label) { openAchvModal(key, accent, label); },
   'app:toggleDomainExpl': function(el, e, id) { const b = document.getElementById(id); if (!b) return; const o = b.hidden; b.hidden = !o; el.setAttribute('aria-expanded', o ? 'true' : 'false'); el.classList.toggle('on', o); },
   'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvPicker(subjId, accent); },
   'app:focusSearch':    function() { focusSearch(); },
@@ -633,7 +636,7 @@ registerActions('click', {
   'app:downloadTxt':    function() { downloadTxt(); },
 });
 registerActions('keydown', {
-  'app:achv':       function(el, e, key, accent) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAchvModal(key, accent); } },
+  'app:achv':       function(el, e, key, accent, label) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAchvModal(key, accent, label); } },
   'app:copyDomain': function(el, e, secId) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyDomain(secId, el); } },
   'app:toggleDomainExpl': function(el, e, id) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const b = document.getElementById(id); if (!b) return; const o = b.hidden; b.hidden = !o; el.setAttribute('aria-expanded', o ? 'true' : 'false'); el.classList.toggle('on', o); } },
   // role="tablist" 키보드 규약: 좌우 화살표로 서브탭 이동 (data-args는 무시)
