@@ -42,7 +42,7 @@ assets/
   fonts/PretendardVariable.woff2  셀프호스팅 가변폰트, 서브셋본 443KB (CDN 사용 금지 — CSP에 외부 origin 없음)
                   서브셋 범위: KS X 1001 한글 2350 + ASCII + 호환 자모 + 사이트 전체 사용 문자 (2026-07-07 기준).
                   범위 밖 희귀 한글은 시스템 폰트로 폴백됨. 원본(2.0MB)·재서브셋 스크립트(subset.mjs, npm subset-font 필요):
-                  C:\Users\정벅\jungle-font-backup\ — data.js에 희귀 글자를 대량 추가했다면 재서브셋할 것.
+                  D:\Works\jungle-font-backup\ — data.js에 희귀 글자를 대량 추가했다면 재서브셋할 것.
 ```
 
 렌더링 방식: 해시 라우팅(`#home`, `#high`, `#overview:map`, `#evalplan:rubric` …) → `render()`가 `#main.innerHTML` 교체. 상태는 모듈 스코프 변수 + localStorage.

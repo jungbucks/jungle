@@ -9,7 +9,7 @@ import { dirname, join } from 'path';
 import vm from 'vm';
 
 const ROOT = dirname(dirname(fileURLToPath(import.meta.url)));
-const JUNGLE_DATA = 'C:/Users/정벅/jungle/assets/data.js';
+const JUNGLE_DATA = 'D:/Works/jungle/assets/data.js';
 
 /* 개념 태그 사전 — [태그명, 정규식]. 서술어(탐색한다 등) 오검출을 피해 명사구 위주로. */
 const TAG_RULES = [

@@ -5,7 +5,7 @@ GitHub에 push하기 **전에** 반드시 실행. 이번에 겪은 "사이트 �
 ## 실행
 
 ```powershell
-cd C:\Users\정벅\jungle
+cd D:\Works\jungle
 node tools/verify.mjs
 ```
 
