@@ -40,7 +40,7 @@
 
 ## 절대 규칙 (하위 모델이 자주 실수하는 곳)
 
-1. **모든 수정 후 `node tools/verify.mjs`** — ⚙️ **2026-07-17부터 git pre-commit 훅이 자동 강제**(원본 `tools/pre-commit` → `.git/hooks/`에 설치됨. 새 클론이면 복사 필요. `--no-verify` 우회 금지 — 5a69e3f가 verify 생략 커밋이었던 재발 방지). 5항목(import 정합성/문법/그래프 로드+init/SW 프리캐시 존재/**[5] 계산 단위 테스트 38건**) 통과 못 하면 배포 금지. 새 DOM API를 쓰면 verify.mjs의 DOM 스텁에도 추가. **계산 로직(gradecalc·chasi·evalplan)을 고치면 `tools/test.mjs`에 케이스를 먼저/함께 추가**할 것 — 실무 사고 방지선. 테스트용 export는 `__gcTest`/`__chasiTest`/`__evalTest`(앱은 render 함수만 씀). chasi는 Date+toISOString TZ 시프트가 있어 테스트는 TZ 불변값(총차시·주당시수)만 단언.
+1. **모든 수정 후 `node tools/verify.mjs`** — ⚙️ **2026-07-17부터 git pre-commit 훅이 자동 강제**(원본 `tools/pre-commit` → `.git/hooks/`에 설치됨. 새 클론이면 복사 필요. `--no-verify` 우회 금지 — 5a69e3f가 verify 생략 커밋이었던 재발 방지). 6항목(import 정합성/문법/그래프 로드+init/SW 프리캐시 존재/**[5] 계산 단위 테스트**/**[6] 렌더 불변식**) 통과 못 하면 배포 금지. 새 DOM API를 쓰면 verify.mjs의 DOM 스텁에도 추가. **계산 로직(gradecalc·chasi·evalplan)을 고치면 `tools/test.mjs`에 케이스를 먼저/함께 추가**할 것 — 실무 사고 방지선. 테스트용 export는 `__gcTest`/`__chasiTest`/`__evalTest`(앱은 render 함수만 씀). chasi는 Date+toISOString TZ 시프트가 있어 테스트는 TZ 불변값(총차시·주당시수)만 단언.
 2. **배포 묶음마다 `sw.js`의 `CACHE = 'jungle-vNN'` +1** (한 묶음이면 한 번만).
 3. **파일 추가/이름변경 시 두 곳 동시 갱신**: `sw.js`의 ASSETS 배열 + `index.html`의 modulepreload 목록. 빠뜨리면 verify가 잡거나 로딩 워터폴 부활.
 4. **ACHIEVEMENTS 키 접미사 체계**: 고등 `_고`, 정보과학 `_cs`(utils.js `cid` 헬퍼가 `domainName+'_고'/'_cs'` 생성, 현재 line 252). 새 과목 추가 시 **키 충돌부터 확인**. 데이터는 data.js.
@@ -52,6 +52,7 @@
 10. **브랜드**: 'JunGLE'(Jun 소문자+GLE 대문자)·잎 로고 = `--brand` 딥그린. 구글 패러디(무지개 4색·"행운을 믿어요") 복원 금지. 새 아이콘은 이모지 대신 stroke SVG(lucide 계열).
 11. **용어**: 정보교과서에 검정교과서 없음 → "인정교과서"가 올바름.
 12. **파일 임의 통합/재구성 금지.** 위 매핑의 분리 기준(도구 1개 = 파일 1개, 공용은 utils/state)을 따라 배치. app.js·evalplan.js는 상태 결합이 깊어 더 쪼개지 말 것.
+13. **결함을 고치면 그 결함을 잡았을 규칙을 함께 추가한다** → `tools/invariants.mjs`. 규칙에는 한글 `왜`와 **일부러 깨진 `가짜` 화면**을 반드시 붙인다(가짜가 없으면 규칙이 죽어도 알 수 없다). 화면 종류를 새로 만들면 `tools/render.mjs`의 `EXPECTED_MIN`에 최소 장수를 등록한다. 이 순환이 없으면 규칙 수는 첫날 이후 늘지 않는다.
 
 ## 작업 절차 (모든 기능 추가 시)
 

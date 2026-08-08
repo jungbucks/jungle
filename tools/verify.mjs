@@ -9,6 +9,8 @@
 //   [3] 전체 그래프 로드 + init 실행 — node --check가 못 잡는 런타임 초기화 오류
 //   [4] 서비스워커 프리캐시 목록의 파일 실제 존재 여부
 //   [5] 계산 로직 단위 테스트 — gradecalc·chasi·evalplan 회귀 (tools/test.mjs)
+//   [6] 렌더 불변식 — 화면을 데이터 조합마다 렌더해 규칙 검사 (tools/render.mjs + invariants.mjs)
+//   [7] 외부 링크 생존 — --links 플래그 시에만
 // ============================================================
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -138,10 +140,25 @@ try {
   fail('test.mjs 실행 실패 — ' + (e && e.message ? e.message : e));
 }
 
-// ── [6] 외부 링크 생존 (--links 플래그 시에만) ──────────────
+// ── [6] 렌더 불변식 ─────────────────────────────────────────
+//  계산이 아니라 "화면에 무엇이 찍히는가"를 지킨다. 규칙은 tools/invariants.mjs.
+head('[6] 렌더 불변식 (화면 카탈로그 × 규칙)');
+try {
+  const { renderAll } = await import(pathToFileURL(join(root, 'tools', 'render.mjs')).href);
+  const { runInvariants } = await import(pathToFileURL(join(root, 'tools', 'invariants.mjs')).href);
+  const screens = await renderAll();
+  const r = runInvariants(screens);
+  r.selfFails.forEach(m => fail('규칙 자체 검증 — ' + m));
+  r.violations.forEach(m => fail(m));
+  if (!r.selfFails.length && !r.violations.length) ok(`화면 ${r.checked}장 × 규칙 ${r.rules}개 — 위반 없음`);
+} catch (e) {
+  fail('렌더 불변식 실행 실패 — ' + (e && e.stack ? e.stack.split('\n').slice(0, 3).join(' | ') : e));
+}
+
+// ── [7] 외부 링크 생존 (--links 플래그 시에만) ──────────────
 //  네트워크 의존이라 기본 게이트(pre-commit)에서 제외. 릴리스 전 `node tools/verify.mjs --links`.
 if (process.argv.includes('--links')) {
-  head('[6] 외부 링크 생존 (--links)');
+  head('[7] 외부 링크 생존 (--links)');
   try {
     const { checkLinks } = await import(pathToFileURL(join(root, 'tools', 'linkcheck.mjs')).href);
     const r = await checkLinks();

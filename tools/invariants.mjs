@@ -79,11 +79,15 @@ export function runInvariants(screens) {
     const fake = { kind: r.대상, id: `가짜/${r.id}`, ...r.가짜 };
     if (!r.검사(fake)) selfFails.push(`${r.id}: 가짜 화면을 못 잡았다 — 규칙이 죽었다`);
 
+    // 규칙이 실제로 몇 장에 걸렸는지 센다. 0장이면 "위반 없음"이 아니라 "검사를 안 한 것"이다.
+    let matched = 0;
     for (const s of screens) {
       if (s.kind !== r.대상) continue;
+      matched++;
       const why = r.검사(s);
       if (why) violations.push(`[${r.id}] ${s.id} — ${why}\n      ↳ ${r.왜}`);
     }
+    if (matched === 0) selfFails.push(`${r.id}: 대상 '${r.대상}' 에 걸린 화면이 0장 — 대상 철자가 render.mjs의 kind와 다를 수 있다`);
   }
   return { checked: screens.length, rules: RULES.filter(r => !r.보류).length, violations, selfFails };
 }
