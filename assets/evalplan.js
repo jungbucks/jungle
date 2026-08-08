@@ -426,7 +426,7 @@ export {
   evalReset, evalOpenPreview, evalClosePreview
 };
 // 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어. 앱 렌더는 위 함수만 사용.
-export const __evalTest = { ratioSum: evalRatioSum, essayRatio: evalEssayRatio, distribute: evalDistribute };
+export const __evalTest = { ratioSum: evalRatioSum, essayRatio: evalEssayRatio, distribute: evalDistribute, previewTableHtml: evalPreviewTableHtml };
 // index.html 정적 모달 버튼(app.js bindStaticHandlers)이 참조 — 유지
 window.evalClosePreview = evalClosePreview;
 window.evalCopyPreviewTable = evalCopyPreviewTable;

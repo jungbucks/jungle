@@ -13,6 +13,19 @@ import { renderAll, checkCounts } from './render.mjs';
 
 const 제목 = s => (s.html.match(/id="achvModalTitle"[^>]*>([^<]*)</) || [, ''])[1];
 
+// 평가계획 표: 라벨 칸은 배경색으로 구분된다(labelStyle에 background:var(--g50)).
+// 나머지가 데이터 칸이며, 한 행의 데이터 칸은 정렬이 서로 같아야 한다.
+const 행별정렬 = html => {
+  const out = [];
+  for (const row of html.match(/<tr>[\s\S]*?<\/tr>/g) || []) {
+    const tds = [...row.matchAll(/<td\s+style="([^"]*)"/g)].map(m => m[1]);
+    const 데이터칸 = tds.filter(st => !st.includes('background:var(--g50)'));
+    if (데이터칸.length < 2) continue;
+    out.push(데이터칸.map(st => (st.match(/text-align:\s*([a-z]+)/) || [, '(없음)'])[1]));
+  }
+  return out;
+};
+
 export const RULES = [
   {
     id: 'achv-title-no-internal-key',
@@ -34,6 +47,21 @@ export const RULES = [
       return t.includes(s.meta.단원) ? null : `제목 "${t}" 이 단원명 "${s.meta.단원}" 을 담지 않는다`;
     },
     가짜: { html: '<span id="achvModalTitle">📊 알고리즘 — ABCDE 성취수준</span>', meta: { 단원: '데이터' } },
+  },
+  {
+    id: 'table-row-align-consistent',
+    왜: '한 행에서 어떤 칸만 정렬이 다르면 표가 어긋나 보인다. 2026-08-07 평가계획 표에서 정기시험 칸만 좌측이었다.',
+    대상: 'evalPreview',
+    검사: s => {
+      for (const aligns of 행별정렬(s.html)) {
+        const uniq = [...new Set(aligns)];
+        if (uniq.length > 1) return `한 행의 데이터 칸 정렬이 섞였다: ${aligns.join(' / ')}`;
+      }
+      return null;
+    },
+    가짜: { html: '<tr><td style="background:var(--g50)">영역 만점</td>' +
+                  '<td style="padding:10px">선택형 70점</td>' +
+                  '<td style="padding:10px;text-align:center">30%</td></tr>', meta: {} },
   },
 ];
 
