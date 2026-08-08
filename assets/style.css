@@ -179,6 +179,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .cbtn:hover:not(.ok){background:var(--accent,var(--g400));border-color:var(--accent,var(--g400));color:#fff}
 .cbtn.sm{font-size:12px;padding:4px 9px;color:var(--adark,var(--g600));border-color:var(--alight,var(--g200));min-height:36px}
 .cbtn.ok{background:var(--ok)!important;color:#fff!important;border-color:var(--ok)!important}
+.cbtn-ico{display:none;width:16px;height:16px;flex-shrink:0}   /* 데스크톱: 숨김(라벨만). 모바일서만 노출 */
 
 /* NO RESULTS */
 .no-res{text-align:center;padding:64px 20px;color:var(--g500)}
@@ -1149,12 +1150,21 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
   .home-shortcuts{grid-template-columns:repeat(2,1fr)}
   .home-card-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
   .std-card{padding:11px 14px;gap:9px}
-  .card-btns{flex-wrap:wrap;justify-content:flex-end}
-  .cbtn{padding:6px 12px;font-size:13px}
-  .cbtn.sm{padding:5px 10px;font-size:13px}
+  /* 성취기준 검색 — 모바일 반응형 (데스크톱 불변) */
+  /* ④ 항목 버튼: 텍스트 라벨→아이콘 (정사각 터치타깃), 복사 피드백 시 폭 확장 */
+  .card-btns{gap:6px;align-items:center}
+  .cbtn,.cbtn.sm{padding:0;width:38px;height:38px;justify-content:center}
+  .cbtn-ico{display:inline-flex;width:18px;height:18px}
+  .cbtn-label{display:none}
+  .cbtn.ok{width:auto;padding:0 10px}
+  /* ② 필터 태그: 줄바꿈 시 상하 여백 8~12px */
+  .domain-filter{gap:10px 8px}
+  /* ③ 카테고리명 세로 깨짐 방지: 이름줄이 가로 전체 → 우측 버튼은 아래로, 단어 단위 줄바꿈 */
+  .domain-left{flex:1 1 100%;min-width:0}
+  .domain-name{white-space:normal;word-break:keep-all}
   .chasi-exc-form{flex-direction:column}
   .chasi-exc-label-input,.chasi-exc-date-input{min-width:0;width:100%}
-  .domain-header{padding:11px 14px}
+  .domain-header{padding:11px 14px;flex-wrap:wrap;row-gap:8px;column-gap:8px;justify-content:flex-start}
   .panel-header{flex-wrap:wrap}
   .sim-palette-title{flex-wrap:wrap}
   .sim-palette-hint{width:100%;white-space:normal}
