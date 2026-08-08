@@ -36,7 +36,7 @@
 | 데이터 전역 브리지 + SW 등록 | `assets/boot.js` |
 | 스타일 전체 | `assets/style.css` |
 | 캐시 전략·CSP·정적 셸 | `sw.js` / `index.html` |
-| 배포 전 검증기 | `tools/verify.mjs`(정적 4) + `tools/test.mjs`(계산 단위 테스트, verify [5]가 호출) |
+| 배포 전 검증기 | `tools/verify.mjs`([1]~[4] 정적 + [5]·[6] 호출) + `tools/test.mjs`(계산 단위 테스트, verify [5]가 호출) + `tools/render.mjs`(화면 카탈로그) + `tools/invariants.mjs`(렌더 불변식 규칙, verify [6]이 호출) |
 
 ## 절대 규칙 (하위 모델이 자주 실수하는 곳)
 
@@ -52,7 +52,7 @@
 10. **브랜드**: 'JunGLE'(Jun 소문자+GLE 대문자)·잎 로고 = `--brand` 딥그린. 구글 패러디(무지개 4색·"행운을 믿어요") 복원 금지. 새 아이콘은 이모지 대신 stroke SVG(lucide 계열).
 11. **용어**: 정보교과서에 검정교과서 없음 → "인정교과서"가 올바름.
 12. **파일 임의 통합/재구성 금지.** 위 매핑의 분리 기준(도구 1개 = 파일 1개, 공용은 utils/state)을 따라 배치. app.js·evalplan.js는 상태 결합이 깊어 더 쪼개지 말 것.
-13. **결함을 고치면 그 결함을 잡았을 규칙을 함께 추가한다** → `tools/invariants.mjs`. 규칙에는 한글 `왜`와 **일부러 깨진 `가짜` 화면**을 반드시 붙인다(가짜가 없으면 규칙이 죽어도 알 수 없다). 화면 종류를 새로 만들면 `tools/render.mjs`의 `EXPECTED_MIN`에 최소 장수를 등록한다. 이 순환이 없으면 규칙 수는 첫날 이후 늘지 않는다.
+13. **결함을 고치면 그 결함을 잡았을 규칙을 함께 추가한다** → `tools/invariants.mjs`. 규칙에는 한글 `왜`와 **일부러 깨진 `가짜` 화면**을 반드시 붙인다(가짜가 없으면 규칙이 죽어도 알 수 없다). 화면 종류를 새로 만들면 `tools/render.mjs`의 `EXPECTED_MIN`에 최소 장수를 등록한다. 이 순환이 없으면 규칙 수는 첫날 이후 늘지 않는다. ⚠️ **한계**: 이 하네스는 아직 렌더 함수를 *부르는 쪽*(`app.js`의 `data-args`/호출부 표현식)까지는 못 지킨다 — `render.mjs`가 그 표현식을 베껴 직접 넘기는 1단계 구조라, 호출부 자체가 깨지는 재발은 2단계 `domainHeader`가 렌더할 때까지 못 잡는다(상세: `docs/superpowers/specs/2026-08-08-update-workflow-design.md`).
 
 ## 작업 절차 (모든 기능 추가 시)
 

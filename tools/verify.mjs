@@ -148,6 +148,7 @@ try {
   const { runInvariants } = await import(pathToFileURL(join(root, 'tools', 'invariants.mjs')).href);
   const screens = await renderAll();
   const r = runInvariants(screens);
+  r.보류목록.forEach(b => console.log(`   \x1b[33m⏸\x1b[0m [보류] ${b.id} — ${b.이유}`));
   r.selfFails.forEach(m => fail('규칙 자체 검증 — ' + m));
   r.violations.forEach(m => fail(m));
   if (!r.selfFails.length && !r.violations.length) ok(`화면 ${r.checked}장 × 규칙 ${r.rules}개 — 위반 없음`);
