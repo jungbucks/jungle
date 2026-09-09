@@ -1714,3 +1714,17 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 /* --- 성적 산출기 = 계산기 가족색 teal (U5 ⓒ, 2026-07-09) — 공용 eval-* 컴포넌트만 gc-wrap 범위로 덮음. 다크 규칙(위)보다 뒤에 있어야 양 테마 모두 적용 --- */
 .gc-wrap .eval-toggle.active{background:var(--teal);color:#fff}
 .gc-wrap .eval-number:focus{border-color:var(--teal)}
+
+/* 교과서: 첫 목록까지의 탐색 영역을 간결하게 유지 */
+#textbookPage .ov-head{padding:0 0 16px}
+#textbookPage .msub-tabbar{margin-bottom:16px}
+#textbookPage .tbk-chips{margin-bottom:16px}
+#textbookPage .tbk-searchbar{margin-bottom:20px}
+#textbookPage .tbk-section-heading{margin-bottom:16px}
+@media(max-width:600px){
+ #textbookPage .tbk-chips{flex-wrap:nowrap;overflow-x:auto;padding-bottom:8px;gap:8px}
+ #textbookPage .tbk-chip{flex-shrink:0}
+ #textbookPage .tbk-searchbar{margin-bottom:16px}
+ #textbookPage .tbk-searchbar>span{display:none}
+ #textbookPage .ov-sub{font-size:13px}
+}

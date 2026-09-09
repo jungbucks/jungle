@@ -168,6 +168,33 @@ const GOSIWA_BOOKS = {
   ],
 };
 
+// 페이지를 떠나도 현재 탐색은 이 탭 안에서 유지한다.
+let textbookView = null;
+function saveTextbookView() {
+  const root = document.getElementById('textbookPage');
+  if (!root) return;
+  const selected = root.querySelector('.tbk-chip[aria-pressed="true"]');
+  if (!selected) return;
+  textbookView = {
+    subject: selected.dataset.section,
+    query: root.querySelector('#tbkSearch').value,
+    panel: document.getElementById('tbPanel2').style.display === 'none' ? 1 : 2,
+    gosiwa: root.querySelector('.gsw-filter').value,
+    expanded: [...root.querySelectorAll('.gsw-group')].map(g => g.open),
+    scroll: window.scrollY,
+  };
+}
+function restoreTextbookView() {
+  if (!textbookView) return;
+  document.getElementById('tbkSearch').value = textbookView.query;
+  tbkJump(textbookView.subject);
+  tbSwitch(textbookView.panel);
+  document.querySelector('#textbookPage .gsw-filter').value = textbookView.gosiwa;
+  gosiwaFilterInput(textbookView.gosiwa);
+  document.querySelectorAll('#textbookPage .gsw-group').forEach((g, i) => { g.open = textbookView.expanded[i]; });
+}
+function textbookScroll() { return textbookView?.scroll || 0; }
+
 function tbSwitch(n) {
   document.getElementById('tbPanel1').style.display = n === 1 ? '' : 'none';
   document.getElementById('tbPanel2').style.display = n === 2 ? '' : 'none';
@@ -281,12 +308,11 @@ function renderTextbook() {
     </div>`;
   }
 
-  return `<div style="max-width:1200px;margin:0 auto">
+  return `<div id="textbookPage" style="max-width:1200px;margin:0 auto">
   <div class="msub-wrap">
   <div class="ov-head">
-    <span class="ov-eyebrow" style="color:var(--book);background:var(--book-soft)">교과서 자료실</span>
     <h2 class="ov-h2">정보교과서</h2>
-    <p class="ov-sub">2022 개정 교육과정 인정 교과서와 시도교육청 고시외 과목 목록</p>
+    <p class="ov-sub">2022 개정 교육과정 교과서·고시외 과목</p>
   </div>
   <div class="msub-tabbar">
     <button class="msub-tab active" data-onclick="tb:switch" data-args="[1]">중·고 인정 교과서</button>
@@ -306,7 +332,7 @@ function renderTextbook() {
   </div></div></div>`;
 }
 
-export { renderTextbook };
+export { renderTextbook, saveTextbookView, restoreTextbookView, textbookScroll };
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체) ──
 registerActions('click', {

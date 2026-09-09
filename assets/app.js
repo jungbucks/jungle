@@ -9,7 +9,7 @@ import { renderRegExam } from './regexam.js';
 import { renderCodeVar } from './codevar.js';
 import { renderGradeCalc } from './gradecalc.js';
 import { renderAiIdea } from './aiidea.js';
-import { renderTextbook } from './textbook.js';
+import { renderTextbook, saveTextbookView, restoreTextbookView, textbookScroll } from './textbook.js';
 import { renderAppStore } from './appstore.js';
 import { renderFav, renderSWRec } from './resources.js';
 import { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOverview } from './overview.js';
@@ -455,10 +455,11 @@ function renderWithFade() {
   void el.offsetWidth;
   render();
   el.classList.add('page-enter');
-  window.scrollTo(0, 0); // 페이지 전환은 항상 최상단부터 (모든 내비게이션이 이 함수를 지나감)
+  window.scrollTo({ top: !homeMode && S().type === 'textbook' ? textbookScroll() : 0, behavior: 'instant' });
 }
 
 function render() {
+  saveTextbookView();
   evalHideSummary();
   resetAccent(); // 과목 페이지의 accent 오버라이드 복원 — 과목 목록 렌더 시에만 setAccent로 다시 칠함
   if (homeMode) { document.getElementById('main').innerHTML = renderHome(); return; }
@@ -476,7 +477,7 @@ function render() {
   }
   if (s.type === 'fav')       { document.getElementById('main').innerHTML = renderFav(); return; }
   if (s.type === 'swrec')      { document.getElementById('main').innerHTML = renderSWRec(); return; }
-  if (s.type === 'textbook')   { document.getElementById('main').innerHTML = renderTextbook(); return; }
+  if (s.type === 'textbook')   { document.getElementById('main').innerHTML = renderTextbook(); restoreTextbookView(); return; }
   if (s.type === 'appstore')   { document.getElementById('main').innerHTML = renderAppStore(); return; }
   if (s.type === 'chasi')      { document.getElementById('main').innerHTML = renderChasi(); return; }
   if (s.type === 'evalplan') {
