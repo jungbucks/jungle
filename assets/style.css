@@ -1740,3 +1740,15 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 #textbookPage .tbk-section{background:var(--surface);border:1px solid var(--g200);border-radius:12px;padding:24px}
 [data-theme="dark"] #textbookPage .tbk-section{background:var(--g100)}
 @media(max-width:600px){#textbookPage .tbk-section{padding:16px}}
+
+/* 홈: 검색 예시와 접힌 사용 안내 */
+.home-glrow{align-items:center;gap:8px;padding:0 16px}
+.home-example-label{font-size:13px;color:var(--g600)}
+.home-example{padding:10px 12px;min-height:44px}
+.home-help{max-width:860px;margin:16px auto 0;padding:12px 16px;background:var(--book-soft);border:1px solid var(--book-line);border-radius:10px}
+.home-help summary{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;font-size:14px;color:var(--g700);line-height:1.6;list-style:none}
+.home-help summary::-webkit-details-marker{display:none}
+.home-help-link{white-space:nowrap;color:var(--book-dark);font-weight:600;text-decoration:underline;text-underline-offset:3px}
+.home-help .onboard-list{margin-top:12px;font-size:14px;color:var(--g700)}
+.home-help summary:focus-visible,.home-example:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+@media(max-width:600px){.home-help summary{flex-wrap:wrap;gap:4px}.home-glrow>[data-onclick="app:lucky"]{flex-basis:auto}}

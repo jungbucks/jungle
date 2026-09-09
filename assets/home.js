@@ -36,17 +36,7 @@ export function renderHome() {
       <span class="home-card-desc">${esc(t.desc)}</span>
     </button>`
   ).join('');
-  const isFirstVisit = (() => { try { return !localStorage.getItem('jungle_visited'); } catch(e) { return false; } })();
-  const onboardHtml = isFirstVisit ? `
-    <div class="onboard-banner" id="onboardBanner">
-      <button class="onboard-close" data-onclick="app:dismissOnboard" aria-label="닫기">✕</button>
-      <div class="onboard-title">👋 처음 오셨나요?</div>
-      <ul class="onboard-list">
-        <li>상단 검색창에서 전 과목 성취기준을 한번에 검색할 수 있어요</li>
-        <li>성취기준 버튼을 누르면 코드·텍스트를 바로 복사할 수 있어요</li>
-        <li>수업·평가 도구에서 수업계획서·루브릭을 자동으로 만들 수 있어요</li>
-      </ul>
-    </div>` : '';
+  const onboardHtml = `<details class="home-help" id="onboardBanner"><summary><span>찾은 성취기준은 바로 복사하거나 담을 수 있어요.</span><span class="home-help-link">사용법 보기</span></summary><ul class="onboard-list"><li>검색창에 키워드나 코드를 입력하면 전 과목에서 찾아요.</li><li>결과의 복사 버튼을 누르거나 체크해서 여러 기준을 담아 보세요.</li><li>담은 기준은 수업·평가 계획에 활용할 수 있어요.</li></ul></details>`;
   const evalIdx = SUBJECTS.findIndex(s => s.id === 'evalplan');
   const textbookIdx = SUBJECTS.findIndex(s => s.id === 'textbook');
   const ICONS = {
@@ -57,7 +47,7 @@ export function renderHome() {
   };
   return `
   <div class="home-glrow">
-    <button class="home-gl-btn" data-onclick="app:focusSearch">성취기준 검색</button>
+    <span class="home-example-label">예시</span><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="알고리즘">알고리즘</button><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="인공지능">인공지능</button><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="12정01-01">12정01-01</button>
     <button class="home-gl-btn" data-onclick="app:lucky"><svg class="gl-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M16 8h.01"/><path d="M8 8h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M12 12h.01"/></svg> 랜덤 성취기준</button>
   </div>
   <div class="home-tagline">정보교사를 위한 <strong>올인원 플랫폼</strong></div>
@@ -82,13 +72,14 @@ export function renderHome() {
   </div>
   <div class="home-nav">
     <div class="home-nav-section">
-      <div class="home-nav-label">교육과정</div>
-      <div class="home-card-grid">${ovCards}</div>
-    </div>
-    <div class="home-nav-section">
       <div class="home-nav-label">성취기준</div>
       <div class="home-card-grid">${['middle','high','ai','ds','sw','cs','prog'].map(subCard).join('')}</div>
     </div>
+    <div class="home-nav-section">
+      <div class="home-nav-label">교육과정</div>
+      <div class="home-card-grid">${ovCards}</div>
+    </div>
+
     <div class="home-nav-section">
       <div class="home-nav-label">수업·평가 도구</div>
       <div class="home-card-grid">${['evalplan','textbook'].map(subCard).join('')}</div>

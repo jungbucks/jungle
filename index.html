@@ -84,10 +84,11 @@
   <!-- 정적 홈 셸: renderHome()과 동일 마크업으로 첫 페인트 — init의 render()가 innerHTML로 교체.
        버튼은 JS 로드 전까지 동작하지 않는 시각용 자리이며(핸들러 없음), 데이터 필요한 카드 그리드만 스켈레톤 -->
   <div class="home-glrow">
-    <button class="home-gl-btn">성취기준 검색</button>
+    <span class="home-example-label">예시</span><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="알고리즘">알고리즘</button><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="인공지능">인공지능</button><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="12정01-01">12정01-01</button>
     <button class="home-gl-btn"><svg class="gl-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M16 8h.01"/><path d="M8 8h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M12 12h.01"/></svg> 랜덤 성취기준</button>
   </div>
   <div class="home-tagline">정보교사를 위한 <strong>올인원 플랫폼</strong></div>
+  <details class="home-help" id="onboardBanner"><summary><span>찾은 성취기준은 바로 복사하거나 담을 수 있어요.</span><span class="home-help-link">사용법 보기</span></summary><ul class="onboard-list"><li>검색창에 키워드나 코드를 입력하면 전 과목에서 찾아요.</li><li>결과의 복사 버튼을 누르거나 체크해서 여러 기준을 담아 보세요.</li><li>담은 기준은 수업·평가 계획에 활용할 수 있어요.</li></ul></details>
   <div class="home-shortcuts home-shortcuts-below">
     <button class="home-sc-card">
       <span class="home-sc-ico" style="--sc-soft:var(--accent-light);--sc-color:var(--accent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
@@ -108,13 +109,14 @@
   </div>
   <div class="home-nav">
     <div class="home-nav-section">
-      <div class="home-nav-label">교육과정</div>
-      <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>
-    </div>
-    <div class="home-nav-section">
       <div class="home-nav-label">성취기준</div>
       <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>
     </div>
+    <div class="home-nav-section">
+      <div class="home-nav-label">교육과정</div>
+      <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>
+    </div>
+
     <div class="home-nav-section">
       <div class="home-nav-label">수업·평가 도구</div>
       <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>

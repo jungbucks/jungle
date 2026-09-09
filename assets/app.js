@@ -634,6 +634,7 @@ registerActions('click', {
   'app:toggleDomainExpl': function(el, e, id) { const b = document.getElementById(id); if (!b) return; const o = b.hidden; b.hidden = !o; el.setAttribute('aria-expanded', o ? 'true' : 'false'); el.classList.toggle('on', o); },
   'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvPicker(subjId, accent); },
   'app:focusSearch':    function() { focusSearch(); },
+  'app:exampleSearch': function(el) { onHomeSearch(el.dataset.query); },
   'app:lucky':          function() { luckyJump(); },
   'app:downloadTxt':    function() { downloadTxt(); },
 });
