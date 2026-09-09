@@ -15,6 +15,7 @@
 import { readdirSync, readFileSync, existsSync } from 'node:fs';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { dirname, join } from 'node:path';
+import { execFileSync } from 'node:child_process';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');   // jungle/
 const assetsDir = join(root, 'assets');
@@ -138,6 +139,15 @@ try {
   else r.fails.forEach(f => fail('단위테스트 — ' + f));
 } catch (e) {
   fail('test.mjs 실행 실패 — ' + (e && e.message ? e.message : e));
+}
+
+// 브라우저 경계 스텁과 상태를 격리한 별도 프로세스에서 CSV·복사·선택 흐름 검사.
+try {
+  const result = execFileSync(process.execPath, [join(root, 'tools', 'workflow-tests.mjs')],
+    { encoding: 'utf8', timeout: 30000, windowsHide: true, stdio: ['ignore', 'pipe', 'pipe'] });
+  ok(result.trim());
+} catch (e) {
+  fail('사용자 흐름 회귀 — ' + ((e.stderr || '').trim() || e.message));
 }
 
 // ── [6] 렌더 불변식 ─────────────────────────────────────────

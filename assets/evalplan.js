@@ -254,6 +254,7 @@ function evalOpenModal(i) {
   openStdPicker({
     title: '성취기준 연결',
     subjectIdx: evalState.subjectIdx,
+    lockSubject: true,
     preselected: item.linkedCodes,
     selectAll: true,
     onConfirm: (codes) => {
@@ -324,13 +325,13 @@ function evalPreviewTableHtml() {
     ${perfItems.map(it => `<th ${thStyle('color:#7C3AED;background:#F5F3FF')}>${esc(it.name)}</th>`).join('')}  
   </tr>`;  
   // Row: 반영비율  
-  let rows = `<tr>    
+  let rows = `<tr data-eval-row="ratio">
     <td ${labelStyle}>반영비율</td>    
     ${items.map(it => `<td ${tdStyle('text-align:center')}><strong>${it.ratio}%</strong></td>`).join('')}    
-    <td ${tdStyle('text-align:center;font-weight:700')}>100%</td>  
+    <td ${tdStyle('text-align:center;font-weight:700')}>${evalRatioSum(items)}%</td>
   </tr>`;  
   // Row: 영역 만점(반영비율)  
-  rows += `<tr>    
+  rows += `<tr data-eval-row="score">
     <td ${labelStyle}>영역 만점<br>(반영비율)</td>    
     ${examItems.map(it => {      
       const sc = Number(it.scoreChoice)||0, se = Number(it.scoreEssay)||0;      
@@ -340,10 +341,10 @@ function evalPreviewTableHtml() {
       return `<td ${tdStyle('line-height:1.8;text-align:center')}>선택형 ${sc}점(${scPct}%)<br>논술형 ${se}점(${sePct}%)</td>`;
     }).join('')}    
     ${perfItems.map(it => `<td ${tdStyle('text-align:center')}>${it.ratio}%</td>`).join('')}    
-    <td ${tdStyle('text-align:center;font-weight:700')}>100%</td>  
+    <td ${tdStyle('text-align:center;font-weight:700')}>${evalRatioSum(items)}%</td>
   </tr>`;  
   // Row: 논술형 평가 반영비율  
-  rows += `<tr>    
+  rows += `<tr data-eval-row="essay">
     <td ${labelStyle}>논술형 평가<br>반영비율</td>    
     ${examItems.map(it => `<td ${tdStyle('text-align:center')}>${essayContrib(it).toFixed(1)}%</td>`).join('')}    
     ${perfItems.map(it => it.isEssay      
@@ -352,7 +353,7 @@ function evalPreviewTableHtml() {
     <td ${tdStyle('text-align:center;font-weight:700')}>${totalEssay.toFixed(1)}%</td>  
   </tr>`;  
   // Row: 성취기준  
-  rows += `<tr>    
+  rows += `<tr data-eval-row="standards">
     <td ${labelStyle}>성취기준</td>    
     ${items.map(it => `<td ${tdStyle()}>` +      
       (it.linkedCodes.length        
@@ -362,7 +363,7 @@ function evalPreviewTableHtml() {
     <td ${tdStyle()}></td>  
   </tr>`;  
   // Row: 평가 요소  
-  rows += `<tr>    
+  rows += `<tr data-eval-row="elements">
     <td ${labelStyle}>평가 요소</td>    
     ${items.map(it => {      
       const txt = (it.elements||'').trim();      
@@ -371,7 +372,7 @@ function evalPreviewTableHtml() {
     <td ${tdStyle()}></td>  
   </tr>`;  
   // Row: 평가 시기  
-  rows += `<tr>    
+  rows += `<tr data-eval-row="period">
     <td ${labelStyle}>평가 시기</td>    
     ${items.map(it => {      
       const txt = (it.period||'').trim();      
@@ -398,7 +399,7 @@ function evalCopyPreviewTable() {
                    + perfItems.reduce((s,it) => s+(it.isEssay?(Number(it.ratio)||0):0), 0);  
   const lines = [    
     ['내용', ...items.map(it => it.name), '합계'].join('\t'),    
-    ['반영비율', ...items.map(it => it.ratio+'%'), '100%'].join('\t'),    
+    ['반영비율', ...items.map(it => it.ratio+'%'), evalRatioSum(items)+'%'].join('\t'),
     ['영역 만점(반영비율)', ...items.map(it => {      
       if (it.type === 'exam') {        
         const sc=Number(it.scoreChoice)||0, se=Number(it.scoreEssay)||0;        
@@ -407,7 +408,7 @@ function evalCopyPreviewTable() {
         const seP = tot>0?(se/tot*ratio).toFixed(1):0;        
         return `선택형 ${sc}점(${scP}%) / 논술형 ${se}점(${seP}%)`;      
       }      
-      return it.ratio+'%';    }), '100%'].join('\t'),    
+      return it.ratio+'%';    }), evalRatioSum(items)+'%'].join('\t'),
     ['논술형 평가 반영비율', ...items.map(it => it.type==='exam' ? essayContrib(it).toFixed(1)+'%' : (it.isEssay ? (Number(it.ratio)||0)+'%' : '-')), totalEssay.toFixed(1)+'%'].join('\t'),    
     ['성취기준', ...items.map(it => it.linkedCodes.join(', ')||'-'), ''].join('\t'),    
     ['평가 요소', ...items.map(it => (it.elements||'').replace(/\n/g,' / ')||'-'), ''].join('\t'),    

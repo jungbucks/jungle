@@ -123,6 +123,37 @@ export function runGradeTests() {
     eq('비율 100% 반영', r.rows[0].total, 88);
   }
 
+  // ── ⑦ CSV 왕복: 우리가 내려준 양식을 그대로 다시 올려도 헤더가 데이터로 안 새는가 ──
+  //    2026-08-13 실사용 결함: parseFloat('1차점수') 가 1 이라 헤더가 1번 학생으로 들어갔다.
+  {
+    const { parseCsv } = __gcTest;
+    const 양식헤더 = '번호,1차점수,2차점수,수행점수(만점=반영비율)';
+
+    const r1 = parseCsv(양식헤더 + '\r\n1,88,90,18\r\n2,70,75,15\r\n');
+    eq('양식 헤더를 건너뛴다(행 수)', r1.length, 2);
+    eq('첫 행이 헤더가 아니라 1번 학생', r1[0].sid, '1');
+    eq('첫 행 점수가 문자가 아님', r1[0].s1, '88');
+
+    // BOM 이 붙어 내려가므로(gcDownloadCsv) BOM 포함본도 같아야 한다
+    const r2 = parseCsv('﻿' + 양식헤더 + '\r\n1,88,90,18\r\n');
+    eq('BOM 붙은 양식도 헤더 건너뜀', r2.length, 1);
+
+    // 점수를 아직 안 채운 첫 행을 헤더로 오인하면 안 된다
+    const r3 = parseCsv('1,,,\r\n2,80,80,10\r\n');
+    eq('빈 점수 첫 행은 데이터로 유지', r3.length, 2);
+    eq('빈 점수 첫 행의 번호 보존', r3[0].sid, '1');
+
+    // 헤더 없이 숫자만 올려도 첫 행이 살아야 한다
+    const r4 = parseCsv('1,88,90,18\r\n2,70,75,15\r\n');
+    eq('헤더 없는 CSV는 전부 데이터', r4.length, 2);
+    eq('헤더 없는 CSV 첫 행 보존', r4[0].s1, '88');
+
+    // 산출결과는 점수 입력 양식과 열 의미가 달라 오입력을 거부한다
+    let resultRejected = false;
+    try { parseCsv('번호,환산총점,등급\r\n1,88.5,2\r\n'); } catch (e) { resultRejected = /산출결과/.test(e.message); }
+    eq('결과 CSV를 점수 입력으로 오인하지 않음', resultRejected, true);
+  }
+
   // 상태 복원 (모듈 싱글턴 — 다른 검사에 영향 주지 않도록)
   state.students = snap.students; state.ratios = snap.ratios; state.tieMode = snap.tieMode;
   return { pass, fail: fails.length, fails };
@@ -130,8 +161,7 @@ export function runGradeTests() {
 
 // ============================================================
 //  chasi (차시 계산) — chasiCalc·chasiWeeklyAlerts
-//  ※ Date+toISOString의 TZ 시프트는 제외일·루프가 동일하게 적용돼
-//    total/주당시수는 TZ 불변. 테스트는 TZ 불변 값으로만 단언.
+//  ※ 월 경계·제외일의 시간대별 검증은 workflow-tests.mjs에서 추가 실행.
 //  (2026-01-05=월 … 01-09=금, 01-10=토, 01-11=일)
 // ============================================================
 export function runChasiTests() {

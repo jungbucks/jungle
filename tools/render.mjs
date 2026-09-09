@@ -129,7 +129,7 @@ export async function renderAll() {
       id: `evalPreview/${c.이름}`,
       kind: 'evalPreview',
       html: ep.__evalTest.previewTableHtml(),
-      meta: { 구성: c.이름 },
+      meta: { 구성: c.이름, dataColumns: c.items.length + 1 },
     });
   }
 

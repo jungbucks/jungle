@@ -99,6 +99,7 @@ function lpOpenModal(rowIdx) {
   openStdPicker({
     title: '성취기준 연결',
     subjectIdx: lessonState.subjectIdx,
+    lockSubject: true,
     preselected: row.linkedCodes,
     selectAll: true,
     highlightDomain: row.domain || '',
@@ -117,9 +118,9 @@ async function lpReset() {
 }
 function lpCopy() {  
   if (!lessonState.generated || !lessonState.rows.length) return;  
-  const header = ['월/주','단원명','성취기준','수업방법'].join('\t');  
+  const header = ['월/주','단원명','성취기준','수업방법','평가방법'].join('\t');
   const rows = lessonState.rows.map(r =>    
-    [r.monthWeek, r.domain, r.linkedCodes.join(', '), r.method].join('\t')  
+    [r.monthWeek, r.domain, r.linkedCodes.join(', '), r.method, r.evalMethod || ''].join('\t')
   );  
   navigator.clipboard.writeText([header,...rows].join('\n')).then(() => {    
     const btn = document.querySelector('.lp-copy-btn');    

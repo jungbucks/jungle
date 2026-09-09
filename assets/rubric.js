@@ -37,6 +37,7 @@ function rubricOpenModal() {
   openStdPicker({
     title: '성취기준 선택',
     subjectIdx: rubricState.subjectIdx,
+    lockSubject: true,
     preselected: rubricState.selectedCodes,
     selectAll: true,
     onConfirm: (codes) => {

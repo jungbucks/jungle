@@ -19,6 +19,11 @@ let chasiState = (() => {
 })();
 let chasiExcForm = { label: '', start: '', end: '' };
 
+// 로컬 달력 날짜를 UTC로 변환하지 않는다. 월 경계와 주별 제외일 판정에 같은 키를 쓴다.
+function chasiDateKey(d) {
+  return [d.getFullYear(), String(d.getMonth() + 1).padStart(2, '0'), String(d.getDate()).padStart(2, '0')].join('-');
+}
+
 // --- Chasi Calculator ---
 function chasiSave() { saveState('jungle_chasi', chasiState); }
 function chasiApplySemesterDefaults() {  
@@ -100,7 +105,7 @@ function chasiWeeklyAlerts() {
   const excludedMap = {}; // date → [label, ...]  
   exceptions.forEach(e => {    
     for (let d = new Date(e.start + 'T00:00:00'); d <= new Date(e.end + 'T00:00:00'); d.setDate(d.getDate() + 1)) {      
-      const ds = d.toISOString().slice(0, 10);      
+      const ds = chasiDateKey(d);
       if (!excludedMap[ds]) excludedMap[ds] = [];      
       if (!excludedMap[ds].includes(e.label)) excludedMap[ds].push(e.label);    
     }  
@@ -119,7 +124,7 @@ function chasiWeeklyAlerts() {
     for (let i = 0; i < 5; i++) { // 월=0 … 금=4      
       const day = new Date(mon);      
       day.setDate(mon.getDate() + i);      
-      const ds = day.toISOString().slice(0, 10);      
+      const ds = chasiDateKey(day);
       if (ds < startDate || ds > endDate) continue; // 학기 밖      
       const hrs = (days[i] || 0);      
       if (!hrs) continue;      
@@ -147,7 +152,7 @@ function chasiCalc() {
   const excluded = new Set();  
   exceptions.forEach(({ start, end }) => {    
     for (let d = new Date(start + 'T00:00:00'); d <= new Date(end + 'T00:00:00'); d.setDate(d.getDate() + 1))      
-      excluded.add(d.toISOString().slice(0, 10));  
+      excluded.add(chasiDateKey(d));
   });  
   const monthMap = {};  
   let total = 0;  
@@ -156,7 +161,7 @@ function chasiCalc() {
     if (dow === 0 || dow === 6) continue;    
     const hrs = days[dow - 1] || 0;    
     if (!hrs) continue;    
-    const ds = d.toISOString().slice(0, 10);    
+    const ds = chasiDateKey(d);
     if (excluded.has(ds)) continue;    
     total += hrs;    
     const mk = ds.slice(0, 7);    
@@ -190,7 +195,7 @@ function renderChasi() {
   const MN = {'01':'1월','02':'2월','03':'3월','04':'4월','05':'5월','06':'6월',               
               '07':'7월','08':'8월','09':'9월','10':'10월','11':'11월','12':'12월'};  
   const DAYS = ['월','화','수','목','금'];  
-  const wh = (cs.days || []).filter(Boolean).length;  
+  const wh = weeklyHours;
   const excSorted = [...cs.exceptions].sort((a,b) => a.start.localeCompare(b.start));  
   return `<div class="chasi-wrap">
     ${pageHead('수업/평가계획', '차시 계산기', '학사일정과 수업 요일로 학기 총 수업 차시를 계산합니다.')}

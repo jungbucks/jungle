@@ -237,10 +237,10 @@ function gcDownloadCsv(filename, lines) {
 
 function gcCsvDownload() {
   const src = gcActiveStudents().length ? gcActiveStudents() : gcState.students;
-  const body = src.map(st => [st.sid, st.s1, st.s2, st.sp]);
+  const body = src.map(st => [st.sid, st.s1, st.s2, st.sp, st.a1 ? 1 : 0, st.a2 ? 1 : 0]);
   // 예시 행: 데이터가 전혀 없을 때만 안내용 샘플 제공
-  const rows = body.length ? body : [['1', '', '', ''], ['2', '', '', '']];
-  gcDownloadCsv('내신성적_입력양식.csv', [['번호', '1차점수', '2차점수', '수행점수(만점=반영비율)'], ...rows]);
+  const rows = body.length ? body : [['1', '', '', '', 1, 1], ['2', '', '', '', 1, 1]];
+  gcDownloadCsv('내신성적_입력양식.csv', [['번호', '1차점수', '2차점수', '수행점수(만점=반영비율)', '1차응시', '2차응시'], ...rows]);
 }
 
 function gcResultLines() {
@@ -270,16 +270,44 @@ function gcCsvCell(v) {
 }
 
 function gcParseCsv(text) {
-  const clean = text.replace(/^﻿/, '');
-  const lines = clean.split(/\r\n|\n|\r/).filter(l => l.trim() !== '');
+  const lines = text.replace(/^﻿/, '').split(/\r\n|\n|\r/);
   const out = [];
+  let first = true, attendanceColumns = [];
+  const attendance = (value, lineNumber) => {
+    const v = String(value ?? '').trim().toLowerCase();
+    if (['', '1', 'true', '응시'].includes(v)) return true;
+    if (['0', 'false', '미응시'].includes(v)) return false;
+    throw new Error(lineNumber + '행: 응시 여부는 1(응시) 또는 0(미응시)으로 입력하세요.');
+  };
   lines.forEach((line, idx) => {
+    if (!line.trim()) return;
     const cells = gcSplitCsvLine(line);
-    // 헤더 행 건너뛰기: 첫 줄이고 2번째 칸이 숫자가 아니면 헤더로 간주
-    if (idx === 0 && cells.length > 1 && isNaN(parseFloat(cells[1]))) return;
+    if (first) {
+      first = false;
+      // 숫자로 시작하는 헤더와 실제 점수를 추측으로 구분하지 않는다.
+      const inputHeader = cells[0] === '번호' && cells[1] === '1차점수' &&
+        cells[2] === '2차점수' && /^수행점수/.test(cells[3] || '');
+      if (inputHeader) {
+        attendanceColumns = ['1차응시', '2차응시'].map(name => cells.indexOf(name));
+        return;
+      }
+      if (cells[0] === '순위' || (cells[0] === '번호' && /환산/.test(cells[1] || '')))
+        throw new Error('산출결과 CSV는 입력 양식이 아닙니다. CSV 양식 내려받기로 보관한 파일을 선택하세요.');
+    }
     const [sid = '', s1 = '', s2 = '', sp = ''] = cells;
-    if (sid.trim() === '' && s1.trim() === '' && s2.trim() === '' && sp.trim() === '') return;
-    out.push(gcNewStudent(sid.trim(), s1.trim(), s2.trim(), sp.trim()));
+    if ([sid, s1, s2, sp].every(v => v === '')) return;
+    if (cells.length < 4) throw new Error((idx + 1) + '행: 번호와 점수 3개 열이 필요합니다.');
+    [s1, s2, sp].forEach((v, i) => {
+      if (v !== '' && (!/^[+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?$/i.test(v) || !Number.isFinite(Number(v))))
+        throw new Error((idx + 1) + '행 ' + (i + 2) + '열: 점수는 숫자로 입력하세요.');
+    });
+    const st = gcNewStudent(sid, s1, s2, sp);
+    // 과거 4열 양식/헤더 없는 파일은 기본 응시. 추가 메모 열은 응시 열로 오인하지 않는다.
+    ['a1', 'a2'].forEach((key, i) => {
+      const column = attendanceColumns[i];
+      if (column >= 0) st[key] = attendance(cells[column], idx + 1);
+    });
+    out.push(st);
   });
   return out;
 }
@@ -312,7 +340,7 @@ function gcCsvUpload(file) {
       gcRerender();
       uiToast(`CSV에서 ${parsed.length}행을 불러왔습니다.`);
     } catch (e) {
-      uiToast('CSV 파일을 읽는 중 오류가 발생했습니다. 형식을 확인해 주세요.', { isErr: true });
+      uiToast(e.message || 'CSV 파일 형식을 확인해 주세요.', { isErr: true });
     }
   };
   reader.onerror = () => uiToast('파일을 읽지 못했습니다.', { isErr: true });
@@ -505,7 +533,7 @@ function renderGradeCalc() {
 
 export { renderGradeCalc };
 // 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어 참조. 앱은 renderGradeCalc만 사용.
-export const __gcTest = { state: gcState, compute: gcCompute, gradeCums: gcGradeCums, newStudent: gcNewStudent };
+export const __gcTest = { state: gcState, compute: gcCompute, gradeCums: gcGradeCums, newStudent: gcNewStudent, parseCsv: gcParseCsv };
 
 // ── 이벤트 위임 등록 ──
 registerActions('click', {

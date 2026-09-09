@@ -13,18 +13,35 @@ import { renderAll, checkCounts } from './render.mjs';
 
 const 제목 = s => (s.html.match(/id="achvModalTitle"[^>]*>([^<]*)</) || [, ''])[1];
 
-// 평가계획 표: 라벨 칸은 배경색으로 구분된다(labelStyle에 background:var(--g50)).
-// 나머지가 데이터 칸이며, 한 행의 데이터 칸은 정렬이 서로 같아야 한다.
-const 행별정렬 = html => {
-  const out = [];
-  for (const row of html.match(/<tr>[\s\S]*?<\/tr>/g) || []) {
-    const tds = [...row.matchAll(/<td\s+style="([^"]*)"/g)].map(m => m[1]);
-    const 데이터칸 = tds.filter(st => !st.includes('background:var(--g50)'));
-    if (데이터칸.length < 2) continue;
-    out.push(데이터칸.map(st => (st.match(/text-align:\s*([a-z]+)/) || [, '(없음)'])[1]));
+// 행 이름과 열 개수를 확인한 뒤 정렬을 비교한다. 속성 순서·공백·클래스 추가는 무관하다.
+const EVAL_ROWS = ['ratio', 'score', 'essay', 'standards', 'elements', 'period'];
+function attribute(attrs, name) {
+  const match = [...attrs.matchAll(/(?:^|\s)([\w-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/g)]
+    .find(m => m[1].toLowerCase() === name);
+  return match ? (match[2] ?? match[3] ?? match[4]) : '';
+}
+function evalTableAlignment(screen) {
+  const body = screen.html.match(/<tbody\b[^>]*>([\s\S]*?)<\/tbody>/i);
+  if (!body) return '평가계획 표 본문을 찾지 못했다';
+  const rows = [...body[1].matchAll(/<tr\b([^>]*)>([\s\S]*?)<\/tr>/gi)];
+  if (rows.length !== EVAL_ROWS.length) return '평가계획 본문 행이 누락되거나 중복됐다';
+  const columns = screen.meta.dataColumns;
+  if (!Number.isInteger(columns) || columns < 2) return '예상 데이터 열 개수가 없다';
+  for (const id of EVAL_ROWS) {
+    const matched = rows.filter(row => attribute(row[1], 'data-eval-row') === id);
+    if (matched.length !== 1) return id + ': 필수 행이 누락되거나 중복됐다';
+    const cells = [...matched[0][2].matchAll(/<td\b([^>]*)>[\s\S]*?<\/td>/gi)];
+    if (cells.length !== columns + 1) return id + ': 데이터 셀이 누락되거나 중복됐다';
+    // 첫 칸은 행 제목. 배경색에 의존해 라벨 여부를 추측하지 않는다.
+    const aligns = cells.slice(1).map(cell => {
+      const style = attribute(cell[1], 'style');
+      const declarations = [...style.matchAll(/(?:^|;)\s*text-align\s*:\s*([^;]+)/gi)];
+      return declarations.length ? declarations.at(-1)[1].trim().toLowerCase() : '(없음)';
+    });
+    if (new Set(aligns).size > 1) return id + ': 한 행의 데이터 칸 정렬이 섞였다: ' + aligns.join(' / ');
   }
-  return out;
-};
+  return null;
+}
 
 export const RULES = [
   {
@@ -55,20 +72,14 @@ export const RULES = [
     id: 'table-row-align-consistent',
     왜: '한 행에서 어떤 칸만 정렬이 다르면 표가 어긋나 보인다. 2026-08-07 평가계획 표에서 정기시험 칸만 좌측이었다.',
     대상: 'evalPreview',
-    검사: s => {
-      const 행들 = 행별정렬(s.html);
-      // 행을 하나도 못 뽑으면 "정렬 위반 없음"이 아니라 정규식이 마크업 변경(예: <tr class="...">)을
-      // 놓친 것이다 — 기준선은 화면당 데이터 행 6개이므로 0개는 항상 추출기 실패다.
-      if (행들.length === 0) return '표에서 행을 하나도 추출하지 못했다 — 추출기가 마크업 변경을 놓쳤을 수 있다';
-      for (const aligns of 행들) {
-        const uniq = [...new Set(aligns)];
-        if (uniq.length > 1) return `한 행의 데이터 칸 정렬이 섞였다: ${aligns.join(' / ')}`;
-      }
-      return null;
+    검사: evalTableAlignment,
+    가짜: {
+      html: '<table><tbody>' + EVAL_ROWS.map(id =>
+        '<tr data-eval-row="' + id + '"><td>라벨</td>' +
+        '<td style="text-align:' + (id === 'score' ? 'left' : 'center') + '">값</td>' +
+        '<td style="text-align:center">합계</td></tr>').join('') + '</tbody></table>',
+      meta: { dataColumns: 2 },
     },
-    가짜: { html: '<tr><td style="background:var(--g50)">영역 만점</td>' +
-                  '<td style="padding:10px">선택형 70점</td>' +
-                  '<td style="padding:10px;text-align:center">30%</td></tr>', meta: {} },
   },
 ];
 

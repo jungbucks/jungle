@@ -6,14 +6,16 @@ import { esc, openModal, closeModal, registerActions } from './utils.js';
 import { evalSubjects } from './evalplan.js';
 
 let _subjectIdx = 1;
+let _lockSubject = false;
 let _selected = new Set();
 let _onConfirm = null;
 let _selectAll = false;        // 도메인별 "단원 모두 포함" 버튼 표시 여부
 let _highlightDomain = '';     // 강조 + 자동 스크롤할 도메인명
 
-export function openStdPicker({ title = '성취기준 선택', subjectIdx = 1, preselected = [], onConfirm, selectAll = false, highlightDomain = '', hint = '' } = {}) {
-  _subjectIdx = subjectIdx || 1;
-  _selected = new Set((preselected || []).filter(Boolean));
+export function openStdPicker({ title = '성취기준 선택', subjectIdx = 1, preselected = [], onConfirm, selectAll = false, highlightDomain = '', hint = '', lockSubject = false } = {}) {
+  _subjectIdx = SUBJECTS[subjectIdx]?.domains ? subjectIdx : 1;
+  _lockSubject = !!lockSubject;
+  _selected = new Set((preselected || []).filter(code => stdPickerValidCodes().has(code)));
   _onConfirm = onConfirm;
   _selectAll = !!selectAll;
   _highlightDomain = highlightDomain || '';
@@ -38,6 +40,7 @@ function stdPickerClose() {
 }
 
 function stdPickerConfirm() {
+  _selected = new Set([..._selected].filter(code => stdPickerValidCodes().has(code)));
   const codes = [..._selected].sort((a, b) => {
     const na = parseInt(a) || 0, nb = parseInt(b) || 0;
     return na !== nb ? na - nb : a.localeCompare(b, 'ko');
@@ -49,12 +52,20 @@ function stdPickerConfirm() {
   if (cb) cb(codes, subjIdx);
 }
 
+function stdPickerValidCodes() {
+  return new Set((SUBJECTS[_subjectIdx]?.domains || []).flatMap(d => d.items.map(it => it.code)));
+}
+
 function stdPickerChangeSubject(idx) {
+  if (_lockSubject || !SUBJECTS[+idx]?.domains || _subjectIdx === +idx) return;
+  _selected.clear();
+  _highlightDomain = '';
   _subjectIdx = +idx;
   stdPickerRenderBody();
 }
 
 function stdPickerToggle(code, checked) {
+  if (!stdPickerValidCodes().has(code)) return;
   checked ? _selected.add(code) : _selected.delete(code);
   const el = document.getElementById('stdPickerSelCount');
   if (el) el.textContent = _selected.size + '개 선택됨';
@@ -62,6 +73,7 @@ function stdPickerToggle(code, checked) {
 
 // 도메인(단원) 내 전체 성취기준 선택
 function stdPickerSelectAll(subjIdx, domainIdx) {
+  if (subjIdx !== _subjectIdx) return;
   const subj = SUBJECTS[subjIdx];
   if (!subj || !subj.domains[domainIdx]) return;
   subj.domains[domainIdx].items.forEach(it => _selected.add(it.code));
@@ -72,6 +84,7 @@ function stdPickerRenderBody() {
   const subj = SUBJECTS[_subjectIdx];
   const subjs = evalSubjects();
   const selEl = document.getElementById('stdPickerSubjSel');
+  if (selEl) selEl.disabled = _lockSubject;
   if (selEl) selEl.innerHTML = subjs.map(s => {
     const idx = SUBJECTS.indexOf(s);
     return '<option value="' + idx + '"' + (_subjectIdx === idx ? ' selected' : '') + '>' + esc(s.name) + '</option>';
