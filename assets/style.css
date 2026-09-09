@@ -1004,27 +1004,39 @@ span.astore-card-author{color:var(--brand)}
 .msub-collapse-arrow{display:inline-block;font-size:13px;color:var(--g500);transition:transform .2s;margin-right:2px}
 details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 
-/* ── 교과서: 출판사 카드 그리드 ── */
-.tbk-chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:24px}
-.tbk-chip{border:1.5px solid var(--tbk,var(--g300));color:var(--tbk-dark,var(--g700));background:#fff;border-radius:999px;padding:7px 15px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .15s,transform .12s}
-.tbk-chip:hover{background:var(--tbk-soft,var(--g50));transform:translateY(-1px)}
-.tbk-chip b{font-weight:800}
-.tbk-section{scroll-margin-top:112px;margin-bottom:34px}
-.tbk-sec-note{font-size:13px;font-weight:500;opacity:.75;margin-left:6px}
-.tbk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;margin-top:12px}
-/* 좁은 폰(≤480px)에선 auto-fill minmax(180px)가 180*2+gap=370>360이라 1열로 떨어져
-   세로가 크게 낭비된다. 이 구간만 2열 고정(320px에서도 카드 폭 ~150px 확보). */
-@media(max-width:480px){.tbk-grid{grid-template-columns:repeat(2,1fr);gap:8px}}
-.tbk-card{background:#fff;border:1px solid var(--g200);border-top:3px solid var(--tbk,var(--g300));border-radius:12px;padding:14px 14px 12px;display:flex;flex-direction:column;gap:5px;transition:box-shadow .15s,transform .12s}
-.tbk-card:hover{box-shadow:0 6px 18px -6px rgba(17,24,39,.14);transform:translateY(-2px)}
-.tbk-head{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
-.tbk-pub{font-size:16px;font-weight:700;color:var(--g900);line-height:1.35}
-.tbk-author{font-size:13px;color:var(--g500);line-height:1.35}
-.tbk-year{background:var(--g100);border-radius:6px;padding:1px 7px;font-size:12px;font-weight:600;color:var(--g600)}
-.tbk-btn{margin-top:auto;display:block;text-align:center;background:var(--tbk-soft,var(--g100));color:var(--tbk-dark,var(--g700));font-size:14px;font-weight:700;border-radius:8px;padding:8px 0;text-decoration:none;transition:background .15s,color .15s}
-.tbk-btn:hover{background:var(--tbk);color:#fff}
-.tbk-btn.off{opacity:.5;cursor:default}
-.tbk-card .tbk-btn{margin-top:12px}
+/* 교과서: 과목 선택과 출판사 목록 */
+.tbk-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+.tbk-chip{font:inherit;font-size:14px;padding:8px 16px;border:1px solid var(--g200);border-radius:8px;color:var(--g600);background:var(--g50);cursor:pointer;min-height:44px}
+.tbk-chip b{margin-left:4px;font-weight:500}
+.tbk-chip[aria-pressed="true"]{color:var(--book-dark);background:var(--book-soft);border-color:var(--book);font-weight:700}
+.tbk-searchbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:32px}
+.tbk-searchbar label{font-size:14px;font-weight:600}
+.tbk-searchbar input{font:inherit;min-width:0;width:320px;max-width:100%;padding:12px;border:1px solid var(--g300);border-radius:8px;background:var(--g50);color:var(--g900)}
+.tbk-searchbar>span{font-size:13px;color:var(--g500);margin-left:auto}
+.tbk-section[hidden],.tbk-row[hidden],.tbk-empty[hidden]{display:none}
+.tbk-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
+.tbk-section-heading h3{font-size:21px;margin:0;color:var(--g900)}
+.tbk-section-heading p{font-size:13px;color:var(--g500);margin:4px 0 0}
+.tbk-count{font-size:14px;color:var(--g600)}
+.tbk-list{list-style:none;padding:0;margin:0}
+.tbk-columns,.tbk-row{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1.5fr) 88px 80px;gap:16px;align-items:center;padding:16px}
+.tbk-columns{font-size:13px;color:var(--g500);border-bottom:1px solid var(--g300);padding-top:0}
+.tbk-row{border-bottom:1px solid var(--g200);min-height:72px}
+.tbk-row:hover{background:var(--g50)}
+.tbk-pub{font-size:16px;font-weight:700;color:var(--g900);overflow-wrap:anywhere}
+.tbk-author,.tbk-year{font-size:14px;color:var(--g600);overflow-wrap:anywhere}
+.tbk-open{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;color:var(--book-dark);font-size:14px;text-decoration:underline;text-underline-offset:4px;border-radius:8px}
+.tbk-open:hover{background:var(--book-soft)}
+.tbk-unavailable{font-size:13px;color:var(--g500);text-align:center}
+.tbk-chip:focus-visible,.tbk-open:focus-visible,.tbk-searchbar input:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.tbk-mobile-year{display:none}
+.tbk-empty{padding:24px 16px;color:var(--g600);font-size:15px}
+@media(max-width:600px){
+ .tbk-searchbar{gap:8px}.tbk-searchbar label{width:100%}.tbk-searchbar input{width:100%}.tbk-searchbar>span{margin-left:0}
+ .tbk-columns{display:none}.tbk-row{grid-template-columns:minmax(0,1fr) 72px;gap:4px 12px;padding:16px 0}
+ .tbk-pub{grid-column:1}.tbk-author{grid-column:1}.tbk-year{grid-column:1;font-size:13px}
+ .tbk-open,.tbk-unavailable{grid-column:2;grid-row:1 / 4}.tbk-mobile-year{display:inline}
+}
 
 /* ── 교과서: 고시외 과목 (교육청별 그룹 + 필터) ── */
 .gsw-filter{width:100%;max-width:420px;padding:10px 14px;border:1.5px solid var(--g300);border-radius:10px;font-size:15px;font-family:inherit;background:#fff;color:var(--g800);outline:none;margin-bottom:14px;transition:border-color .15s}

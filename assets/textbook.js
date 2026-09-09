@@ -175,8 +175,25 @@ function tbSwitch(n) {
 }
 
 function tbkJump(id) {
-  const el = document.getElementById(id);
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  document.querySelectorAll('.tbk-section').forEach(el => { el.hidden = el.id !== id; });
+  document.querySelectorAll('.tbk-chip').forEach(el => {
+    el.setAttribute('aria-pressed', String(el.dataset.section === id));
+  });
+  textbookFilter(document.getElementById('tbkSearch').value);
+}
+
+function textbookFilter(query) {
+  const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+  document.querySelectorAll('.tbk-section').forEach(section => {
+    let count = 0;
+    section.querySelectorAll('.tbk-row').forEach(row => {
+      const match = terms.every(term => row.dataset.search.includes(term));
+      row.hidden = !match;
+      if (match) count++;
+    });
+    section.querySelector('.tbk-count').textContent = count + '종';
+    section.querySelector('.tbk-empty').hidden = count !== 0;
+  });
 }
 
 // 고시외 과목: 교육청별 그룹핑 (과목 수 많은 순)
@@ -213,14 +230,18 @@ function renderTextbook() {
 
   function bookCards(s, list) {
     if (!list || !list.length) return '<div class="msub-empty">목록 준비 중입니다.</div>';
-    return `<div class="tbk-grid">${list.map(b => `
-      <div class="tbk-card" style="--tbk:${s.accent};--tbk-soft:${s.aLight};--tbk-dark:${s.aDark}">
-        <div class="tbk-head"><span class="tbk-pub">${esc(b.publisher)}</span>${b.author ? `<span class="tbk-author">${esc(b.author)}</span>` : ''}</div>
-        <div class="tbk-yearline"><span class="tbk-year">${b.year}</span></div>
+    return `<div class="tbk-columns" aria-hidden="true"><span>출판사</span><span>저자</span><span>발행연도</span><span></span></div>
+      <ul class="tbk-list">${list.map(b => `
+      <li class="tbk-row" data-search="${esc((b.publisher + ' ' + b.author).toLowerCase())}">
+        <span class="tbk-pub">${esc(b.publisher)}</span>
+        <span class="tbk-author">${esc(b.author || '')}</span>
+        <span class="tbk-year">${b.year}<span class="tbk-mobile-year">년 발행</span></span>
         ${b.ebook
-          ? `<a class="tbk-btn" href="${safeUrl(b.ebook)}" target="_blank" rel="noopener noreferrer">교과서 보기</a>`
-          : '<span class="tbk-btn off">준비 중</span>'}
-      </div>`).join('')}</div>`;
+          ? `<a class="tbk-open" href="${safeUrl(b.ebook)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.publisher)} 교과서 열기 (새 탭)">열기 <span aria-hidden="true">↗</span></a>`
+          : '<span class="tbk-unavailable">준비 중</span>'}
+      </li>`).join('')}</ul>
+      <p class="tbk-empty" hidden>검색 결과가 없습니다. 출판사 또는 저자 이름을 바꿔 검색해 보세요.</p>`;
+
   }
 
   const SECTIONS = [
@@ -232,16 +253,14 @@ function renderTextbook() {
   ];
 
   const chips = SECTIONS.map(sec =>
-    `<button class="tbk-chip" style="--tbk:${sec.s.accent};--tbk-soft:${sec.s.aLight};--tbk-dark:${sec.s.aDark}" data-onclick="tb:jump" data-args="${esc(JSON.stringify([sec.id]))}">${esc(sec.label)} <b>${sec.list.length}</b></button>`
+    `<button class="tbk-chip" aria-pressed="${sec.id === 'tbk-mid'}" data-section="${sec.id}" data-onclick="tb:jump" data-args="${esc(JSON.stringify([sec.id]))}">${esc(sec.label)} <b>${sec.list.length}</b></button>`
   ).join('');
 
   const sections = SECTIONS.map(sec => `
-    <div class="tbk-section" id="${sec.id}">
-      <div class="msub-subheading" style="color:${sec.s.aDark};background:${sec.s.aLight};border-left-color:${sec.s.accent}">
-        ${esc(sec.label)} <span class="tbk-sec-note">${esc(sec.note)} · ${sec.list.length}종 · 가나다순</span>
-      </div>
+    <section class="tbk-section" id="${sec.id}" aria-label="${esc(sec.label)}"${sec.id !== 'tbk-mid' ? ' hidden' : ''}>
+      <div class="tbk-section-heading"><div><h3>${esc(sec.label)}</h3><p>${esc(sec.note)} · 출판사 가나다순</p></div><span class="tbk-count" role="status">${sec.list.length}종</span></div>
       ${bookCards(sec.s, sec.list)}
-    </div>`).join('');
+    </section>`).join('');
 
   function gosiwaSection(title, color, soft, list, openFirst) {
     const groups = gosiwaGroups(list);
@@ -267,14 +286,15 @@ function renderTextbook() {
   <div class="ov-head">
     <span class="ov-eyebrow" style="color:var(--book);background:var(--book-soft)">교과서 자료실</span>
     <h2 class="ov-h2">정보교과서</h2>
-    <p class="ov-sub">2022 개정 교육과정 인정 교과서와 시도교육청 고시외 과목 목록 — E-BOOK으로 바로 열람하세요.</p>
+    <p class="ov-sub">2022 개정 교육과정 인정 교과서와 시도교육청 고시외 과목 목록</p>
   </div>
   <div class="msub-tabbar">
     <button class="msub-tab active" data-onclick="tb:switch" data-args="[1]">중·고 인정 교과서</button>
     <button class="msub-tab" data-onclick="tb:switch" data-args="[2]">고시외 과목</button>
   </div>
   <div id="tbPanel1">
-    <div class="tbk-chips">${chips}</div>
+    <div class="tbk-chips" role="group" aria-label="교과서 과목 선택">${chips}</div>
+    <div class="tbk-searchbar"><label for="tbkSearch">출판사·저자 검색</label><input id="tbkSearch" type="search" placeholder="출판사 또는 저자 이름" data-oninput="tb:search"><span>교과서는 새 탭에서 열립니다.</span></div>
     ${sections}
   </div>
   <div id="tbPanel2" style="display:none">
@@ -295,4 +315,5 @@ registerActions('click', {
 });
 registerActions('input', {
   'tb:filter': function(el) { gosiwaFilterInput(el.value); },
+  'tb:search': function(el) { textbookFilter(el.value); },
 });
