@@ -257,7 +257,7 @@ function renderTextbook() {
 
   function bookCards(s, list) {
     if (!list || !list.length) return '<div class="msub-empty">목록 준비 중입니다.</div>';
-    return `<div class="tbk-columns" aria-hidden="true"><span>출판사</span><span>저자</span><span>발행연도</span><span></span></div>
+    return `
       <ul class="tbk-list">${list.map(b => `
       <li class="tbk-row" data-search="${esc((b.publisher + ' ' + b.author).toLowerCase())}">
         <span class="tbk-pub">${esc(b.publisher)}</span>
