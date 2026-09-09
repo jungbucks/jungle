@@ -138,7 +138,7 @@ function renderTabs() {
       { key: 'simulator', label: '고교학점제 시뮬레이터' },
       { key: 'compare',   label: '중·고 정보 교육과정 비교' },
       { key: 'guide',     label: '고등학교 선택과목 가이드' },
-      { key: 'dsai',      label: '인공지능 기초 VS 데이터 과학' }
+      { key: 'dsai',      label: '데이터 과학 vs 인공지능 기초' }
     ].map(({ key, label }) => {      
       const active = overviewSubtab === key;      
       return `<button class="subtab${active ? ' active' : ''}" role="tab" aria-selected="${active}" data-text="${label}" data-onclick="app:ovSubtabSel" data-onkeydown="app:subtabKey" data-args="${esc(JSON.stringify([key]))}"
@@ -567,7 +567,7 @@ function doCopy(btn) {
 
 function overviewSelectSubtab(key) {
   overviewSubtab = key;
-  const OV_LABELS = { map:'교육과정 한눈에 보기', simulator:'고교학점제 시뮬레이터', compare:'중·고 정보 교육과정 비교', guide:'고등학교 선택과목 가이드', dsai:'인공지능 기초 VS 데이터 과학' };
+  const OV_LABELS = { map:'교육과정 한눈에 보기', simulator:'고교학점제 시뮬레이터', compare:'중·고 정보 교육과정 비교', guide:'고등학교 선택과목 가이드', dsai:'데이터 과학 vs 인공지능 기초' };
   announce(OV_LABELS[key] || key);
   pushHash();
   renderTabs();

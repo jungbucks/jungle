@@ -17,7 +17,7 @@ export function renderHome() {
     { key:'simulator', label:'고교학점제 시뮬레이터', desc:'학기별 과목 배치 설계' },
     { key:'compare',   label:'중·고 정보 교육과정 비교', desc:'성취기준·내용 요소 대조' },
     { key:'guide',     label:'고등학교 선택과목 가이드', desc:'과목별 특징·이수 흐름' },
-    { key:'dsai',      label:'인공지능 기초 VS 데이터 과학', desc:'두 과목 심층 비교' },
+    { key:'dsai',      label:'데이터 과학 vs 인공지능 기초', desc:'두 과목 심층 비교' },
   ];
   function subCard(id) {
     const idx = SUBJECTS.findIndex(s => s.id === id);
