@@ -1,4 +1,4 @@
-import { esc, clipboardWriteText, loadState, saveState, registerActions } from './utils.js';
+import { esc, clipboardWriteText, loadState, saveState, registerActions, uiToast } from './utils.js';
 
 // --- 담은 성취기준 (수집 패널) — app.js에서 분리 (2026-07-08 F2) ---
 // collected는 export let 라이브 바인딩: app.js 렌더가 최신 값을 읽는다. 재할당은 이 모듈 안에서만.
@@ -12,7 +12,7 @@ function saveCollected() {
 function onCheck(chk) {
   const { code, text, sid } = chk.dataset;
   if (chk.checked) {
-    if (!collected.some(c => c.code === code)) collected.push({ code, text, sid });
+    if (!collected.some(c => c.code === code)) { collected.push({ code, text, sid }); uiToast('성취기준을 담았습니다.'); }
   } else {
     collected = collected.filter(c => c.code !== code);
   }
@@ -42,6 +42,7 @@ export function copyAll() {
 }
 
 export function togglePanel() {
+  if (!collected.length) { uiToast('성취기준의 체크박스를 눌러 담아 보세요.'); return; }
   panelOpen = !panelOpen;
   const panel = document.getElementById('collectPanel');
   panel.classList.toggle('open', panelOpen);
@@ -53,13 +54,18 @@ export function updatePanel() {
   const n = collected.length;
   document.getElementById('fabCnt').textContent = n;
   document.getElementById('panelCnt').textContent = n;
-  document.getElementById('fab').classList.toggle('on', n > 0);
+  document.getElementById('fab').classList.add('on');
+  document.getElementById('fab').classList.toggle('empty', n === 0);
   const dlBtn = document.getElementById('downloadCollectedBtn');
   if (dlBtn) dlBtn.disabled = n === 0;
-  if (n === 0 && panelOpen) { panelOpen = false; document.getElementById('collectPanel').classList.remove('open'); }
+  if (n === 0) panelOpen = false;
+  const panel = document.getElementById('collectPanel');
+  panel.classList.toggle('open', panelOpen);
+  panel.setAttribute('aria-hidden', String(!panelOpen));
+  document.getElementById('fab').setAttribute('aria-expanded', String(panelOpen));
   const body = document.getElementById('panelBody');
   if (!n) {
-    body.innerHTML = '<div style="text-align:center;padding:24px;color:#9CA3AF;font-size:13px">담은 성취기준이 없습니다.</div>';
+    body.innerHTML = '<div style="text-align:center;padding:24px;color:var(--g600);font-size:14px">담은 성취기준이 없습니다.</div>';
     return;
   }
   body.innerHTML = collected.map(c => {

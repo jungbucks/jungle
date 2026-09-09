@@ -1757,3 +1757,15 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .dac-heading-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
 .dac-preview{font-size:14px;line-height:1.6;font-weight:400;color:var(--g600);word-break:keep-all}
 .dac-head .dac-num,.dac-head .dac-chev{flex-shrink:0}
+
+/* 담기 패널은 사용자가 열 때만 화면과 키보드 탐색에 노출한다. */
+.collect-panel{visibility:hidden;pointer-events:none}
+.collect-panel.open{visibility:visible;pointer-events:auto}
+.fab.empty{background:var(--surface);color:var(--g700);border:1px solid var(--g300);box-shadow:none;padding:8px 12px;font-size:13px}
+[data-theme="dark"] .fab.empty{background:var(--g100)}
+/* 읽는 본문과 보조 설명의 공통 가독성 기준 */
+.std-text{font-size:16px;line-height:1.8;color:var(--g800)}
+.eval-std-text,.p-item-text{font-size:15px;line-height:1.75;color:var(--g800)}
+.home-card-desc,.gc-hint,.msub-desc,.sguide-flow-desc,.codevar-type-desc{font-size:14px;line-height:1.7;color:var(--g600)}
+.dac-card .desc,.dac-type .t-desc,.fav-card-desc{font-size:15px;line-height:1.7}
+.astore-card-desc,.codevar-card-desc{font-size:14px;line-height:1.7}
