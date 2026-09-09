@@ -280,7 +280,7 @@ function renderTextbook() {
   ];
 
   const chips = SECTIONS.map(sec =>
-    `<button class="tbk-chip" aria-pressed="${sec.id === 'tbk-mid'}" data-section="${sec.id}" data-onclick="tb:jump" data-args="${esc(JSON.stringify([sec.id]))}">${esc(sec.label)} <b>${sec.list.length}</b></button>`
+    `<button class="tbk-chip" style="--tbk:${sec.s.accent};--tbk-soft:${sec.s.aLight}" aria-pressed="${sec.id === 'tbk-mid'}" data-section="${sec.id}" data-onclick="tb:jump" data-args="${esc(JSON.stringify([sec.id]))}">${esc(sec.label)} <b>${sec.list.length}</b></button>`
   ).join('');
 
   const sections = SECTIONS.map(sec => `
