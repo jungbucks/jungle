@@ -1752,3 +1752,8 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .home-help .onboard-list{margin-top:12px;font-size:14px;color:var(--g700)}
 .home-help summary:focus-visible,.home-example:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
 @media(max-width:600px){.home-help summary{flex-wrap:wrap;gap:4px}.home-glrow>[data-onclick="app:lucky"]{flex-basis:auto}}
+
+/* 비교 항목: 접힌 상태에서도 차이를 읽을 수 있는 제목·요약 */
+.dac-heading-text{flex:1;min-width:0;display:flex;flex-direction:column;gap:6px}
+.dac-preview{font-size:14px;line-height:1.6;font-weight:400;color:var(--g600);word-break:keep-all}
+.dac-head .dac-num,.dac-head .dac-chev{flex-shrink:0}

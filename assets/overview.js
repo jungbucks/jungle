@@ -76,7 +76,7 @@ function renderDsAiCompare() {
       <div class="dac-item">
         <button class="dac-head" type="button" aria-expanded="false">
           <span class="dac-num">①</span>
-          <span class="dac-title">데이터 처리</span>
+          <span class="dac-heading-text"><span class="dac-title">데이터 처리</span><span class="dac-preview">같은 전처리 개념, 데이터 품질과 학습 준비라는 목적 차이</span></span>
           <svg class="dac-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
         <div class="dac-panel"><div class="dac-panel-inner"><div class="dac-body">
@@ -90,13 +90,12 @@ function renderDsAiCompare() {
               <div class="desc"><span class="dac-code">12인기02-02</span>동일 개념 → 기계학습 투입 준비 목적</div>
             </div>
           </div>
-          <div class="dac-summary"><span class="lbl">한 줄 요약</span>같은 개념, 다른 목적</div>
         </div></div></div>
       </div>
       <div class="dac-item">
         <button class="dac-head" type="button" aria-expanded="false">
           <span class="dac-num">②</span>
-          <span class="dac-title">데이터 수집</span>
+          <span class="dac-heading-text"><span class="dac-title">데이터 수집</span><span class="dac-preview">편향을 고려한 수집과 학습에 적합한 데이터 선정</span></span>
           <svg class="dac-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
         <div class="dac-panel"><div class="dac-panel-inner"><div class="dac-body">
@@ -110,13 +109,12 @@ function renderDsAiCompare() {
               <div class="desc"><span class="dac-code">12인기02-01</span>기계학습에 적합한 데이터 선정에 집중</div>
             </div>
           </div>
-          <div class="dac-summary"><span class="lbl">한 줄 요약</span>데이터 과학이 수집 단계를 더 깊이 다룸</div>
         </div></div></div>
       </div>
       <div class="dac-item">
         <button class="dac-head" type="button" aria-expanded="false">
           <span class="dac-num">③</span>
-          <span class="dac-title">분석·모델링</span>
+          <span class="dac-heading-text"><span class="dac-title">분석·모델링</span><span class="dac-preview">모델의 비교·해석과 학습·성능 평가</span></span>
           <svg class="dac-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
         <div class="dac-panel"><div class="dac-panel-inner"><div class="dac-body">
@@ -130,33 +128,31 @@ function renderDsAiCompare() {
               <div class="desc"><span class="dac-code">12인기02-03~04</span>모델 선정 후 직접 학습·성능 평가</div>
             </div>
           </div>
-          <div class="dac-summary"><span class="lbl">한 줄 요약</span>데이터 과학은 이해, 인공지능 기초는 구현</div>
         </div></div></div>
       </div>
       <div class="dac-item">
         <button class="dac-head" type="button" aria-expanded="false">
           <span class="dac-num">④</span>
-          <span class="dac-title">AI 심화 <span style="font-weight:600;color:var(--g500);font-size:13px;">· 인공지능 기초 고유 영역</span></span>
+          <span class="dac-heading-text"><span class="dac-title">AI 심화 <span style="font-weight:600;color:var(--g500);font-size:13px;">· 인공지능 기초 고유 영역</span></span><span class="dac-preview">탐색·추론부터 딥러닝까지, AI 세부 내용 살펴보기</span></span>
           <svg class="dac-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
         <div class="dac-panel"><div class="dac-panel-inner"><div class="dac-body">
           <div class="dac-pair">
-            <div class="dac-card is-ai">
-              <div class="who"><span class="dot dot-ai"></span>인공지능 기초</div>
-              <div class="desc"><span class="dac-code">12인기01</span>탐색·지식표현·추론 (전통적 AI)</div>
+            <div class="dac-card is-ds">
+              <div class="who"><span class="dot dot-ds"></span>데이터 과학</div>
+              <div class="desc">분석·모델링 관점은 위 항목에서 비교합니다. 이 항목은 오른쪽의 AI 세부 내용을 살펴봅니다.</div>
             </div>
             <div class="dac-card is-ai">
               <div class="who"><span class="dot dot-ai"></span>인공지능 기초</div>
-              <div class="desc"><span class="dac-code">12인기02-05~06</span>딥러닝·컴퓨터비전·음성인식·자연어처리</div>
+              <div class="desc"><span class="dac-code">12인기01</span>탐색·지식표현·추론 (전통적 AI)<br><br><span class="dac-code">12인기02-05~06</span>딥러닝·컴퓨터비전·음성인식·자연어처리</div>
             </div>
           </div>
-          <div class="dac-summary"><span class="lbl">한 줄 요약</span>데이터 과학은 딥러닝을 다루지 않음</div>
         </div></div></div>
       </div>
       <div class="dac-item">
         <button class="dac-head" type="button" aria-expanded="false">
           <span class="dac-num">⑤</span>
-          <span class="dac-title">윤리</span>
+          <span class="dac-heading-text"><span class="dac-title">윤리</span><span class="dac-preview">데이터 활용 결과와 AI 윤리적 딜레마</span></span>
           <svg class="dac-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
         </button>
         <div class="dac-panel"><div class="dac-panel-inner"><div class="dac-body">
@@ -170,7 +166,6 @@ function renderDsAiCompare() {
               <div class="desc"><span class="dac-code">12인기03-04</span>AI 존재 자체의 윤리적 딜레마</div>
             </div>
           </div>
-          <div class="dac-summary"><span class="lbl">한 줄 요약</span>둘 다 윤리를 다루지만 결이 다름</div>
         </div></div></div>
       </div>
     </div>
