@@ -311,6 +311,7 @@ function renderTextbook() {
   return `<div id="textbookPage" style="max-width:1200px;margin:0 auto">
   <div class="msub-wrap">
   <div class="ov-head">
+    <span class="ov-eyebrow" style="color:var(--book-dark);background:var(--book-soft)">교과서</span>
     <h2 class="ov-h2">정보교과서</h2>
     <p class="ov-sub">2022 개정 교육과정 교과서·고시외 과목</p>
   </div>

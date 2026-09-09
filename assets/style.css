@@ -2,6 +2,7 @@
 @font-face{font-family:'Pretendard';src:url('fonts/PretendardVariable.woff2') format('woff2');font-weight:45 920;font-style:normal;font-display:swap}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
+  --surface:#FFFFFF;
   /* 브랜드 기본색 (파랑) — 전역 기능색 전용(포커스·검색·담기·공용 버튼). 메뉴 아이덴티티 아님 (2026-07-10) */
   --accent:#2563EB;--accent-light:#EFF6FF;--accent-dark:#1E40AF;--accent-line:#BFDBFE;
   /* 교육과정(+시뮬레이터) 메뉴색 — 번트 오렌지, 2026-07-10 신설 (성취기준 중학교 정보 파랑과 충돌 해소) */
@@ -1734,3 +1735,8 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
  #textbookPage .tbk-searchbar>span{display:none}
  #textbookPage .ov-sub{font-size:13px}
 }
+
+/* 교과서 과목명과 목록을 하나의 읽기 영역으로 묶는다. */
+#textbookPage .tbk-section{background:var(--surface);border:1px solid var(--g200);border-radius:12px;padding:24px}
+[data-theme="dark"] #textbookPage .tbk-section{background:var(--g100)}
+@media(max-width:600px){#textbookPage .tbk-section{padding:16px}}
