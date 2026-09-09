@@ -152,6 +152,11 @@ try {
 
 // ── [6] 렌더 불변식 ─────────────────────────────────────────
 //  계산이 아니라 "화면에 무엇이 찍히는가"를 지킨다. 규칙은 tools/invariants.mjs.
+try {
+  execFileSync(process.execPath, [join(root, 'tools', 'search-tests.mjs')], {timeout:30000, windowsHide:true});
+  ok('검색 회귀 10건 통과');
+} catch (e) { fail('검색 회귀 검사 실패: ' + (e.stderr?.toString() || e.message)); }
+
 head('[6] 렌더 불변식 (화면 카탈로그 × 규칙)');
 try {
   const { renderAll } = await import(pathToFileURL(join(root, 'tools', 'render.mjs')).href);

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import './test.mjs';
+const { matchesStandard, highlightStandard } = await import('../assets/utils.js');
+const item = {code:'[12정01-01]', text:'인공지능을 활용하여 데이터를 분석한다.'};
+assert.equal(matchesStandard(item,'인공 지능'),true);
+assert.equal(matchesStandard(item,'분석 데이터'),true);
+assert.equal(matchesStandard(item,'１２정０１–０１'),true);
+assert.equal(matchesStandard(item,'[12정01 − 01]'),true);
+assert.equal(matchesStandard(item,'분석 네트워크'),false);
+assert.equal(matchesStandard(item,'12정01-02'),false);
+assert.equal(matchesStandard(item,'인공지능'),true);
+assert.equal(highlightStandard('인공지능','인공 지능'),'<mark>인공지능</mark>');
+assert.equal(highlightStandard('인공 지능','인공지능'),'<mark>인공 지능</mark>');
+assert.equal(highlightStandard('<데이터> & 분석','분석 데이터'),'&lt;<mark>데이터</mark>&gt; &amp; <mark>분석</mark>');
+console.log('검색 회귀 10건 통과');

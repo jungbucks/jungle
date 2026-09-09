@@ -1,3 +1,4 @@
+import { matchesStandard, highlightStandard } from './utils.js';
 import { esc, safeUrl, hi, cid, announce, setAccent, resetAccent, initDelegation, registerActions, clipboardWriteText, getAchvKey, findTextByCode } from './utils.js';
 import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META } from './state.js';
 import { renderSimulator } from './simulator.js';
@@ -349,8 +350,8 @@ function stdCardHtml(subj, it, collectedSet) {
     <input type="checkbox" class="card-chk" data-code="${esc(it.code)}" data-text="${esc(it.text)}" data-sid="${subj.id}"
       ${isCol?'checked':''} data-onchange="app:check" style="accent-color:${subj.accent}">
     <div class="card-body">
-      <span class="code-badge" style="background:${subj.aLight};color:${subj.accent}">${hi(it.code,query)}</span>
-      <div class="std-text">${hi(it.text,query)}</div>
+      <span class="code-badge" style="background:${subj.aLight};color:${subj.accent}">${highlightStandard(it.code,query)}</span>
+      <div class="std-text">${highlightStandard(it.text,query)}</div>
     </div>
     <div class="card-btns">
       <button class="cbtn sm" aria-label="성취기준 코드만 복사" data-code="${esc(it.code)}" data-text="" data-mode="code"
@@ -388,7 +389,7 @@ function domainSectionHtml(subj, d, collectedSet) {
         ${explBtn}
       </div>
       ${achvBtn}
-      <span class="domain-copy-btn" role="button" tabindex="0" data-onclick="app:copyDomain" data-onkeydown="app:copyDomain" data-args="${esc(JSON.stringify(['d_' + cid(key)]))}">단원 모두 복사</span>
+      <span class="domain-copy-btn" role="button" tabindex="0" data-onclick="app:copyDomain" data-onkeydown="app:copyDomain" data-args="${esc(JSON.stringify(['d_' + cid(key)]))}">${query ? '검색된 성취기준 복사' : '성취기준 모두 복사'}</span>
     </button>
     <div class="domain-body" id="d_body_${cid(key)}">${d.items.map(it => stdCardHtml(subj, it, collectedSet)).join('')}</div>
     ${explBox}
@@ -405,7 +406,7 @@ function renderGlobalSearch() {
   SUBJECTS.filter(s => !['overview','simulator','evalplan'].includes(s.type)).forEach(subj => {
     const matchedDomains = [];
     subj.domains.forEach(d => {
-      const items = d.items.filter(it => it.code.toLowerCase().includes(q) || it.text.toLowerCase().includes(q));
+      const items = d.items.filter(it => matchesStandard(it, query));
       if (items.length) { matchedDomains.push({name: d.name, items}); totalVis += items.length; }
     });
     if (matchedDomains.length) results.push({subj, domains: matchedDomains});

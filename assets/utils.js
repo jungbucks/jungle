@@ -260,3 +260,46 @@ export function findTextByCode(code) {
   }
   return '';
 }
+
+// 검색용 문자열만 정규화한다. 원문과 복사 데이터는 변경하지 않는다.
+function searchNormalized(value) {
+  return value.normalize('NFKC').toLowerCase().replace(/[‐‑‒–—−]/g, '-').replace(/[\s\[\]]/g, '');
+}
+function searchTokens(query) {
+  return query.trim().split(/\s+/).map(searchNormalized).filter(Boolean);
+}
+export function matchesStandard(item, query) {
+  const fields = [searchNormalized(item.code), searchNormalized(item.text)];
+  const phrase = searchNormalized(query);
+  const tokens = searchTokens(query);
+  return !phrase || fields.some(field => field.includes(phrase)) || tokens.every(token => fields.some(field => field.includes(token)));
+}
+export function highlightStandard(text, query) {
+  if (!query.trim()) return esc(text);
+  let normalized = '', offsets = [], position = 0;
+  for (const char of text) {
+    const part = searchNormalized(char);
+    for (let i = 0; i < part.length; i++) offsets.push([position, position + char.length]);
+    normalized += part;
+    position += char.length;
+  }
+  const phrase = searchNormalized(query);
+  const needles = phrase && normalized.includes(phrase) ? [phrase] : searchTokens(query);
+  const marked = new Array(text.length).fill(false);
+  for (const needle of needles) {
+    let from = 0, at;
+    while (needle && (at = normalized.indexOf(needle, from)) !== -1) {
+      for (let i = offsets[at][0]; i < offsets[at + needle.length - 1][1]; i++) marked[i] = true;
+      from = at + 1;
+    }
+  }
+  let html = '', start = 0;
+  while (start < text.length) {
+    let end = start + 1;
+    while (end < text.length && marked[end] === marked[start]) end++;
+    const chunk = esc(text.slice(start, end));
+    html += marked[start] ? '<mark>' + chunk + '</mark>' : chunk;
+    start = end;
+  }
+  return html;
+}
