@@ -67,7 +67,7 @@ export function renderHome() {
     </button>
     <button class="home-sc-card" data-onclick="app:subject" data-args="[${textbookIdx}]">
       <span class="home-sc-ico" style="--sc-soft:var(--book-soft);--sc-color:var(--book)">${ICONS.book}</span>
-      <span class="home-sc-label">교과서·앱 정보</span>
+      <span class="home-sc-label">교과서 정보</span>
     </button>
   </div>
   <div class="home-nav">
