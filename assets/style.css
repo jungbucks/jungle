@@ -642,7 +642,7 @@ span.astore-card-author{color:var(--brand)}
 .dac-card .who{font-size:13px;font-weight:800;display:flex;align-items:center;margin-bottom:7px}
 .dac-card.is-ds .who{color:var(--dac-accent)}
 .dac-card.is-ai .who{color:var(--g700)}
-.dac-code{font-family:ui-monospace,"SF Mono",Menlo,monospace;font-size:12px;font-weight:600;color:var(--g500);background:#fff;border:1px solid var(--g200);border-radius:6px;padding:1px 6px;margin-right:6px;white-space:nowrap}
+.dac-code{font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px;font-weight:600;color:var(--g500);background:#fff;border:1px solid var(--g200);border-radius:6px;padding:1px 6px;margin-right:6px;white-space:nowrap}
 .dac-card .desc{font-size:14px;color:var(--g700)}
 .dac-summary{margin-top:14px;padding:12px 16px;background:var(--g900);border-radius:10px;font-size:14px;color:#fff;font-weight:600;display:flex;align-items:center;gap:10px}
 .dac-summary .lbl{font-size:12px;font-weight:800;letter-spacing:.05em;color:var(--dac-line);flex:0 0 auto}
