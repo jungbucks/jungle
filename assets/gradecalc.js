@@ -472,6 +472,16 @@ function renderGradeCalc() {
   const ok = sum === 100;
   return `<div class="gc-wrap">
     ${pageHead('수업/평가계획', '내신 5등급제 성적 산출기', '반영 비율과 지필·수행 점수로 환산 총점·석차·등급을 상대평가로 산출합니다.')}
+    <div class="eval-settings gc-preview">
+      <div class="eval-settings-title">수강자수 → 등급별 인원 미리보기</div>
+      <div class="gc-preview-row">
+        <input type="number" id="gcFillN" class="eval-number" min="1" max="100" value="${esc(String(gcPreviewN))}"
+          placeholder="예: 25" aria-label="수강자수" data-oninput="gc:previewN">
+        <div id="gcPreviewChips" class="gc-preview-chips" aria-live="polite">${gcPreviewChipsHtml()}</div>
+        <button class="pbtn sec" data-onclick="gc:fill">이 인원으로 번호 생성</button>
+      </div>
+    </div>
+
     <div class="eval-settings">
       <div class="eval-settings-title">반영 비율 설정</div>
       <div class="eval-settings-row" style="align-items:flex-end">
@@ -501,16 +511,6 @@ function renderGradeCalc() {
           <p><strong>④ 두 모드의 차이</strong> — 화면에 표시되는 석차는 항상 RANK.EQ이고, 등급 경계와 비교하는 <em>유효 석차</em>만 토글을 따릅니다. 중간석차 모드에서는 경계에 걸린 동점자 전원이 아래 등급으로, RANK.EQ 모드에서는 전원이 위 등급으로 갑니다(정원 초과 허용).</p>
         </div>
       </details>
-    </div>
-
-    <div class="eval-settings gc-preview">
-      <div class="eval-settings-title">수강자수 → 등급별 인원 미리보기</div>
-      <div class="gc-preview-row">
-        <input type="number" id="gcFillN" class="eval-number" min="1" max="100" value="${esc(String(gcPreviewN))}"
-          placeholder="예: 25" aria-label="수강자수" data-oninput="gc:previewN">
-        <div id="gcPreviewChips" class="gc-preview-chips" aria-live="polite">${gcPreviewChipsHtml()}</div>
-        <button class="pbtn sec" data-onclick="gc:fill">이 인원으로 번호 생성</button>
-      </div>
     </div>
 
     <div class="gc-toolbar">

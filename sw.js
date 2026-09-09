@@ -1,4 +1,4 @@
-const CACHE = 'jungle-v63';
+const CACHE = 'jungle-v64';
 
 const ASSETS = [
   './',
