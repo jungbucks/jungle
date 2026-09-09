@@ -1007,14 +1007,14 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 
 /* 교과서: 과목 선택과 출판사 목록 */
 .tbk-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
-.tbk-chip{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;padding:12px 16px;border:2px solid var(--g200);border-radius:8px;color:var(--g800);background:var(--g50);cursor:pointer;min-height:48px;line-height:1.5;white-space:normal;word-break:keep-all;text-align:left}
+.tbk-chip{display:inline-flex;align-items:center;gap:8px;font:inherit;font-size:15px;padding:12px 16px;border:2px solid var(--g200);border-radius:8px;color:var(--g800);background:var(--surface);cursor:pointer;min-height:48px;line-height:1.5;white-space:normal;word-break:keep-all;text-align:left}
 .tbk-chip::before{content:"";width:10px;height:10px;flex-shrink:0;border-radius:50%;background:var(--tbk)}
 .tbk-chip b{margin-left:4px;font-weight:500}
-.tbk-chip[aria-pressed="true"]{color:var(--g900);background:var(--tbk-soft);border-color:var(--tbk);font-weight:700}
+.tbk-chip[aria-pressed="true"]{color:var(--g900);background:var(--surface);border-color:var(--tbk);font-weight:700}
 .tbk-chip[aria-pressed="true"]::before{content:"✓";width:auto;height:auto;background:none;color:var(--g900);font-weight:800}
 .tbk-searchbar{display:flex;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:32px}
 .tbk-searchbar label{font-size:14px;font-weight:600}
-.tbk-searchbar input{font:inherit;min-width:0;width:320px;max-width:100%;padding:12px;border:1px solid var(--g300);border-radius:8px;background:var(--g50);color:var(--g900)}
+.tbk-searchbar input{font:inherit;min-width:0;width:320px;max-width:100%;padding:12px;border:1px solid var(--g300);border-radius:8px;background:var(--surface);color:var(--g900)}
 .tbk-searchbar>span{font-size:13px;color:var(--g500);margin-left:auto}
 .tbk-section[hidden],.tbk-row[hidden],.tbk-empty[hidden]{display:none}
 .tbk-section-heading{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px}
@@ -1646,7 +1646,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 
 /* --- Textbook --- */
 [data-theme="dark"] .msub-tab:hover:not(.active) { background: #253347; }
-[data-theme="dark"] .tbk-chip { background:var(--g50); }
+[data-theme="dark"] .tbk-chip, [data-theme="dark"] .tbk-searchbar input { background:var(--g50); }
 [data-theme="dark"] .tbk-chip[aria-pressed="true"] { background:var(--g200);border-color:var(--tbk); }
 [data-theme="dark"] .tbk-chip:hover { background:var(--g200); }
 [data-theme="dark"] .tbk-card { background: #1E293B; border-color: #334155; border-top-color: var(--tbk, #475569); }
