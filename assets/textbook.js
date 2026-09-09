@@ -273,7 +273,7 @@ function renderTextbook() {
 
   const SECTIONS = [
     { id: 'tbk-mid',  s: mid,  label: '중학교 정보',        note: '중학교',              list: TEXTBOOK_BOOKS.mid },
-    { id: 'tbk-high', s: high, label: '정보',              note: '고등학교 일반선택',    list: TEXTBOOK_BOOKS.high },
+    { id: 'tbk-high', s: high, label: '고등학교 정보',              note: '고등학교 일반선택',    list: TEXTBOOK_BOOKS.high },
     { id: 'tbk-ai',   s: ai,   label: '인공지능 기초',      note: '고등학교 진로선택',    list: TEXTBOOK_BOOKS.ai },
     { id: 'tbk-ds',   s: ds,   label: '데이터 과학',        note: '고등학교 진로선택',    list: TEXTBOOK_BOOKS.ds },
     { id: 'tbk-sw',   s: sw,   label: '소프트웨어와 생활',   note: '고등학교 융합선택',    list: TEXTBOOK_BOOKS.sw },
