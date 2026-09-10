@@ -349,7 +349,6 @@ function noResHtml(q) {
 
 // --- Shared markup: domain section + standard card (render / renderGlobalSearch 공용) ---
 function stdCardHtml(subj, it, collectedSet) {
-  const explanation = typeof ACHV_EXPL !== 'undefined' ? ACHV_EXPL[it.code] : '';
   const isCol = collectedSet.has(it.code);
   return `<div class="std-card">
     <input type="checkbox" class="card-chk" aria-label="${esc(it.code)} 성취기준 담기" data-code="${esc(it.code)}" data-text="${esc(it.text)}" data-sid="${subj.id}"
@@ -357,7 +356,6 @@ function stdCardHtml(subj, it, collectedSet) {
     <div class="card-body">
       <span class="code-badge" style="background:${subj.aLight};color:${subj.accent}">${highlightStandard(it.code,query)}</span>
       <div class="std-text">${highlightStandard(it.text,query)}</div>
-      ${explanation ? `<details class="std-explanation"><summary>성취기준 해설<span class="sr-only"> — ${esc(it.code)}</span></summary><p>${esc(explanation)}</p></details>` : ''}
     </div>
     <div class="card-btns">
       <button class="cbtn sm" aria-label="성취기준 코드만 복사" data-code="${esc(it.code)}" data-text="" data-mode="code"
