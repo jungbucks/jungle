@@ -32,3 +32,13 @@ try {
   assert.equal(await clipboardWriteText('성취기준'), false, '대체 복사 예외');
 } finally {navigator.clipboard = savedClipboard; document.createElement = savedCreate; document.execCommand = savedExec;}
 console.log('복사 결과 회귀 5건 통과');
+
+const {__rsTest}=await import('../assets/resources.js');
+const site={name:'Python Tutor',desc:'코드 실행 흐름 시각화'};
+assert.equal(__rsTest.matchesSite(site,'코딩 교육','ＰＹＴＨＯＮ'),true);
+assert.equal(__rsTest.matchesSite(site,'코딩 교육','코드 실행'),true);
+assert.equal(__rsTest.matchesSite(site,'코딩 교육','코딩'),true);
+assert.equal(__rsTest.matchesSite(site,'코딩 교육','없는단어'),false);
+assert.equal(__rsTest.filterSites('Python',0).length,0);
+assert.ok(__rsTest.filterSites('Python',null).length>0);
+console.log('사이트 검색 회귀 6건 통과');

@@ -43,13 +43,40 @@ function rsHead(id, h2, sub) {
 }
 
 // ── 수업 사이트 ──────────────────────────────────────
+let siteQuery = '';
+let siteCategory = null;
+const normalizeSite = text => text.normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+function matchesSite(site, category, query) {
+  const text = normalizeSite(site.name + ' ' + site.desc + ' ' + catLabel(category));
+  return query.trim().split(/\s+/).filter(Boolean).every(word => text.includes(normalizeSite(word)));
+}
+function filterSites(query, category) {
+  return RECOMMENDED_SITES.map((cat,i) => ({...cat,index:i,items:cat.items.filter(site => (category === null || category === i) && matchesSite(site,cat.category,query))})).filter(cat=>cat.items.length);
+}
+function updateSiteResults() {
+  const results=document.getElementById('siteResults');
+  if (!results) return;
+  results.innerHTML=siteResultsHtml();
+  document.querySelectorAll('[data-onclick="rs:category"]').forEach(btn=>{
+    const active=btn.dataset.category === String(siteCategory);
+    btn.classList.toggle('active',active);btn.setAttribute('aria-pressed',String(active));
+  });
+  document.getElementById('siteResultCount').textContent=filterSites(siteQuery,siteCategory).reduce((sum,cat)=>sum+cat.items.length,0)+'개 사이트';
+}
 function renderFav() {
-  const chips = RECOMMENDED_SITES.map((cat, i) =>
-    `<button class="rs-chip" data-onclick="rs:jump" data-args="${esc(JSON.stringify([i]))}">
-      <span class="rs-chip-dot" style="background:${famAt(i).base}"></span>${esc(catLabel(cat.category))}</button>`
-  ).join('');
-
-  const cats = RECOMMENDED_SITES.map((cat, i) => {
+  const chip=(label,value) => `<button type="button" class="rs-chip${siteCategory===value?' active':''}" data-onclick="rs:category" data-category="${value}" aria-pressed="${siteCategory===value}">${esc(label)}</button>`;
+  const chips=chip('전체',null)+RECOMMENDED_SITES.map((cat,i)=>chip(catLabel(cat.category),i)).join('');
+  const count=filterSites(siteQuery,siteCategory).reduce((sum,cat)=>sum+cat.items.length,0);
+  return `<div class="fav-wrap">
+    ${rsHead('fav','추천 사이트 모음','정보 수업과 업무에 바로 쓰는 사이트만 골라 담았습니다.')}
+    <div class="rs-search"><label for="siteSearch">사이트 검색</label><div class="rs-search-row"><input id="siteSearch" type="search" value="${esc(siteQuery)}" placeholder="이름·설명·분류 검색 (예: 파이썬, 퀴즈)" data-oninput="rs:search"><button type="button" class="rs-chip" data-onclick="rs:reset">초기화</button></div></div>
+    <div class="rs-chips" role="group" aria-label="사이트 분류">${chips}</div>
+    <p id="siteResultCount" class="rs-result-count" role="status">${count}개 사이트</p>
+    <div id="siteResults">${siteResultsHtml()}</div></div>`;
+}
+function siteResultsHtml() {
+  const cats = filterSites(siteQuery,siteCategory).map(cat => {
+    const i=cat.index;
     const f = famAt(i);
     const cards = cat.items.map(site => `
       <a class="fav-card" href="${safeUrl(site.url)}" target="_blank" rel="noopener noreferrer">
@@ -72,10 +99,7 @@ function renderFav() {
     </section>`;
   }).join('');
 
-  return `<div class="fav-wrap">
-    ${rsHead('fav', '추천 사이트 모음', '정보 수업과 업무에 바로 쓰는 사이트만 골라 담았습니다.')}
-    <div class="rs-chips">${chips}</div>
-    ${cats}</div>`;
+  return cats || '<div class="rs-empty">조건에 맞는 사이트가 없습니다. 검색어를 줄이거나 전체 분류를 선택해 보세요.</div>';
 }
 
 // ── 수업 도구 ────────────────────────────────────────
@@ -137,10 +161,8 @@ function renderSWRec() {
 }
 
 registerActions('click', {
-  'rs:jump': (el, e, i) => {
-    const t = document.getElementById('favSec' + i);
-    if (t) t.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  },
+  'rs:category': (el) => {siteCategory=el.dataset.category==='null'?null:Number(el.dataset.category);updateSiteResults();},
+  'rs:reset': () => {siteQuery='';siteCategory=null;const input=document.getElementById('siteSearch');input.value='';updateSiteResults();input.focus();},
   'rs:os': (el, e, key) => {
     document.querySelectorAll('.rs-chip[data-onclick="rs:os"]').forEach(c => c.classList.toggle('active', c === el));
     document.querySelectorAll('.fav-category[data-os]').forEach(sec => {
@@ -150,3 +172,6 @@ registerActions('click', {
 });
 
 export { renderFav, renderSWRec };
+
+registerActions('input', {'rs:search': el => {siteQuery=el.value;updateSiteResults();}});
+export const __rsTest = {matchesSite,filterSites};

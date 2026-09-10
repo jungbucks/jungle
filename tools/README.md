@@ -69,3 +69,6 @@ UI 수정 절차:
 
 ### 성취기준 탐색 회귀 검사
 `node tools/standards-ui-tests.mjs` — 기존 화면 검토와 같은 Playwright/Edge 환경에서 실행. 360px/1280px 검색 범위 전환, 홈·과목별 기본값, 단원 해설 키보드 열기, 담기 이름, 복사 실패·성공 및 가로 넘침·푸터 높이를 검사합니다. 캡처는 `.ui-review/standards-360.png`, `.ui-review/standards-1280.png`에 저장합니다. 실제 사용자 저장 데이터는 사용하지 않습니다.
+
+### 수업 사이트·도구 검증
+`node tools/resources-ui-tests.mjs` — 사이트 검색과 분류 조합, 빈 결과, 초기화, 도구별 공식 링크 및 모바일·PC 가로 넘침 검사. `.ui-review/resources-360.png`, `resources-1280.png`에 화면 저장.

@@ -1408,7 +1408,7 @@ const SW_DATA = {
       category: "이미지",
       free: true,
       desc: "항상 이미지를 화면에 띄워두고 수업할 수 있는 툴",
-      url: "",
+      url: "https://www.pureref.com/download.php",
       blogUrl: ""
     },
     {
@@ -1416,15 +1416,15 @@ const SW_DATA = {
       category: "검색",
       free: true,
       desc: "가장 빠른 윈도우 파일 검색기",
-      url: "",
+      url: "https://www.voidtools.com/",
       blogUrl: ""
     },
     {
       name: "Imagine",
       category: "이미지 뷰어",
       free: true,
-      desc: "현직 정보 선생님이 만든 가볍고 빠른 이미지 뷰어",
-      url: "",
+      desc: "이미지와 애니메이션을 열고 비교할 수 있는 Windows용 뷰어",
+      url: "https://www.nyam.pe.kr/dev/imagine/",
       blogUrl: ""
     }
   ],
@@ -1456,11 +1456,19 @@ const SW_DATA = {
   ],
   ipad: [
     {
-      name: "GoodNotes / Notability",
+      name: "Goodnotes",
       category: "필기",
       free: false,
       desc: "애플펜슬로 수업 판서를 디지털화하는 대표 필기 앱",
       url: "https://www.goodnotes.com",
+      blogUrl: ""
+    },
+    {
+      name: "Notability",
+      category: "필기",
+      free: false,
+      desc: "손글씨 필기와 PDF 주석으로 수업 내용을 정리하는 앱",
+      url: "https://notability.com/",
       blogUrl: ""
     },
     {

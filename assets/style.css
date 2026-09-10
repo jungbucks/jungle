@@ -1795,3 +1795,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
   .std-card .code-badge{justify-self:start}
   .std-card .card-btns{grid-column:2;justify-content:flex-end}
 }
+
+.rs-search{margin-bottom:16px}.rs-search label{display:block;font-size:13px;font-weight:600;color:var(--g700);margin-bottom:8px}
+.rs-search-row{display:flex;gap:8px;align-items:center}.rs-search input{min-width:0;flex:1;padding:12px;border:1px solid var(--g300);border-radius:8px;background:var(--surface);color:var(--g900);font:inherit;font-size:15px}
+.rs-search input:focus-visible{outline:2px solid var(--brand);outline-offset:2px}.rs-result-count{font-size:13px;color:var(--g600);margin:12px 0 16px}.rs-empty{padding:24px 16px;border:1px solid var(--g200);border-radius:12px;font-size:15px;color:var(--g700)}
