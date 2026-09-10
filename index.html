@@ -129,13 +129,23 @@
 </div>
 
 <footer class="site-footer">
-  <span>Instagram: <a href="https://www.instagram.com/jungbucks" target="_blank" rel="noopener noreferrer" class="site-footer-link">@jungbucks</a></span>
-  <span>Blog: <a href="https://blog.naver.com/kachu_t" target="_blank" rel="noopener noreferrer" class="site-footer-link">blog.naver.com/kachu_t</a></span>
-  <span class="site-footer-tools">
-    <button class="site-footer-btn" id="backupExportBtn" type="button">데이터 백업</button>
-    <button class="site-footer-btn" id="backupImportBtn" type="button">백업 복원</button>
-    <input type="file" id="backupImportFile" accept=".json,application/json" hidden>
-  </span>
+  <div class="site-footer-inner">
+    <div class="site-footer-brand">
+      <span class="site-footer-name"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>정글 · JunGLE</span>
+      <p>정보교사의 수업과 평가를 돕습니다</p>
+    </div>
+    <div class="site-footer-actions">
+      <div class="site-footer-tools" role="group" aria-label="데이터 관리">
+        <button class="site-footer-btn" id="backupExportBtn" type="button">데이터 백업</button>
+        <button class="site-footer-btn" id="backupImportBtn" type="button">백업 복원</button>
+        <input type="file" id="backupImportFile" accept=".json,application/json" hidden>
+      </div>
+      <nav class="site-footer-social" aria-label="제작자 채널">
+        <a href="https://www.instagram.com/jungbucks" target="_blank" rel="noopener noreferrer" class="site-footer-link" aria-label="인스타그램 (새 탭)">인스타그램 ↗</a>
+        <a href="https://blog.naver.com/kachu_t" target="_blank" rel="noopener noreferrer" class="site-footer-link" aria-label="블로그 (새 탭)">블로그 ↗</a>
+      </nav>
+    </div>
+  </div>
 </footer>
 
 <button class="fab" id="fab" aria-expanded="false" aria-controls="collectPanel" aria-label="담은 성취기준 패널 열기/닫기">
