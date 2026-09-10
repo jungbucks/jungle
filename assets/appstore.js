@@ -58,10 +58,10 @@ function renderAppStore() {
         </div>
         <div class="astore-card-body">
           <div class="astore-card-name">${esc(app.name)}</div>
-          <div class="astore-card-meta"><span class="astore-avatar">${esc([...app.author.trim()][0])}</span>${authorHtml}</div>
           <div class="astore-card-desc">${esc(app.desc)}</div>
           ${tags ? `<div class="astore-card-tags">${tags}</div>` : ''}
           <div class="astore-card-footer">
+            <div class="astore-card-meta"><span>제작</span>${authorHtml}</div>
             <a class="astore-card-btn" href="${safeUrl(app.url)}" target="_blank" rel="noopener noreferrer">열기 →</a>
           </div>
         </div>

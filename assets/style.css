@@ -1823,3 +1823,10 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .sw-card .sw-card-btns{margin-top:auto;padding-top:8px}
 .sw-card .sw-btn{min-height:36px;display:inline-flex;align-items:center;border-radius:8px}
 .sw-card .sw-btn:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+
+/* 앱스토어: 용도 설명을 먼저, 제작자와 실행 링크는 마지막에 */
+.astore-card-body{gap:10px}
+.astore-card-body .astore-card-desc{font-size:15px;line-height:1.7;display:block;-webkit-line-clamp:unset;overflow:visible;flex:initial}
+.astore-card-footer{justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:8px}
+.astore-card-meta{white-space:normal;overflow:visible}
+.astore-card-author{white-space:normal;overflow-wrap:anywhere}
