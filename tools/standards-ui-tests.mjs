@@ -1,0 +1,61 @@
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {readFile, mkdir} from 'node:fs/promises';
+import {resolve, dirname, extname, sep, join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+import {createRequire} from 'node:module';
+import {homedir} from 'node:os';
+const require=createRequire(import.meta.url);
+let pw;
+for (const name of [process.env.JUNGLE_PLAYWRIGHT,'playwright',join(homedir(),'.cache/codex-runtimes/codex-primary-runtime/dependencies/node/node_modules/playwright')].filter(Boolean)) {try {pw=require(name);break;} catch {}}
+if(!pw) throw Error('Playwright 필요: tools/README.md 참조');
+const root=resolve(dirname(fileURLToPath(import.meta.url)),'..');
+const server=createServer(async(req,res)=>{try{const name=decodeURIComponent(new URL(req.url,'http://localhost').pathname);if(name.split('/').some(p=>p.startsWith('.')))throw Error('private');const file=resolve(root,'.'+(name==='/'?'/index.html':name));if(!file.startsWith(root+sep))throw Error('path');const data=await readFile(file);res.setHeader('Content-Type',({'.js':'text/javascript','.css':'text/css','.html':'text/html'})[extname(file)]||'application/octet-stream');res.end(data);}catch{res.writeHead(404).end();}});
+await new Promise(r=>server.listen(0,'127.0.0.1',r));
+let browser;
+try {
+ browser=await pw.chromium.launch({channel:process.env.JUNGLE_BROWSER||'msedge',headless:true});
+ await mkdir(join(root,'.ui-review'),{recursive:true});
+ for(const width of [360,1280]) {
+  const context=await browser.newContext({viewport:{width,height:900},serviceWorkers:'block',reducedMotion:'reduce'});
+  const page=await context.newPage(), errors=[];page.on('pageerror',e=>errors.push(e.message));
+  const base='http://127.0.0.1:'+server.address().port;
+  await page.goto(base);await page.locator('#searchInput').fill('알고리즘');
+  await page.waitForFunction(()=>document.querySelectorAll('.std-card').length>0);
+  assert.equal(await page.locator('[data-scope="all"]').getAttribute('aria-pressed'),'true');
+  const all=await page.locator('.std-card').count();
+  await page.locator('[data-scope="subject"]').click();
+  const current=await page.locator('.std-card').count();assert.ok(current>0 && current<all);
+  assert.equal(await page.locator('#searchInput').inputValue(),'알고리즘');
+  const sid=await page.evaluate(()=>SUBJECTS[1].id);
+  assert.ok(await page.locator('.card-chk').evaluateAll((els,sid)=>els.every(e=>e.dataset.sid===sid),sid));
+  await page.locator('[data-scope="all"]').click();assert.equal(await page.locator('.std-card').count(),all);
+  await page.goto(base+'/#'+sid);await page.reload();
+  await page.locator('[data-scope="subject"][aria-pressed="true"]').waitFor();
+  await page.locator('#searchInput').fill('인공 지능');await page.waitForTimeout(220);
+  assert.equal(await page.locator('[data-scope="subject"]').getAttribute('aria-pressed'),'true');
+  await page.locator('#searchClear').click();
+  const card=page.locator('.std-card').filter({has:page.locator('.std-explanation')}).first();
+  const code=await card.locator('.card-chk').getAttribute('data-code');
+  assert.equal(await card.locator('.card-chk').getAttribute('aria-label'),code+' 성취기준 담기');
+  await card.locator('summary').focus();await page.keyboard.press('Enter');
+  assert.ok(await card.locator('details').evaluate(e=>e.open));
+  assert.equal(await card.locator('details p').innerText(),await page.evaluate(code=>ACHV_EXPL[code],code));
+  assert.equal(await card.locator('.std-text').innerText(),await card.locator('.card-chk').getAttribute('data-text'));
+  await page.screenshot({path:join(root,'.ui-review','standards-'+width+'.png')});
+  assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
+  await card.locator('.card-chk').check();await page.locator('#fab').click();
+  await page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}});document.execCommand=()=>false;});
+  await page.locator('#copyAllBtn').click();assert.equal(await page.locator('#copyAllBtn').innerText(),'전체 복사');
+  await page.locator('#panelCloseBtn').click();
+  await card.locator('[data-mode="full"]').click();assert.equal((await card.locator('[data-mode="full"]').textContent()).trim(),'복사');
+  const domain=card.locator('xpath=ancestor::*[contains(@class,"domain-section")]');
+  await domain.locator('.domain-copy-btn').click();assert.equal(await domain.locator('.domain-copy-btn').innerText(),'성취기준 모두 복사');
+  await page.evaluate(()=>{navigator.clipboard.writeText=async t=>{window.testCopied=t};});
+  await card.locator('[data-mode="full"]').click();
+  await page.waitForFunction(()=>window.testCopied);
+  assert.equal(await page.evaluate(()=>window.testCopied),code+' '+await card.locator('.card-chk').getAttribute('data-text'));
+  assert.equal(await card.locator('[data-mode="full"]').innerText(),'복사됨!');
+  assert.deepEqual(errors,[]);console.log(width+'px: 검색 범위·홈/과목 기본값·해설 키보드·담기 이름·복사 실패/성공·넘침 PASS');await context.close();
+ }
+} finally {await browser?.close();server.close();}

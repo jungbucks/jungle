@@ -13,3 +13,22 @@ assert.equal(highlightStandard('인공지능','인공 지능'),'<mark>인공지�
 assert.equal(highlightStandard('인공 지능','인공지능'),'<mark>인공 지능</mark>');
 assert.equal(highlightStandard('<데이터> & 분석','분석 데이터'),'&lt;<mark>데이터</mark>&gt; &amp; <mark>분석</mark>');
 console.log('검색 회귀 10건 통과');
+
+// 복사 API의 결과가 실제 클립보드 성공 여부와 같아야 한다.
+const { clipboardWriteText } = await import('../assets/utils.js');
+const savedClipboard = navigator.clipboard, savedCreate = document.createElement, savedExec = document.execCommand;
+try {
+  document.createElement = () => ({select(){}, remove(){}});
+  navigator.clipboard = {writeText: async () => {}};
+  assert.equal(await clipboardWriteText('성취기준'), true, '성공 결과 반환');
+  navigator.clipboard = {writeText: async () => {throw Error('denied');}};
+  document.execCommand = () => false;
+  assert.equal(await clipboardWriteText('성취기준'), false, '두 복사 방식 실패');
+  document.execCommand = () => true;
+  assert.equal(await clipboardWriteText('성취기준'), true, '대체 복사 성공');
+  navigator.clipboard = undefined;
+  assert.equal(await clipboardWriteText('성취기준'), true, 'clipboard API 없는 환경');
+  document.execCommand = () => {throw Error('blocked');};
+  assert.equal(await clipboardWriteText('성취기준'), false, '대체 복사 예외');
+} finally {navigator.clipboard = savedClipboard; document.createElement = savedCreate; document.execCommand = savedExec;}
+console.log('복사 결과 회귀 5건 통과');

@@ -13,7 +13,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const assetsDir = join(root, 'assets');
 
 // kind별 최소 장수 — 렌더가 조용히 죽어 "위반 0건"으로 통과하는 것을 막는다
-export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2 };
+export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2, stdCard: 1 };
 
 export function checkCounts(screens) {
   const problems = [];
@@ -47,6 +47,8 @@ function captureNode() {
 }
 
 function ensureGlobals() {
+  if (!globalThis.addEventListener) globalThis.addEventListener = () => {};
+  if (!globalThis.scrollTo) globalThis.scrollTo = () => {};
   if (!globalThis.window) globalThis.window = globalThis;
   if (!globalThis.document) {
     globalThis.document = {
@@ -133,6 +135,15 @@ export async function renderAll() {
     });
   }
 
+  // 실제 카드 렌더를 사용해 접근성 이름 누락을 방지한다.
+  const { __stdTest } = await import(pathToFileURL(join(assetsDir, 'app.js')).href);
+  for (const subj of globalThis.SUBJECTS) {
+    if (['overview','simulator','evalplan'].includes(subj.type)) continue;
+    for (const domain of subj.domains || []) for (const item of domain.items) {
+      screens.push({kind:'stdCard', id:'stdCard/' + item.code,
+        html:__stdTest.stdCardHtml(subj, item, new Set()), meta:{code:item.code}});
+    }
+  }
   return screens;
 }
 

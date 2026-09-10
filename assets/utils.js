@@ -218,11 +218,17 @@ export async function clipboardWriteHTML(html, plain) {
   return false;
 }
 
-export function clipboardWriteText(text) {
-  navigator.clipboard.writeText(text).catch(() => {
-    const ta = Object.assign(document.createElement('textarea'), {value:text, style:'position:fixed;opacity:0'});
-    document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove();
-  });
+export async function clipboardWriteText(text) {
+  try {
+    if (navigator.clipboard?.writeText) { await navigator.clipboard.writeText(text); return true; }
+  } catch {}
+  const focused = document.activeElement;
+  const ta = Object.assign(document.createElement('textarea'), {value:text, style:'position:fixed;opacity:0'});
+  try {
+    document.body.appendChild(ta); ta.select();
+    return Boolean(document.execCommand('copy'));
+  } catch { return false; }
+  finally { ta.remove(); focused?.focus?.(); }
 }
 
 export function openModal(id) {

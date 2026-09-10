@@ -1,4 +1,4 @@
-import { matchesStandard, highlightStandard } from './utils.js';
+import { matchesStandard, highlightStandard, uiToast } from './utils.js';
 import { esc, safeUrl, hi, cid, announce, setAccent, resetAccent, initDelegation, registerActions, clipboardWriteText, getAchvKey, findTextByCode } from './utils.js';
 import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META } from './state.js';
 import { renderSimulator } from './simulator.js';
@@ -24,6 +24,7 @@ import { initTypedPlaceholder } from './searchfx.js';
 // --- App State ---
 let curIdx = 0;
 let query = '';
+let searchScope = 'subject';
 let collapsed = new Set();
 let domainFilter = null;
 let homeMode = true;
@@ -256,6 +257,7 @@ function goHome() {
 }
 
 function onHomeSearch(val) {
+  searchScope = 'all';
   query = val.trim();
   if (!query) return;
   homeMode = false; curIdx = 1; domainFilter = null;
@@ -285,6 +287,7 @@ function goToSimulator() {
 }
 
 function selectSubject(i) {
+  searchScope = 'subject';
   homeMode = false;
   curIdx = i; query = ''; domainFilter = null; collapsed.clear();
   document.getElementById('searchInput').value = '';
@@ -302,6 +305,7 @@ document.getElementById('searchInput').addEventListener('input', e => {
   domainFilter = null;  
   document.getElementById('searchClear').classList.toggle('on', query.length > 0);  
   if (homeMode && query) {
+    searchScope = 'all';
     homeMode = false; curIdx = 1;
     renderTabs(); updateSearchVisibility();    
     const inp = e.target;    
@@ -345,13 +349,15 @@ function noResHtml(q) {
 
 // --- Shared markup: domain section + standard card (render / renderGlobalSearch 공용) ---
 function stdCardHtml(subj, it, collectedSet) {
+  const explanation = typeof ACHV_EXPL !== 'undefined' ? ACHV_EXPL[it.code] : '';
   const isCol = collectedSet.has(it.code);
   return `<div class="std-card">
-    <input type="checkbox" class="card-chk" data-code="${esc(it.code)}" data-text="${esc(it.text)}" data-sid="${subj.id}"
+    <input type="checkbox" class="card-chk" aria-label="${esc(it.code)} 성취기준 담기" data-code="${esc(it.code)}" data-text="${esc(it.text)}" data-sid="${subj.id}"
       ${isCol?'checked':''} data-onchange="app:check" style="accent-color:${subj.accent}">
     <div class="card-body">
       <span class="code-badge" style="background:${subj.aLight};color:${subj.accent}">${highlightStandard(it.code,query)}</span>
       <div class="std-text">${highlightStandard(it.text,query)}</div>
+      ${explanation ? `<details class="std-explanation"><summary>성취기준 해설<span class="sr-only"> — ${esc(it.code)}</span></summary><p>${esc(explanation)}</p></details>` : ''}
     </div>
     <div class="card-btns">
       <button class="cbtn sm" aria-label="성취기준 코드만 복사" data-code="${esc(it.code)}" data-text="" data-mode="code"
@@ -396,6 +402,10 @@ function domainSectionHtml(subj, d, collectedSet) {
   </div>`;
 }
 
+function searchScopeHtml() {
+  return `<div class="std-search-scope" role="group" aria-label="검색 범위"><span>검색 범위</span>${[['subject', S().name], ['all', '전체 과목']].map(([value, label]) => `<button type="button" data-onclick="app:searchScope" data-scope="${value}" aria-pressed="${searchScope === value}">${esc(label)}</button>`).join('')}</div>`;
+}
+
 // --- Global search ---
 function renderGlobalSearch() {
   document.getElementById('domainFilter').innerHTML = '';
@@ -403,7 +413,7 @@ function renderGlobalSearch() {
   const collectedSet = new Set(collected.map(c => c.code));
   const results = [];
   let totalVis = 0;
-  SUBJECTS.filter(s => !['overview','simulator','evalplan'].includes(s.type)).forEach(subj => {
+  SUBJECTS.filter(s => !['overview','simulator','evalplan'].includes(s.type) && (searchScope === 'all' || s.id === S().id)).forEach(subj => {
     const matchedDomains = [];
     subj.domains.forEach(d => {
       const items = d.items.filter(it => matchesStandard(it, query));
@@ -411,8 +421,8 @@ function renderGlobalSearch() {
     });
     if (matchedDomains.length) results.push({subj, domains: matchedDomains});
   });
-  let html = `<div class="subject-meta">
-    <span style="font-size:13px;color:var(--g600)">전체 과목에서 검색 중 &mdash; <strong style="color:var(--g900)">${totalVis}개</strong> 성취기준</span>
+  let html = searchScopeHtml() + `<div class="subject-meta">
+    <span style="font-size:13px;color:var(--g600)">${searchScope === 'all' ? '전체 과목' : esc(S().name)}에서 검색 중 &mdash; <strong style="color:var(--g900)">${totalVis}개</strong> 성취기준</span>
   </div>`;
   if (!results.length) {
     html += noResHtml(query);
@@ -519,7 +529,7 @@ function render() {
     return {...d, items};  
   }).filter(d => d.items.length > 0);  
   const hasAchv = s.domains.some(d => ACHIEVEMENTS[getAchvKey(s.id, d.name)]);
-  let html = `<div class="subject-meta">
+  let html = searchScopeHtml() + `<div class="subject-meta">
     <span class="level-badge" style="background:${s.aLight};color:${s.accent}">${s.level}</span>
     <span class="count-info">${(q||domainFilter)?`<strong>${totalVis}</strong> / ${totalAll}개 성취기준`:`총 <strong>${totalAll}</strong>개 성취기준`}</span>
     <span class="meta-actions">
@@ -536,23 +546,23 @@ function render() {
 }
 
 // --- Copy ---
-function copyDomain(sectionId, el) {
+async function copyDomain(sectionId, el) {
   const section = document.getElementById(sectionId);
   if (!section) return;
   const cards = section.querySelectorAll('.card-chk');
   if (!cards.length) return;
   const text = Array.from(cards).map(c => c.dataset.code + ' ' + c.dataset.text).join('\n');
-  clipboardWriteText(text);
+  if (!await clipboardWriteText(text)) { uiToast('복사하지 못했습니다. 다시 시도하거나 텍스트를 직접 선택해 복사하세요.', { isErr: true }); return; }
   const orig = el.textContent;
   el.textContent = '복사됨!'; el.classList.add('ok');
   setTimeout(() => { el.textContent = orig; el.classList.remove('ok'); }, 1400);
 }
 
-function doCopy(btn) {  
+async function doCopy(btn) {
   const text = btn.dataset.mode === 'code'    
     ? btn.dataset.code    
     : btn.dataset.code + ' ' + btn.dataset.text;  
-  clipboardWriteText(text);  
+  if (!await clipboardWriteText(text)) { uiToast('복사하지 못했습니다. 다시 시도하거나 텍스트를 직접 선택해 복사하세요.', { isErr: true }); return; }
   const orig = btn.innerHTML;
   btn.textContent = '복사됨!'; btn.classList.add('ok'); announce('복사됨');
   btn.style.background = 'var(--ok)'; btn.style.borderColor = 'var(--ok)'; btn.style.color = '#fff';
@@ -618,6 +628,7 @@ window.compareSelectSubtab = compareSelectSubtab;
 
 // ── 이벤트 위임 등록 (동적 템플릿 인라인 핸들러 대체) ──
 registerActions('click', {
+  'app:searchScope': function(el) { searchScope = el.dataset.scope === 'all' ? 'all' : 'subject'; render(); document.querySelector('.std-search-scope [data-scope="' + searchScope + '"]')?.focus(); },
   'app:domainFilter':   function(el, e, name) { setDomainFilter(name); },
   'app:subject':        function(el, e, idx) { selectSubject(idx); },
   'app:subjectNav':     function(el, e, idx) { selectSubject(idx); closeMobileNav(); },
@@ -697,3 +708,4 @@ renderTabs();
 updateSearchVisibility();
 render();
 updatePanel();
+export const __stdTest = { stdCardHtml };

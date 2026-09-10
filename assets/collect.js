@@ -32,11 +32,11 @@ export function clearCollect() {
   saveCollected(); updatePanel();
 }
 
-export function copyAll() {
+export async function copyAll() {
   if (!collected.length) return;
   const text = collected.map(c => c.code + ' ' + c.text).join('\n');
   const btn = document.getElementById('copyAllBtn');
-  clipboardWriteText(text);
+  if (!await clipboardWriteText(text)) { uiToast('복사하지 못했습니다. 다시 시도하거나 담은 항목을 파일로 저장하세요.', { isErr: true }); return; }
   btn.textContent = '복사됨!';
   setTimeout(() => btn.textContent = '전체 복사', 1400);
 }

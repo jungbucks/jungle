@@ -45,6 +45,18 @@ function evalTableAlignment(screen) {
 
 export const RULES = [
   {
+    id: 'standard-checkbox-name',
+    왜: '담기 체크박스는 화면 읽기 도구에도 어떤 성취기준을 선택하는지 알려야 한다.',
+    대상: 'stdCard',
+    검사: s => {
+      const input = [...s.html.matchAll(/<input\b([^>]*)>/g)].find(m => attribute(m[1], 'class').split(/\s+/).includes('card-chk'));
+      if (!input) return '담기 체크박스 누락';
+      const label = attribute(input[1], 'aria-label');
+      return label.includes(s.meta.code) && label.includes('담기') ? null : '성취기준 코드와 담기 이름 누락';
+    },
+    가짜: {html:'<input type="checkbox" class="card-chk">', meta:{code:'[12정01-01]'}},
+  },
+  {
     id: 'achv-title-no-internal-key',
     왜: '모달 제목은 사용자가 읽는 이름이다. ACHIEVEMENTS 조회 키(_고/_cs)가 새면 단원명과 어긋난다.',
     대상: 'achvModal',

@@ -66,3 +66,6 @@ UI 수정 절차:
 캡처에는 Playwright와 Edge가 필요하다. 로컬 설치 또는 Codex 번들 Playwright를 자동 탐색한다. 다른 설치는 `$env:JUNGLE_PLAYWRIGHT='설치된 playwright 폴더의 절대 경로'`로 지정한다. Chrome 사용 시 `$env:JUNGLE_BROWSER='chrome'`. 도구가 의존성을 자동 설치하지는 않는다.
 
 결과는 `.ui-review/`에 저장되고 Git에서 제외된다. before/after는 각각 재실행 시 덮어쓰므로 보관할 비교는 따로 복사한다. 새 변경 작업 시작 전에는 두 캡처를 다시 실행한다. 개발 도구이므로 서비스워커 프리캐시에는 넣지 않는다.
+
+### 성취기준 탐색 회귀 검사
+`node tools/standards-ui-tests.mjs` — 기존 화면 검토와 같은 Playwright/Edge 환경에서 실행. 360px/1280px 검색 범위 전환, 홈·과목별 기본값, 해설 키보드 열기, 담기 이름, 복사 실패·성공 및 가로 넘침을 검사합니다. 캡처는 `.ui-review/standards-360.png`, `.ui-review/standards-1280.png`에 저장합니다. 실제 사용자 저장 데이터는 사용하지 않습니다.
