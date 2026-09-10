@@ -79,14 +79,12 @@ function siteResultsHtml() {
     const i=cat.index;
     const f = famAt(i);
     const cards = cat.items.map(site => `
-      <a class="fav-card" href="${safeUrl(site.url)}" target="_blank" rel="noopener noreferrer">
-        <span class="rs-tile">${esc([...site.name.trim()][0])}</span>
+      <a class="fav-card site-card" href="${safeUrl(site.url)}" target="_blank" rel="noopener noreferrer">
         <span class="fav-card-body">
           <span class="fav-card-top">
-            <span class="fav-card-name">${esc(site.name)}</span>
-            <span class="fav-visit">방문 ${ICONS.arrow}</span>
+            <span class="site-card-heading"><span class="rs-tile" aria-hidden="true">${esc([...site.name.trim()][0])}</span><span class="fav-card-name">${esc(site.name)}</span></span>
+            <span class="fav-visit">${ICONS.arrow}<span class="sr-only">새 탭에서 열기</span></span>
           </span>
-          <span class="fav-card-url">${esc(site.url.replace(/^https?:\/\//, '').replace(/\/$/, ''))}</span>
           <span class="fav-card-desc">${esc(site.desc)}</span>
         </span>
       </a>`).join('');

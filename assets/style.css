@@ -1799,3 +1799,14 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .rs-search{margin-bottom:16px}.rs-search label{display:block;font-size:13px;font-weight:600;color:var(--g700);margin-bottom:8px}
 .rs-search-row{display:flex;gap:8px;align-items:center}.rs-search input{min-width:0;flex:1;padding:12px;border:1px solid var(--g300);border-radius:8px;background:var(--surface);color:var(--g900);font:inherit;font-size:15px}
 .rs-search input:focus-visible{outline:2px solid var(--brand);outline-offset:2px}.rs-result-count{font-size:13px;color:var(--g600);margin:12px 0 16px}.rs-empty{padding:24px 16px;border:1px solid var(--g200);border-radius:12px;font-size:15px;color:var(--g700)}
+
+/* 사이트 카드는 제목과 설명을 먼저 읽도록 전체 폭을 사용한다. */
+.site-card .fav-card-body{gap:8px}
+.site-card-heading{display:flex;align-items:center;gap:8px;min-width:0}
+.site-card .rs-tile{width:24px;height:24px;border-radius:8px;font-size:13px}
+.site-card .fav-card-name{line-height:1.4;overflow-wrap:anywhere}
+.site-card .fav-visit{opacity:1}
+.site-card .fav-card-desc{color:var(--g700);line-height:1.6}
+.site-card:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+.fav-wrap .rs-chips{gap:6px;margin-bottom:16px}
+.fav-wrap .rs-chips .rs-chip{padding:4px 10px;min-height:32px;font-size:13px}
