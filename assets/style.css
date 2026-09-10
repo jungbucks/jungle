@@ -1810,3 +1810,16 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .site-card:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
 .fav-wrap .rs-chips{gap:6px;margin-bottom:16px}
 .fav-wrap .rs-chips .rs-chip{padding:4px 10px;min-height:32px;font-size:13px}
+
+/* 도구 카드: 제목 → 분류 → 활용 설명 → 방문 순서 */
+.sw-card .fav-card-body{align-self:stretch;gap:8px}
+.sw-card-heading{display:flex;align-items:center;gap:8px;min-width:0}
+.sw-card .rs-tile{width:24px;height:24px;border-radius:8px}
+.sw-card .rs-tile svg{width:16px;height:16px}
+.sw-card .sw-card-name{line-height:1.4;overflow-wrap:anywhere}
+.sw-card .sw-badges{margin-left:0;flex-wrap:wrap}
+.sw-card .sw-badge{padding:0 8px}
+.sw-card .fav-card-desc{color:var(--g700);line-height:1.6}
+.sw-card .sw-card-btns{margin-top:auto;padding-top:8px}
+.sw-card .sw-btn{min-height:36px;display:inline-flex;align-items:center;border-radius:8px}
+.sw-card .sw-btn:focus-visible{outline:2px solid var(--brand);outline-offset:3px}

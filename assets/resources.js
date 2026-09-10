@@ -131,12 +131,11 @@ function renderSWRec() {
       const blogBtn = sw.blogUrl ? `<a class="sw-btn sw-btn-blog" href="${safeUrl(sw.blogUrl)}" target="_blank" rel="noopener noreferrer">${ICONS.pencil} 직접 써본 후기</a>` : '';
       const btns = (urlBtn || blogBtn) ? `<div class="sw-card-btns">${urlBtn}${blogBtn}</div>` : '';
       return `<div class="fav-card sw-card">
-        <span class="rs-tile">${ICONS[SW_CAT_ICON[sw.category] || 'grid']}</span>
         <span class="fav-card-body">
           <span class="sw-card-top">
-            <span class="sw-card-name">${esc(sw.name)}</span>
-            <span class="sw-badges"><span class="sw-badge sw-badge-cat">${esc(sw.category)}</span>${freeBadge}</span>
+            <span class="sw-card-heading"><span class="rs-tile">${ICONS[SW_CAT_ICON[sw.category] || 'grid']}</span><span class="sw-card-name">${esc(sw.name)}</span></span>
           </span>
+          <span class="sw-badges"><span class="sw-badge sw-badge-cat">${esc(sw.category)}</span>${freeBadge}</span>
           <span class="fav-card-desc">${esc(sw.desc)}</span>
           ${btns}
         </span>

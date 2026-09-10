@@ -38,6 +38,11 @@ try {
   for(const card of await cards.all())assert.equal(await card.locator('a.sw-btn').count(),1);
   assert.equal(await page.locator('.sw-card-name').filter({hasText:'Goodnotes'}).count(),1);
   assert.equal(await page.locator('.sw-card-name').filter({hasText:'Notability'}).count(),1);
+  await page.screenshot({path:join(root,'.ui-review','tools-'+width+'.png')});
+  await page.locator('[data-onclick="rs:os"]').filter({hasText:'Windows'}).click();
+  assert.equal(await page.locator('.sw-card:visible').count(),3);
+  await page.locator('[data-onclick="rs:os"]').filter({hasText:'전체'}).click();
+  assert.equal(await page.locator('.sw-card:visible').count(),9);
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
   assert.deepEqual(errors,[]);console.log(width+'px: 사이트 검색·분류 조합·빈 결과·초기화·도구 링크·넘침 PASS');await context.close();
  }
