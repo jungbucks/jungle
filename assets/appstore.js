@@ -1,7 +1,7 @@
 import { esc, safeUrl } from './utils.js';
 
 // appstore.js — 정보교사 앱스토어 렌더링
-// 스토어 문법: 썸네일 위 타입 배지 오버레이 + 제작자 아바타 + 그리드 안의 점선 '등록 신청' 카드
+// 모두 웹앱이면 유형은 공통 안내로 묶는다. 태그는 주제·활용 방식 순서.
 
 function renderAppStore() {
   const TYPE_META = {
@@ -16,11 +16,12 @@ function renderAppStore() {
   const packageIco = ICO('<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>');
   const inboxIco = ICO('<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>');
 
+  const allWebApps = APPSTORE_APPS.length > 0 && APPSTORE_APPS.every(app => app.type === 'webapp');
   const s = SUBJECTS.find(x => x.id === 'appstore') || {};
   const header = `<div class="ov-head">
     <span class="ov-eyebrow" style="color:${s.accent};background:${s.aLight}">${esc(s.name || '')}</span>
     <h2 class="ov-h2">정보교사 앱스토어</h2>
-    <p class="ov-sub">정보 선생님들이 직접 만든 웹앱·프로그램 모음입니다.</p>
+    <p class="ov-sub">정보 선생님들이 직접 만든 웹앱·프로그램 모음입니다.${allWebApps ? ' 모두 브라우저에서 여는 웹앱입니다.' : ''}</p>
   </div>`;
 
   // 그리드 마지막 자리: 점선 '앱 등록 신청' 카드 — 빈 상태가 곧 초대장
@@ -54,7 +55,7 @@ function renderAppStore() {
       return `<div class="astore-card">
         <div class="astore-thumb-wrap">
           ${thumbHtml}
-          <span class="astore-type-badge" style="color:${tm.color}">${tm.label}</span>
+          ${allWebApps ? '' : `<span class="astore-type-badge" style="color:${tm.color}">${tm.label}</span>`}
         </div>
         <div class="astore-card-body">
           <div class="astore-card-name">${esc(app.name)}</div>
