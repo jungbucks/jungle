@@ -5,12 +5,6 @@ import { esc, registerActions } from './utils.js';
 // 규칙 10: 이 마크업을 바꾸면 index.html 정적 홈 셸도 반드시 같이 갱신할 것.
 // 버튼의 data-onclick 액션(app:subject/app:ovSubtab/app:focusSearch/app:lucky)은 app.js에 등록돼 있다.
 
-function dismissOnboard() {
-  try { localStorage.setItem('jungle_visited', '1'); } catch(e) {}
-  const el = document.getElementById('onboardBanner');
-  if (el) { el.style.transition = 'opacity .2s'; el.style.opacity = '0'; setTimeout(() => el.remove(), 200); }
-}
-
 export function renderHome() {
   const OV_SUBTABS = [
     { key:'map',       label:'교육과정 한눈에 보기', desc:'이수 체계·영역 구조' },
@@ -55,5 +49,10 @@ export function renderHome() {
 }
 
 registerActions('click', {
-  'app:dismissOnboard': function() { dismissOnboard(); },
+  'home:openGuide': function() { document.getElementById('homeGuide').showModal(); },
+  'home:closeGuide': function() { document.getElementById('homeGuide').close(); },
+  'home:startSearch': function() {
+    document.getElementById('homeGuide').close();
+    document.getElementById('searchInput').focus();
+  },
 });
