@@ -1076,16 +1076,15 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .cmp-toggle-btn{padding:9px 22px;border:none;background:#fff;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;color:var(--g600);transition:all .15s}
 .cmp-toggle-btn.active{background:var(--g800);color:#fff}
 .cmp-toggle-btn:not(.active):hover{background:var(--g100)}
-.cmp-reading-note{font-size:var(--fs-caption);color:var(--g500);line-height:1.6;margin:-8px 0 16px}
 .cmp-domain-nav{position:sticky;top:100px;z-index:90;display:flex;align-items:center;gap:16px;background:var(--g50);border-bottom:1px solid var(--g200);margin-bottom:24px;padding:4px 0}
 .cmp-domain-nav-label{flex-shrink:0;font-size:var(--fs-caption);color:var(--g500)}
-.cmp-domain-links{display:flex;gap:16px;min-width:0;overflow-x:auto}
-.cmp-domain-links button{flex-shrink:0;min-height:44px;padding:8px 0;border:0;background:transparent;font:inherit;font-size:var(--fs-body);font-weight:600;color:var(--g700);cursor:pointer;white-space:nowrap}
-.cmp-domain-links button:hover{text-decoration:underline;text-underline-offset:4px}
+.cmp-domain-links{display:flex;gap:8px;min-width:0;overflow-x:auto;padding:4px}
+.cmp-domain-links button{flex-shrink:0;min-height:44px;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;background:var(--surface);font:inherit;font-size:var(--fs-body);font-weight:600;color:var(--g700);cursor:pointer;white-space:nowrap;transition:border-color .15s}
+.cmp-domain-links button:hover{border-color:var(--g400)}
 .cmp-summary{margin:0 0 16px;font-size:var(--fs-body);line-height:1.7;color:var(--g700);word-break:keep-all}
 .cmp-summary strong{font-weight:600;color:var(--g900);margin-right:8px}
 .cmp-domain-block{margin-bottom:32px}
-@media(max-width:640px){.cmp-domain-nav{top:94px;gap:12px}.cmp-domain-links{gap:16px}.cmp-domain-nav-label{font-size:var(--fs-caption)}}
+@media(max-width:640px){.cmp-domain-nav{top:94px;gap:12px}.cmp-domain-links{gap:8px}.cmp-domain-nav-label{font-size:var(--fs-caption)}}
 .cmp-domain-title{display:flex;align-items:center;gap:8px;font-size:16px;font-weight:800;color:var(--g800);margin:0 0 12px;padding-bottom:8px;border-bottom:1px solid var(--g200);scroll-margin-top:176px}
 .cmp-domain-dot{width:10px;height:10px;border-radius:50%;background:var(--g400);flex-shrink:0}
 .cmp-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}

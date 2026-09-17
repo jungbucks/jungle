@@ -357,7 +357,7 @@ function renderCompare(compareSubtab = 'standards') {
         </div>
       </div>`;
     });
-    return `<div class="cmp-wrap">${toggleHtml}<p class="cmp-reading-note">요약은 이해를 돕는 안내입니다. 좌우 항목은 일대일 대응하지 않습니다.</p>${domainNav}${body}</div>`;
+    return `<div class="cmp-wrap">${toggleHtml}${domainNav}${body}</div>`;
   }
   const elemItem = (e, accent) =>
     `<div class="cmp-elem-item"><span class="cmp-elem-dot" style="background:${accent}"></span>${esc(e)}</div>`;
@@ -381,7 +381,7 @@ function renderCompare(compareSubtab = 'standards') {
       </div>
     </div>`;
   });
-  return `<div class="cmp-wrap">${toggleHtml}<p class="cmp-reading-note">요약은 이해를 돕는 안내입니다. 좌우 항목은 일대일 대응하지 않습니다.</p>${domainNav}${body}</div>`;
+  return `<div class="cmp-wrap">${toggleHtml}${domainNav}${body}</div>`;
 }
 
 function renderOverview() {
