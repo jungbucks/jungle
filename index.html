@@ -67,63 +67,93 @@
 
 <div class="subtab-bar" id="subtabBar"><div class="subtab-bar-inner" id="subtabBarInner" role="tablist"></div></div>
 
-<div id="jungleImg" class="home-hero-brand">
-  <div class="hero-wordmark" aria-hidden="true">JunGLE<svg class="hero-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg></div>
-  <div class="hero-sub">복잡해진 22개정 교육과정의 정글, <strong>정글(JunGLE)</strong>과 탐험하자!</div>
-</div>
-
-<div class="search-wrap home-mode" id="searchSection">
+<div class="home-cover">
+  <div id="jungleImg" class="home-hero-brand">
+    <div class="cover-copy"><div class="hero-wordmark" aria-hidden="true">JunGLE<span class="cover-period">.</span></div>
+    <p class="hero-sub">정보 교사를 위한 교육활동 매니저.<br>성취기준, 교과서 등을 한 곳에.</p></div>
+    <svg class="cover-tree" viewBox="0 0 480 440" fill="none" aria-hidden="true">
+<circle cx="255" cy="212" r="183" fill="var(--brand-soft)"/>
+<circle cx="255" cy="212" r="146" stroke="var(--brand-line)" stroke-dasharray="3 10"/>
+<g stroke="var(--brand)" stroke-width="2" stroke-linecap="round"><path d="M244 385V141M244 317C244 256 148 284 148 210M244 269C244 210 345 230 345 151M244 213C244 156 192 166 192 116"/><path d="M210 386h68M223 396h42"/></g>
+<path d="M244 162C199 128 228 64 291 53C300 104 284 151 244 162Z" fill="var(--brand)"/>
+<path d="M247 148L277 76" stroke="var(--brand-line)" stroke-width="2"/>
+<path d="M148 245C99 246 69 211 72 166C120 165 158 193 148 245Z" fill="var(--brand)"/>
+<path d="M141 232L87 182" stroke="var(--brand-line)" stroke-width="2"/>
+<path d="M345 200C305 169 326 119 382 106C390 149 381 188 345 200Z" fill="var(--book)"/>
+<path d="M348 185L369 126" stroke="var(--brand-line)" stroke-width="2"/>
+<path d="M243 323C288 281 349 295 365 342C316 366 269 359 243 323Z" fill="var(--brand-line)"/>
+<path d="M265 327L342 339" stroke="var(--brand)" stroke-width="2"/>
+<g fill="var(--surface)" stroke="var(--brand-line)"><rect x="106" y="91" width="72" height="56" rx="12"/><rect x="330" y="231" width="72" height="56" rx="12"/></g>
+<g stroke="var(--brand)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m132 111-9 9 9 9m20-18 9 9-9 9m-7-21-5 24"/><path d="M347 270v-12m12 12v-24m12 24v-17m12 17v-31"/></g>
+<g fill="var(--curr)"><circle cx="190" cy="86" r="5"/><circle cx="403" cy="197" r="4"/><circle cx="94" cy="286" r="4"/></g>
+</svg>
+  </div>
+  <div class="search-wrap home-mode" id="searchSection">
   <svg class="search-icon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
   <input class="search-input" id="searchInput" type="text" placeholder="성취기준 검색 (예: 알고리즘, 12정01-01)" aria-label="성취기준 검색">
   <button class="search-clear" id="searchClear" aria-label="검색어 지우기">✕</button>
+</div>
+  <div class="home-cover-tools">
+    <div class="cover-examples"><span>예시</span><button type="button" data-onclick="app:exampleSearch" data-query="알고리즘">알고리즘</button><button type="button" data-onclick="app:exampleSearch" data-query="인공지능">인공지능</button><button type="button" data-onclick="app:exampleSearch" data-query="12정01-01">12정01-01</button></div>
+    <div class="cover-assist"><button type="button" data-onclick="app:lucky">랜덤 성취기준</button><details id="onboardBanner" class="cover-help"><summary>사용법</summary><ul><li>키워드나 코드로 전 과목 성취기준을 검색하세요.</li><li>원하는 기준을 복사하거나 여러 개 담으세요.</li><li>담은 기준을 수업·평가 계획에 활용하세요.</li></ul></details></div>
+  </div>
 </div>
 
 <div class="domain-filter" id="domainFilter"></div>
 
 <div class="main" id="main" role="main">
-  <!-- 정적 홈 셸: renderHome()과 동일 마크업으로 첫 페인트 — init의 render()가 innerHTML로 교체.
-       버튼은 JS 로드 전까지 동작하지 않는 시각용 자리이며(핸들러 없음), 데이터 필요한 카드 그리드만 스켈레톤 -->
-  <div class="home-glrow">
-    <span class="home-example-label">예시</span><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="알고리즘">알고리즘</button><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="인공지능">인공지능</button><button class="home-gl-btn home-example" data-onclick="app:exampleSearch" data-query="12정01-01">12정01-01</button>
-    <button class="home-gl-btn"><svg class="gl-btn-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M16 8h.01"/><path d="M8 8h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M12 12h.01"/></svg> 랜덤 성취기준</button>
-  </div>
-  <div class="home-tagline">정보교사를 위한 <strong>올인원 플랫폼</strong></div>
-  <details class="home-help" id="onboardBanner"><summary><span>찾은 성취기준은 바로 복사하거나 담을 수 있어요.</span><span class="home-help-link">사용법 보기</span></summary><ul class="onboard-list"><li>검색창에 키워드나 코드를 입력하면 전 과목에서 찾아요.</li><li>결과의 복사 버튼을 누르거나 체크해서 여러 기준을 담아 보세요.</li><li>담은 기준은 수업·평가 계획에 활용할 수 있어요.</li></ul></details>
-  <div class="home-shortcuts home-shortcuts-below">
-    <button class="home-sc-card">
-      <span class="home-sc-ico" style="--sc-soft:var(--accent-light);--sc-color:var(--accent)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg></span>
-      <span class="home-sc-label">성취기준 검색</span>
-    </button>
-    <button class="home-sc-card">
-      <span class="home-sc-ico" style="--sc-soft:var(--curr-soft);--sc-color:var(--curr)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88"/></svg></span>
-      <span class="home-sc-label">교육과정 분석</span>
-    </button>
-    <button class="home-sc-card">
-      <span class="home-sc-ico" style="--sc-soft:var(--plan-soft);--sc-color:var(--plan)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="8" y="2" width="8" height="4" rx="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg></span>
-      <span class="home-sc-label">수업·평가 계획</span>
-    </button>
-    <button class="home-sc-card">
-      <span class="home-sc-ico" style="--sc-soft:var(--book-soft);--sc-color:var(--book)"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
-      <span class="home-sc-label">교과서 정보</span>
-    </button>
-  </div>
+
   <div class="home-nav">
     <div class="home-nav-section">
       <div class="home-nav-label">성취기준</div>
-      <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>
+      <div class="home-card-grid"><button class="home-card" style="--hc-accent:#3B82F6" data-onclick="app:subject" data-args="[1]">
+      <span class="home-card-name"><span class="home-card-dot"></span>중학교 정보</span>
+    </button><button class="home-card" style="--hc-accent:#10B981" data-onclick="app:subject" data-args="[2]">
+      <span class="home-card-name"><span class="home-card-dot"></span>고등학교 정보</span>
+    </button><button class="home-card" style="--hc-accent:#8B5CF6" data-onclick="app:subject" data-args="[3]">
+      <span class="home-card-name"><span class="home-card-dot"></span>인공지능 기초</span>
+    </button><button class="home-card" style="--hc-accent:#F59E0B" data-onclick="app:subject" data-args="[4]">
+      <span class="home-card-name"><span class="home-card-dot"></span>데이터 과학</span>
+    </button><button class="home-card" style="--hc-accent:#EC4899" data-onclick="app:subject" data-args="[5]">
+      <span class="home-card-name"><span class="home-card-dot"></span>소프트웨어와 생활</span>
+    </button><button class="home-card" style="--hc-accent:#0EA5E9" data-onclick="app:subject" data-args="[6]">
+      <span class="home-card-name"><span class="home-card-dot"></span>정보과학</span>
+    </button><button class="home-card" style="--hc-accent:#F97316" data-onclick="app:subject" data-args="[7]">
+      <span class="home-card-name"><span class="home-card-dot"></span>프로그래밍</span>
+    </button></div>
     </div>
     <div class="home-nav-section">
       <div class="home-nav-label">교육과정</div>
-      <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>
+      <div class="home-card-grid"><button class="home-card" style="--hc-accent:var(--curr)" data-onclick="app:ovSubtab" data-args="[&quot;map&quot;]">
+      <span class="home-card-name"><span class="home-card-dot"></span>교육과정 한눈에 보기</span>
+    </button><button class="home-card" style="--hc-accent:var(--curr)" data-onclick="app:ovSubtab" data-args="[&quot;simulator&quot;]">
+      <span class="home-card-name"><span class="home-card-dot"></span>고교학점제 시뮬레이터</span>
+    </button><button class="home-card" style="--hc-accent:var(--curr)" data-onclick="app:ovSubtab" data-args="[&quot;compare&quot;]">
+      <span class="home-card-name"><span class="home-card-dot"></span>중·고 정보 교육과정 비교</span>
+    </button><button class="home-card" style="--hc-accent:var(--curr)" data-onclick="app:ovSubtab" data-args="[&quot;guide&quot;]">
+      <span class="home-card-name"><span class="home-card-dot"></span>고등학교 선택과목 가이드</span>
+    </button><button class="home-card" style="--hc-accent:var(--curr)" data-onclick="app:ovSubtab" data-args="[&quot;dsai&quot;]">
+      <span class="home-card-name"><span class="home-card-dot"></span>데이터 과학 vs 인공지능 기초</span>
+    </button></div>
     </div>
 
     <div class="home-nav-section">
       <div class="home-nav-label">수업·평가 도구</div>
-      <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>
+      <div class="home-card-grid"><button class="home-card" style="--hc-accent:#7C3AED" data-onclick="app:subject" data-args="[8]">
+      <span class="home-card-name"><span class="home-card-dot"></span>수업/평가계획</span>
+    </button></div>
     </div>
     <div class="home-nav-section">
       <div class="home-nav-label">자료실</div>
-      <div class="home-card-grid" aria-hidden="true"><span class="skel skel-cell"></span><span class="skel skel-cell"></span><span class="skel skel-cell"></span></div>
+      <div class="home-card-grid"><button class="home-card" style="--hc-accent:#059669" data-onclick="app:subject" data-args="[12]">
+      <span class="home-card-name"><span class="home-card-dot"></span>교과서</span>
+    </button><button class="home-card" style="--hc-accent:var(--brand)" data-onclick="app:subject" data-args="[11]">
+      <span class="home-card-name"><span class="home-card-dot"></span>수업 사이트</span>
+    </button><button class="home-card" style="--hc-accent:var(--brand)" data-onclick="app:subject" data-args="[13]">
+      <span class="home-card-name"><span class="home-card-dot"></span>수업 도구</span>
+    </button><button class="home-card" style="--hc-accent:var(--brand)" data-onclick="app:subject" data-args="[14]">
+      <span class="home-card-name"><span class="home-card-dot"></span>앱스토어</span>
+    </button></div>
     </div>
   </div>
 </div>

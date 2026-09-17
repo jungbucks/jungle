@@ -61,6 +61,19 @@ const TEXTBOOK_BOOKS = {
     { publisher: '천재교과서', author: '이준구 외 5명', year: 2024, ebook: 'https://view.chunjae.co.kr/streamdocs/view/sd;streamdocsId=rL-vPRW6Po_jNvU9o9NB4wEN3paUBp_OLweSO_E7xrw;isExternal=eQ;printUse=;enableDapSide=;pageView=' },
     { publisher: '씨마스',    author: '조정원 외 9명', year: 2024, ebook: 'https://viewer.cmass.kr/html/ebook/25exh/high/info_tech/H22_Software/H22_Software_text/H22_Software_text.html' },
   ],
+  cs: [
+    { publisher: '삼양미디어', author: '정종광 외 4명', ebook: null },
+    { publisher: '씨마스', author: '장병철 외 8명', ebook: null },
+  ],
+  prog: [
+    { publisher: '건기원', author: '윤영빈 외 3명', language: 'Python', ebook: null },
+    { publisher: '삼양교육', author: '전현석 외 4명', language: 'Python', ebook: null },
+    { publisher: '웅보출판사', author: '우상호 외 1명', language: 'C', ebook: null },
+    { publisher: '(주)성림출판', author: '강지성 외 3명', language: 'Python', ebook: null },
+    { publisher: '(주)씨마스', author: '장병철 외 4명', language: 'C', ebook: null },
+    { publisher: '(주) 씨마스', author: '임종현 외 3명', language: 'Python', ebook: null },
+    { publisher: '(주)삼양미디어', author: '전현석 외 4명', language: 'C', ebook: null },
+  ],
 };
 
 const GOSIWA_BOOKS = {
@@ -259,13 +272,13 @@ function renderTextbook() {
     if (!list || !list.length) return '<div class="msub-empty">목록 준비 중입니다.</div>';
     return `
       <ul class="tbk-list">${list.map(b => `
-      <li class="tbk-row" data-search="${esc((b.publisher + ' ' + b.author).toLowerCase())}">
-        <span class="tbk-pub">${esc(b.publisher)}</span>
+      <li class="tbk-row" data-search="${esc((b.publisher + ' ' + b.author + ' ' + (b.language || '')).toLowerCase())}">
+        <span class="tbk-pub">${esc(b.publisher)}${b.language ? `<span class="tbk-language">${esc(b.language)}</span>` : ''}</span>
         <span class="tbk-author">${esc(b.author || '')}</span>
-        <span class="tbk-year">${b.year}<span class="tbk-mobile-year">년 발행</span></span>
+        <span class="tbk-year">${b.year ? `${b.year}<span class="tbk-mobile-year">년 발행</span>` : '<span aria-label="발행연도 미등록">—</span>'}</span>
         ${b.ebook
           ? `<a class="tbk-open" href="${safeUrl(b.ebook)}" target="_blank" rel="noopener noreferrer" aria-label="${esc(b.publisher)} 교과서 열기 (새 탭)">열기 <span aria-hidden="true">↗</span></a>`
-          : '<span class="tbk-unavailable">준비 중</span>'}
+          : '<span class="tbk-unavailable">링크 준비 중</span>'}
       </li>`).join('')}</ul>
       <p class="tbk-empty" hidden>검색 결과가 없습니다. 출판사 또는 저자 이름을 바꿔 검색해 보세요.</p>`;
 
@@ -277,6 +290,8 @@ function renderTextbook() {
     { id: 'tbk-ai',   s: ai,   label: '인공지능 기초',      note: '고등학교 진로선택',    list: TEXTBOOK_BOOKS.ai },
     { id: 'tbk-ds',   s: ds,   label: '데이터 과학',        note: '고등학교 진로선택',    list: TEXTBOOK_BOOKS.ds },
     { id: 'tbk-sw',   s: sw,   label: '소프트웨어와 생활',   note: '고등학교 융합선택',    list: TEXTBOOK_BOOKS.sw },
+    { id: 'tbk-cs', s: sid('cs'), label: '정보과학', note: '고등학교 과학계열 진로선택', list: TEXTBOOK_BOOKS.cs, pending: true },
+    { id: 'tbk-prog', s: sid('prog'), label: '프로그래밍', note: '고등학교 전문교과', list: TEXTBOOK_BOOKS.prog, pending: true },
   ];
 
   const chips = SECTIONS.map(sec =>
@@ -285,7 +300,7 @@ function renderTextbook() {
 
   const sections = SECTIONS.map(sec => `
     <section class="tbk-section" id="${sec.id}" aria-label="${esc(sec.label)}"${sec.id !== 'tbk-mid' ? ' hidden' : ''}>
-      <div class="tbk-section-heading"><div><h3>${esc(sec.label)}</h3><p>${esc(sec.note)} · 출판사 가나다순</p></div><span class="tbk-count" role="status">${sec.list.length}종</span></div>
+      <div class="tbk-section-heading"><div><h3>${esc(sec.label)}</h3><p>${esc(sec.note)}${sec.pending ? '' : ' · 출판사 가나다순'}</p></div><span class="tbk-count" role="status">${sec.list.length}종</span></div>
       ${bookCards(sec.s, sec.list)}
     </section>`).join('');
 

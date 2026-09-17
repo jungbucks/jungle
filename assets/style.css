@@ -1841,3 +1841,59 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .astore-card-footer{justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-top:auto;padding-top:8px}
 .astore-card-meta{white-space:normal;overflow:visible}
 .astore-card-author{white-space:normal;overflow-wrap:anywhere}
+
+/* 홈은 매력적인 표지, 내부 페이지는 읽기와 작업 중심으로 유지한다. */
+.home-cover{display:contents}
+.home-cover-tools{display:none}
+.home-cover:has(.home-mode){display:grid;grid-template-columns:minmax(0,1fr) minmax(300px,.8fr);grid-template-rows:auto auto auto;column-gap:48px;position:relative;max-width:1160px;margin:0 auto;padding:28px 24px 24px;min-height:0}
+.home-cover .home-hero-brand{grid-column:1;grid-row:1;padding:0;text-align:left}
+.home-cover .hero-wordmark{font-size:clamp(76px,8vw,116px);letter-spacing:-.07em;font-weight:800;line-height:1;color:var(--brand)}
+.cover-period{color:var(--curr)}
+.home-cover .hero-sub{padding:0;margin:12px 0 20px;font-size:clamp(21px,2.2vw,28px);font-weight:500;line-height:1.5;letter-spacing:-.03em;color:var(--g800)}
+.cover-tree{position:absolute;right:8px;top:12px;width:44%;height:360px;pointer-events:none}
+.home-cover .search-wrap.home-mode{grid-column:1;grid-row:2;margin:0;padding:0;width:100%;max-width:none;align-self:start}
+.home-cover .search-wrap.home-mode .search-input{min-width:0;width:100%;font-family:inherit;padding:18px 44px 18px 48px;border-radius:12px;border-color:var(--brand-line);background:var(--surface);box-shadow:0 8px 24px -16px var(--brand);font-size:16px}
+.home-cover .search-wrap.home-mode .search-icon{left:18px;top:50%}
+.home-cover .search-wrap.home-mode .search-clear{right:16px}
+.home-cover:has(.home-mode) .home-cover-tools{display:block;grid-column:1;grid-row:3;margin-top:12px}
+.cover-examples,.cover-assist{display:flex;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px;color:var(--g500)}
+.home-cover-tools button,.cover-help summary{font:inherit;font-size:13px;min-height:36px;padding:4px 0;border:0;background:none;color:var(--g600);cursor:pointer;display:inline-flex;align-items:center}
+.home-cover-tools button:hover,.cover-help summary:hover{color:var(--brand);text-decoration:underline;text-underline-offset:4px}
+.cover-assist{gap:24px;margin-top:4px}
+.cover-help{position:relative}
+.cover-help summary{list-style:none}
+.cover-help summary::-webkit-details-marker{display:none}
+.cover-help ul{position:absolute;top:100%;left:0;width:280px;z-index:10;background:var(--surface);border:1px solid var(--g200);border-radius:12px;padding:16px 16px 16px 32px;color:var(--g700);font-size:14px;line-height:1.8}
+.home-cover-tools :is(button,summary):focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+.home-nav{max-width:none;margin:0;padding:8px 0 24px;gap:0;border-top:1px solid var(--brand-line)}
+.home-nav-section{display:grid;grid-template-columns:124px minmax(0,1fr);gap:16px;padding:20px 0;border-bottom:1px solid var(--g200);align-items:start}
+.home-nav-label{padding:12px 0;font-size:15px;font-weight:700;color:var(--g500)}
+.home-card-grid{display:flex;flex-wrap:wrap;gap:4px 24px}
+.home-card,.home-card:hover,[data-theme="dark"] .home-card,[data-theme="dark"] .home-card:hover{border:0;border-radius:0;background:transparent;box-shadow:none;transform:none;padding:12px 0;min-height:44px;gap:0}
+.home-card-name{font-size:15px;font-weight:600;line-height:1.4}
+.home-card:hover .home-card-name{color:var(--brand);text-decoration:underline;text-underline-offset:4px}
+.home-card-dot{width:6px;height:6px}
+@media(max-width:760px){
+.home-cover:has(.home-mode){grid-template-columns:minmax(0,1fr);padding:20px 20px 20px;margin:0;min-height:0;gap:0}
+.home-cover .hero-wordmark{font-size:76px}
+.home-cover .hero-sub{font-size:21px;margin:12px 0 16px}
+.cover-tree{right:8px;top:24px;width:48px;height:48px;opacity:.85}
+.home-nav-section{grid-template-columns:1fr;gap:0;padding:12px 0}
+.home-nav-label{padding:8px 0}
+.home-card-grid{gap:0 20px}
+.home-card{padding:10px 0}
+.cover-help ul{left:auto;right:0}
+}
+@media(min-width:761px) and (max-width:1000px){.home-cover:has(.home-mode){column-gap:24px;grid-template-columns:minmax(0,1fr) minmax(260px,.7fr)}.cover-tree{width:40%}.home-cover .hero-wordmark{font-size:88px}}
+
+[data-theme="dark"] .home-cover .search-wrap.home-mode .search-input,[data-theme="dark"] .cover-help ul{background:var(--g100);color:var(--g800)}
+[data-theme="dark"] .cover-tree rect{fill:var(--g100)}
+
+/* 검색 예시는 입력을 시작하는 작은 버튼으로 구분한다. */
+.cover-examples{gap:8px}
+.cover-examples>span{margin-right:4px}
+.cover-examples button{min-height:40px;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;background:var(--surface);color:var(--g700);font-weight:600;box-shadow:0 2px 6px rgba(0,0,0,.08);transition:border-color .15s,box-shadow .15s}
+.cover-examples button:hover{border-color:var(--brand-line);box-shadow:0 3px 8px rgba(0,0,0,.12);text-decoration:none}
+[data-theme="dark"] .cover-examples button{background:var(--g100);color:var(--g800)}
+
+.tbk-language{display:table;font-size:var(--fs-caption);font-weight:600;line-height:1.5;color:var(--g700);background:var(--g100);border:1px solid var(--g200);border-radius:8px;padding:2px 8px;margin-top:4px}
