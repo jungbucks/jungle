@@ -291,6 +291,21 @@ function renderSubjectGuide() {
 function renderCompare(compareSubtab = 'standards') {
   const mid  = SUBJECTS.find(s => s.id === 'middle');
   const high = SUBJECTS.find(s => s.id === 'high');
+  const domains = mid.domains.map(d => d.name);
+  const summaries = {
+    '컴퓨팅 시스템': '중학교는 컴퓨팅 시스템의 동작 원리와 피지컬 컴퓨팅을 다룹니다. 고등학교는 네트워크 구성과 사물인터넷 시스템 설계로 확장합니다.',
+    '데이터': '중학교는 데이터의 표현·수집·구조화·해석을 다룹니다. 고등학교는 압축·암호화와 빅데이터 분석으로 확장합니다.',
+    '알고리즘과 프로그래밍': '중학교는 문제 추상화와 제어 구조·함수 등 프로그래밍 기초를 다룹니다. 고등학교는 문제 분해·모델링, 정렬·탐색, 다차원 데이터와 클래스로 확장합니다.',
+    '인공지능': '중학교는 인공지능의 특성을 이해하고 데이터를 활용해 시스템을 구성·적용합니다. 고등학교는 지능 에이전트와 기계학습 유형을 분석하고 문제 해결에 적용합니다.',
+    '디지털 문화': '중학교는 디지털 사회의 규칙과 개인 정보·저작권 보호를 다룹니다. 고등학교는 기술의 영향 분석과 진로 설계, 정보 보호·보안 기술 활용으로 확장합니다.',
+  };
+  const domainHeader = (domainName, index) => `
+    <h3 class="cmp-domain-title" id="cmp-domain-${index}" tabindex="-1"><span class="cmp-domain-dot" aria-hidden="true"></span>${esc(domainName)}</h3>
+    <p class="cmp-summary"><strong>핵심 차이</strong>${esc(summaries[domainName] || '')}</p>`;
+  const domainNav = `<nav class="cmp-domain-nav" aria-label="비교 영역 바로가기">
+    <span class="cmp-domain-nav-label">영역 바로가기</span>
+    <div class="cmp-domain-links">${domains.map((name, index) => `<button type="button" data-onclick="ov:jumpDomain" data-args="[${index}]" aria-controls="cmp-domain-${index}">${esc(name)}</button>`).join('')}</div>
+  </nav>`;
   const TOGGLE_BTNS = [
     { key: 'standards', label: '성취기준별 비교' },
     { key: 'elements',  label: '핵심요소별 비교' },
@@ -303,20 +318,17 @@ function renderCompare(compareSubtab = 'standards') {
   <div class="cmp-toggle">
     ${TOGGLE_BTNS.map(({ key, label }) => `
       <button class="cmp-toggle-btn${compareSubtab === key ? ' active' : ''}"
-        data-onclick="ov:cmpSubtab" data-args="${esc(JSON.stringify([key]))}">${label}</button>`).join('')}
+        aria-pressed="${compareSubtab === key}" data-onclick="ov:cmpSubtab" data-args="${esc(JSON.stringify([key]))}">${label}</button>`).join('')}
   </div>`;
   if (compareSubtab === 'standards') {
-    const domains = mid.domains.map(d => d.name);
     let body = '';
-    domains.forEach(domainName => {
+    domains.forEach((domainName, index) => {
       const mItems = (mid.domains.find(d => d.name === domainName) || { items: [] }).items;
       const hItems = (high.domains.find(d => d.name === domainName) || { items: [] }).items;
       body += `<div class="cmp-domain-block">
-        <div class="cmp-domain-title">
-          <span class="cmp-domain-dot"></span>${esc(domainName)}
-        </div>
+        ${domainHeader(domainName, index)}
         <div class="cmp-cols">
-          <div class="cmp-col" style="border-top:3px solid ${mid.accent}">
+          <div class="cmp-col">
             <div class="cmp-col-hd" style="background:${mid.aLight};color:${mid.aDark}">
               중학교 정보
               <span class="cmp-col-cnt" style="background:${mid.accent}">총 ${mItems.length}개</span>
@@ -329,7 +341,7 @@ function renderCompare(compareSubtab = 'standards') {
                 </div>`).join('') : `<div class="cmp-empty">해당 없음</div>`}
             </div>
           </div>
-          <div class="cmp-col" style="border-top:3px solid ${high.accent}">
+          <div class="cmp-col">
             <div class="cmp-col-hd" style="background:${high.aLight};color:${high.aDark}">
               고등학교 정보
               <span class="cmp-col-cnt" style="background:${high.accent}">총 ${hItems.length}개</span>
@@ -345,22 +357,22 @@ function renderCompare(compareSubtab = 'standards') {
         </div>
       </div>`;
     });
-    return `<div class="cmp-wrap">${toggleHtml}${body}</div>`;
+    return `<div class="cmp-wrap">${toggleHtml}<p class="cmp-reading-note">요약은 이해를 돕는 안내입니다. 좌우 항목은 일대일 대응하지 않습니다.</p>${domainNav}${body}</div>`;
   }
   const elemItem = (e, accent) =>
     `<div class="cmp-elem-item"><span class="cmp-elem-dot" style="background:${accent}"></span>${esc(e)}</div>`;
   let body = '';
   CORE_ELEMENTS.forEach(({ domain, mid: mElems, high: hElems }) => {
     body += `<div class="cmp-domain-block">
-      <div class="cmp-domain-title"><span class="cmp-domain-dot"></span>${esc(domain)}</div>
+      ${domainHeader(domain, domains.indexOf(domain))}
       <div class="cmp-cols">
-        <div class="cmp-col" style="border-top:3px solid ${mid.accent}">
+        <div class="cmp-col">
           <div class="cmp-col-hd" style="background:${mid.aLight};color:${mid.aDark}">
             중학교 정보 <span class="cmp-col-cnt" style="background:${mid.accent}">${mElems.length}개</span>
           </div>
           <div class="cmp-col-body">${mElems.map(e => elemItem(e, mid.accent)).join('')}</div>
         </div>
-        <div class="cmp-col" style="border-top:3px solid ${high.accent}">
+        <div class="cmp-col">
           <div class="cmp-col-hd" style="background:${high.aLight};color:${high.aDark}">
             고등학교 정보 <span class="cmp-col-cnt" style="background:${high.accent}">${hElems.length}개</span>
           </div>
@@ -369,13 +381,12 @@ function renderCompare(compareSubtab = 'standards') {
       </div>
     </div>`;
   });
-  return `<div class="cmp-wrap">${toggleHtml}${body}</div>`;
+  return `<div class="cmp-wrap">${toggleHtml}<p class="cmp-reading-note">요약은 이해를 돕는 안내입니다. 좌우 항목은 일대일 대응하지 않습니다.</p>${domainNav}${body}</div>`;
 }
 
 function renderOverview() {
   return `<div class="ov-wrap">
   <div class="ov-head">
-    <span class="ov-eyebrow">교육과정 체계</span>
     <h2 class="ov-h2">정보과 교육과정 한눈에 보기</h2>
     <p class="ov-sub">총론 인간상부터 정보 교과 역량까지, 2022 개정 교육과정의 위계를 한 화면에 정리했습니다.</p>
   </div>
@@ -521,5 +532,11 @@ export { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOv
 
 // ── 이벤트 위임 등록 — compareSelectSubtab은 app.js 소유(순환 import 회피 위해 window 경유)
 registerActions('click', {
+  'ov:jumpDomain': function(el, e, index) {
+    const target = document.getElementById('cmp-domain-' + index);
+    if (!target) return;
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ block: 'start', behavior: 'instant' });
+  },
   'ov:cmpSubtab': function(el, e, key) { window.compareSelectSubtab(key); },
 });
