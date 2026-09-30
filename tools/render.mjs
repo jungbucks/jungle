@@ -13,7 +13,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const assetsDir = join(root, 'assets');
 
 // kind별 최소 장수 — 렌더가 조용히 죽어 "위반 0건"으로 통과하는 것을 막는다
-export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2, stdCard: 1 };
+export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2, stdCard: 1, homeShell: 1 };
 
 export function checkCounts(screens) {
   const problems = [];
@@ -87,6 +87,13 @@ function capture(id, fn) {
 export async function renderAll() {
   ensureGlobals();
   const screens = [];
+
+  screens.push({
+    id: 'homeShell/index',
+    kind: 'homeShell',
+    html: readFileSync(join(root, 'index.html'), 'utf8'),
+    meta: {},
+  });
 
   const { getAchvKey } = await import(pathToFileURL(join(assetsDir, 'utils.js')).href);
   const { openAchvModal } = await import(pathToFileURL(join(assetsDir, 'achv.js')).href);

@@ -45,6 +45,22 @@ function evalTableAlignment(screen) {
 
 export const RULES = [
   {
+    id: 'home-cover-svg-safe-fallback-size',
+    왜: '홈 나무 SVG는 새 HTML과 이전 CSS가 잠시 섞여도 브라우저 기본 크기로 커지지 않아야 한다.',
+    대상: 'homeShell',
+    검사: s => {
+      const svg = [...s.html.matchAll(/<svg\b([^>]*)>/gi)]
+        .find(m => attribute(m[1], 'class').split(/\s+/).includes('cover-tree'));
+      if (!svg) return 'cover-tree SVG를 찾지 못했다';
+      const width = Number(attribute(svg[1], 'width'));
+      const height = Number(attribute(svg[1], 'height'));
+      return width > 0 && width <= 64 && height > 0 && height <= 64
+        ? null
+        : `CSS 미적용 시 안전한 크기가 없다: ${width || '없음'}×${height || '없음'}`;
+    },
+    가짜: { html: '<svg class="cover-tree" viewBox="0 0 480 440"></svg>', meta: {} },
+  },
+  {
     id: 'standard-checkbox-name',
     왜: '담기 체크박스는 화면 읽기 도구에도 어떤 성취기준을 선택하는지 알려야 한다.',
     대상: 'stdCard',
