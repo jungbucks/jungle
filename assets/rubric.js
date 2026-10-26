@@ -2,25 +2,66 @@
 import { evalSubjects, evalPlanSubtab } from './evalplan.js';
 import { ALL_ITEMS } from './state.js';
 import { openStdPicker } from './stdpicker.js';
+import * as planCtx from './planctx.js';
 
 // --- Rubric State ---
-let rubricState = (() => {
-  const s = loadState('jungle_rubric', null);
-  if (s) {
-    if (!('task' in s))       s.task = '';
-    if (!('semester' in s))   s.semester = 1;
-    if (!('rubricRows' in s)) s.rubricRows = [];
-    return s;
-  }
-  return { subjectIdx:1, selectedCodes:[], evalName:'', task:'', semester:1, totalScore:'', baseScore:'', generated:false, rubricRows:[] };
-})();
-function rubricChangeSubject(idx) {
-  rubricState.subjectIdx = idx;
-  rubricSave();
+// 저장: jungle_rubric = { v:2, slots: { '<과목id>:<학기>': 루브릭 } } — 예전 단일 객체는 그 과목·학기 슬롯으로 옮긴다.
+// 과목·학기는 수업/평가계획 공통 컨텍스트가 원천(subjectIdx·semester는 표시·복사용 사본).
+function rubricBlank() { return { selectedCodes:[], evalName:'', task:'', totalScore:'', baseScore:'', generated:false, rubricRows:[] }; }
+function rubricNormalize(s) {
+  if (!('task' in s))       s.task = '';
+  if (!('rubricRows' in s)) s.rubricRows = [];
+  if (!Array.isArray(s.selectedCodes)) s.selectedCodes = [];
+  return s;
+}
+const rubricStore = planCtx.slotStore('jungle_rubric', { legacyToSlot: raw => [planCtx.legacyKey(raw), rubricNormalize(raw)] });
+function rubricLoad() {
+  const s = rubricNormalize(rubricStore.load() || rubricBlank());
+  s.subjectIdx = planCtx.subjectIdx();
+  s.semester = planCtx.get().semester;
+  return s;
+}
+let rubricState = rubricLoad();
+let rubricImport = null; // 평가계획 수행평가 불러오기 미리보기
+planCtx.subscribe(() => { rubricState = rubricLoad(); rubricImport = null; });
+function rubricSave() { rubricStore.save(rubricState); }
+// 평가계획의 수행평가 항목 → 루브릭 필드(평가 영역명·성취기준·영역만점=반영비율·학기)
+function rubricFromPerf(it) {
+  return { evalName: it.name || '', selectedCodes: (it.linkedCodes || []).slice(), totalScore: String(Number(it.ratio) || ''), semester: planCtx.get().semester };
+}
+function rubricPickPerf(i) {
+  const perfs = planCtx.consume('evalPerfs') || [];
+  rubricImport = perfs[i] ? { idx: +i, next: rubricFromPerf(perfs[i]) } : null;
   rubricRerender();
 }
-function rubricSave() {
-  try { localStorage.setItem('jungle_rubric', JSON.stringify(rubricState)); } catch(e) {}
+async function rubricApplyImport() {
+  if (!rubricImport) return;
+  const n = rubricImport.next;
+  const filled = rubricState.evalName || rubricState.selectedCodes.length || rubricState.totalScore;
+  if (filled && !(await uiConfirm('평가 영역명·성취기준·영역만점을 평가계획 값으로 바꿉니다. 채점기준 행은 남은 성취기준 것만 유지됩니다. 계속할까요?', { okLabel: '바꾸기' }))) return;
+  rubricState.evalName = n.evalName;
+  rubricState.selectedCodes = n.selectedCodes;
+  rubricState.totalScore = n.totalScore;
+  rubricState.rubricRows = (rubricState.rubricRows || []).filter(x => n.selectedCodes.includes(x.code));
+  rubricImport = null;
+  rubricSave(); rubricRerender();
+  uiToast('평가계획의 수행평가를 불러왔습니다.');
+}
+function rubricImportHtml() {
+  const perfs = planCtx.consume('evalPerfs') || [];
+  if (!perfs.length) return '<p class="rubric-import-none">평가계획에 수행평가 항목을 만들면 여기서 불러올 수 있습니다.</p>';
+  const sel = '<label class="rubric-import-label">평가계획의 수행평가에서 불러오기 <select class="eval-select" data-onchange="rubric:pickPerf"><option value="">선택</option>'
+    + perfs.map((p, i) => '<option value="' + i + '"' + (rubricImport && rubricImport.idx === i ? ' selected' : '') + '>' + esc(p.name) + ' · ' + (Number(p.ratio) || 0) + '%</option>').join('') + '</select></label>';
+  if (!rubricImport) return '<div class="rubric-import">' + sel + '</div>';
+  const n = rubricImport.next;
+  const line = (k, from, to) => '<li><span>' + k + '</span> ' + (from ? '<s>' + esc(from) + '</s> → ' : '') + '<strong>' + esc(to || '—') + '</strong></li>';
+  return '<div class="rubric-import">' + sel
+    + '<ul class="rubric-import-diff" aria-label="불러올 값 미리보기">'
+    + line('평가 영역명', rubricState.evalName !== n.evalName ? rubricState.evalName : '', n.evalName)
+    + line('성취기준', rubricState.selectedCodes.length ? rubricState.selectedCodes.length + '개' : '', n.selectedCodes.length + '개 ' + (n.selectedCodes.length ? '(' + n.selectedCodes.join(', ') + ')' : ''))
+    + line('영역만점', rubricState.totalScore && String(rubricState.totalScore) !== n.totalScore ? rubricState.totalScore + '점' : '', (n.totalScore || '—') + '점 (반영 비율 기준)')
+    + line('학기', '', n.semester + '학기')
+    + '</ul><div class="rubric-import-btns"><button class="pbtn pri" data-onclick="rubric:applyImport">적용</button><button class="pbtn sec" data-onclick="rubric:cancelImport">취소</button></div></div>';
 }
 function rubricRerender() {
   if (!document.getElementById('main').querySelector('.eval-wrap')) return;
@@ -29,8 +70,8 @@ function rubricRerender() {
 }
 async function rubricReset() {
   if (!(await uiConfirm('루브릭 설정이 초기화됩니다. 계속할까요?'))) return;
-  rubricState = { subjectIdx:1, selectedCodes:[], evalName:'', task:'', semester:1, totalScore:'', baseScore:'', generated:false, rubricRows:[] };
-  localStorage.removeItem('jungle_rubric');
+  rubricStore.remove();
+  rubricState = rubricLoad();
   rubricRerender();
 }
 function rubricOpenModal() {
@@ -51,7 +92,6 @@ function rubricSetEvalName(v)  { rubricState.evalName = v; rubricSave(); }
 function rubricSetTotal(v)     { rubricState.totalScore = v; rubricSave(); rubricRerender(); }
 function rubricSetBase(v)      { rubricState.baseScore = v; rubricSave(); rubricRerender(); }
 function rubricSetTask(v)      { rubricState.task = v; rubricSave(); }
-function rubricSetSemester(v)  { rubricState.semester = parseInt(v); rubricSave(); rubricRerender(); }
 function rubricAddRow(code) {
   const entry = (rubricState.rubricRows || []).find(function(r) { return r.code === code; });
   if (entry) { entry.rows.push({ score: '', text: '' }); rubricSave(); rubricRerender(); }
@@ -198,17 +238,11 @@ function renderRubric() {
       }).join('')
     : '<span class="eval-std-empty-hint">선택된 성취기준이 없습니다</span>';
 
-  const subjs = evalSubjects();
-  const subjOpts = subjs.map(function(s) {
-    const idx = SUBJECTS.indexOf(s);
-    return '<option value="' + idx + '"' + (rubricState.subjectIdx === idx ? ' selected' : '') + '>' + esc(s.name) + '</option>';
-  }).join('');
 
   const settingsHtml = '<div class="eval-settings">'
-    + '<div class="eval-settings-title">루브릭 설정</div>'
+    + '<div class="eval-settings-title">루브릭 설정 <span class="eval-settings-sub">과목·학기는 위 기준을 따릅니다</span></div>'
+    + rubricImportHtml()
     + '<div class="eval-settings-row">'
-    + '<div class="eval-field"><span class="eval-label">과목</span>'
-    + '<select class="eval-select" data-onchange="rubric:subject">' + subjOpts + '</select></div>'
     + '<div class="eval-field"><span class="eval-label">성취기준</span>'
     + '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
     + '<button class="pbtn sec" data-onclick="rubric:openModal">+ 선택</button>'
@@ -218,13 +252,6 @@ function renderRubric() {
     + '<div class="eval-settings-row">'
     + '<div class="eval-field"><span class="eval-label">평가 영역명</span>'
     + '<input class="eval-input-text" type="text" value="' + esc(rubricState.evalName) + '" data-oninput="rubric:evalName" placeholder="예: 알고리즘 설계 프로젝트"></div>'
-    + '<div class="eval-field"><span class="eval-label">학기</span>'
-    + '<div class="eval-toggle-group">'
-    + '<button class="eval-toggle' + (rubricState.semester===1?' active':'') + '" data-onclick="rubric:semester" data-args="[1]" aria-pressed="' + (rubricState.semester===1) + '"'
-    + (rubricState.semester===1?' style="background:var(--plan);color:#fff"':'') + '>1학기</button>'
-    + '<button class="eval-toggle' + (rubricState.semester===2?' active':'') + '" data-onclick="rubric:semester" data-args="[2]" aria-pressed="' + (rubricState.semester===2) + '"'
-    + (rubricState.semester===2?' style="background:var(--plan);color:#fff"':'') + '>2학기</button>'
-    + '</div></div>'
     + '<div class="eval-field"><span class="eval-label">영역만점</span>'
     + '<input class="eval-number" type="number" min="1" value="' + esc(String(rubricState.totalScore)) + '" data-oninput="rubric:total" placeholder="예: 20"></div>'
     + '<div class="eval-field"><span class="eval-label">기본점수</span>'
@@ -379,11 +406,13 @@ function renderRubric() {
 }
 
 export { renderRubric };
+export const __rubricTest = { fromPerf: rubricFromPerf, state: () => rubricState };
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체 — window 전역 노출 불필요) ──
 registerActions('click', {
   'rubric:openModal':  function() { rubricOpenModal(); },
-  'rubric:semester':   function(el, e, v) { rubricSetSemester(v); },
+  'rubric:applyImport':  function() { rubricApplyImport(); },
+  'rubric:cancelImport': function() { rubricImport = null; rubricRerender(); },
   'rubric:generate':   function() { rubricGenerate(); },
   'rubric:reset':      function() { rubricReset(); },
   'rubric:removeCode': function(el, e, code) { rubricRemoveCode(code); },
@@ -402,5 +431,5 @@ registerActions('input', {
   'rubric:baseText': function(el, e, code) { rubricSetBaseText(code, el.value); },
 });
 registerActions('change', {
-  'rubric:subject': function(el) { rubricChangeSubject(+el.value); },
+  'rubric:pickPerf': function(el) { if (el.value === '') { rubricImport = null; rubricRerender(); } else rubricPickPerf(el.value); },
 });

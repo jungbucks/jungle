@@ -16,6 +16,7 @@ import { renderFav, renderSWRec } from './resources.js';
 import { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOverview } from './overview.js';
 import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvPicker } from './achv.js';
 import { renderAffective } from './affective.js';
+import * as planCtx from './planctx.js';
 import { renderHome } from './home.js';
 import { collected, updatePanel, togglePanel, closePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
 import { backupExport, backupImport } from './backup.js';
@@ -560,6 +561,8 @@ function render() {
   saveTextbookView();
   evalHideSummary();
   resetAccent(); // 과목 페이지의 accent 오버라이드 복원 — 과목 목록 렌더 시에만 setAccent로 다시 칠함
+  // 수업/평가계획 화면에서만 공통 기준 바(#planCtxBar, #main 밖)를 보인다
+  planCtx.renderCtxBar(!homeMode && S().type === 'evalplan');
   // 성취기준 화면(과목·검색 결과)에서만 0개짜리 '담은 항목' 버튼을 보인다 — 다른 화면에선 담은 게 있을 때만
   document.body.classList.toggle('std-view', !homeMode && !NON_SUBJECT_TYPES.includes(S().type));
   syncSubtabScope();
@@ -792,6 +795,8 @@ if (location.hash && location.hash !== '#home') {
   hashDecode(location.hash);
 }
 bindStaticHandlers();
+// 공통 기준이 바뀌면(각 도구 모듈이 먼저 슬롯을 갈아끼운 뒤) 지금 화면과 서브탭 상태 점을 다시 그린다
+planCtx.subscribe(() => { if (!homeMode && S().type === 'evalplan') { renderTabs(); render(); } });
 document.getElementById('themeToggle').setAttribute('aria-pressed', String(isDark));
 bindSubtabArrows();
 initScrollFades(document.body);

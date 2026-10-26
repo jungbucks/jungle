@@ -45,6 +45,7 @@ const ASSETS = [
   './images/apps/cipher.svg',
   './images/apps/teacher-pay.png',
   './assets/affective.js',
+  './assets/planctx.js',
 ];
 
 // ── install: 개별 캐싱 (파일 하나가 404여도 나머지는 캐시) ──

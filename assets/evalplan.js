@@ -1,23 +1,42 @@
 ﻿import { esc, trapFocus, releaseFocus, loadState, saveState, registerActions, pageHead, emptySteps, uiToast, uiConfirm } from './utils.js';
 import { NON_SUBJECT_TYPES } from './state.js';
 import { openStdPicker } from './stdpicker.js';
+import * as planCtx from './planctx.js';
 
 // --- Eval Plan State ---
 export let evalPlanSubtab = 'lesson';
 export function setEvalPlanSubtab(v) { evalPlanSubtab = v; }
 
-export const evalState = (() => {
+// 저장: jungle_evalplan = { v:2, slots: { '<과목id>:<학기>': 평가계획 } } (planctx 슬롯 저장소).
+// 예전 단일 객체(subjectIdx·semester 포함)는 그 과목·학기 슬롯으로 옮긴다. 아주 옛 키 'evalplan'도 먼저 흡수.
+(() => {
   const migrated = loadState('evalplan', null);
-  if (migrated) { saveState('jungle_evalplan', migrated); try { localStorage.removeItem('evalplan'); } catch(e) {} }
-  return loadState('jungle_evalplan', { semester:1, subjectIdx:1, examCount:1, perfCount:3, items:[], generated:false });
+  if (migrated) { if (!loadState('jungle_evalplan', null)) saveState('jungle_evalplan', migrated); try { localStorage.removeItem('evalplan'); } catch(e) {} }
 })();
+const evalStore = planCtx.slotStore('jungle_evalplan', { legacyToSlot: raw => [planCtx.legacyKey(raw), raw] });
+function evalDefault() { return { examCount:1, perfCount:3, items:[], generated:false, examKind:'final', sumOpen:false }; }
+// evalState는 export const — 슬롯이 바뀌면 같은 객체의 내용만 갈아끼운다(다른 모듈·테스트가 참조)
+export const evalState = {};
+function evalLoadSlot() {
+  const cx = planCtx.get();
+  Object.keys(evalState).forEach(k => delete evalState[k]);
+  Object.assign(evalState, evalDefault(), evalStore.load() || {});
+  evalState.items = (evalState.items || []).map(it => ({ elements: '', period: '', ...it, linkedCodes: Array.isArray(it.linkedCodes) ? it.linkedCodes : [] }));
+  evalState.subjectIdx = planCtx.subjectIdx(cx);
+  evalState.semester = cx.semester;
+}
+let evalImport = null; // 수업계획 가져오기 미리보기 후보
+evalLoadSlot();
+planCtx.subscribe(() => { evalLoadSlot(); evalImport = null; });
+planCtx.provide('evalExams', () => evalState.items.filter(it => it.type === 'exam'));
+planCtx.provide('evalPerfs', () => evalState.items.filter(it => it.type === 'perf'));
 
 // --- Eval Plan ---
 function evalSubjects() {
   return SUBJECTS.filter(s => !NON_SUBJECT_TYPES.includes(s.type));
 }
 
-function evalSave() { saveState('jungle_evalplan', evalState); }
+function evalSave() { evalStore.save(JSON.parse(JSON.stringify(evalState))); }
 
 // --- 순수 계산 헬퍼 (앱·tools/test.mjs 공용 — 로직 단일 소스) ---
 function evalRatioSum(items) { return items.reduce((s, it) => s + (Number(it.ratio) || 0), 0); }
@@ -38,6 +57,86 @@ function evalDistribute(n) {
   if (!n) return [];
   const base = Math.floor(100 / n), rem = 100 - base * n;
   return Array.from({ length: n }, (_, i) => base + (i < rem ? 1 : 0));
+}
+
+// --- 수업계획 → 평가계획 가져오기 (순수 — DOM 모름) ---
+// 정기시험: 연속된 '정기시험' 행 묶음마다 하나. 평가 시기 = 그 주, 성취기준 후보 = 직전 시험 다음 주 ~ 이 시험 직전 주의 성취기준.
+// 수행평가: 평가방법에 '수행평가'가 체크된 수업 행을 단원끼리 묶음. 평가 시기 = 그 행들의 주차 범위.
+function evalExamNames(n, kind) {
+  if (n === 1) return [kind === 'mid' ? '1차 정기시험(중간)' : '2차 정기시험(기말)'];
+  if (n === 2) return ['1차 정기시험(중간)', '2차 정기시험(기말)'];
+  return Array.from({ length: n }, (_, i) => (i + 1) + '차 정기시험');
+}
+function evalCandidatesFromLesson(lesson, examKind = 'final') {
+  if (!lesson || !lesson.rows || !lesson.rows.length) return null;
+  const rows = lesson.rows, F = planCtx.formatMW;
+  const uniq = a => [...new Set(a)];
+  const range = (a, b) => a === b ? F(a) : F(a) + ' ~ ' + F(b);
+  const exams = [];
+  let from = 0;
+  for (let i = 0; i < rows.length; i++) {
+    if (rows[i].kind !== 'exam') continue;
+    let j = i;
+    while (rows[j + 1] && rows[j + 1].kind === 'exam') j++;
+    const codes = uniq(rows.slice(from, i).filter(x => x.kind === 'lesson').flatMap(x => x.linkedCodes));
+    exams.push({ type: 'exam', period: range(rows[i].monthWeek, rows[j].monthWeek), linkedCodes: codes });
+    from = j + 1; i = j;
+  }
+  evalExamNames(exams.length, examKind).forEach((n, k) => { exams[k].name = n; });
+  const groups = new Map();
+  rows.forEach(x => {
+    if (x.kind !== 'lesson' || !(x.evalMethods || []).includes('수행평가')) return;
+    const key = x.domain || '단원 미지정';
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(x);
+  });
+  const perfs = [...groups.entries()].map(([dom, xs], k) => ({
+    type: 'perf', name: '수행평가 ' + (k + 1) + ' — ' + dom,
+    period: range(xs[0].monthWeek, xs[xs.length - 1].monthWeek),
+    linkedCodes: uniq(xs.flatMap(x => x.linkedCodes)),
+  }));
+  return [...exams, ...perfs];
+}
+function evalOpenImport() {
+  const lesson = planCtx.consume('lesson');
+  const cands = evalCandidatesFromLesson(lesson && lesson.generated ? lesson : null, evalState.examKind);
+  if (!cands) { uiToast('이 과목·학기의 수업계획이 아직 없습니다. 수업계획을 먼저 만드세요.', { isErr: true }); return; }
+  if (!cands.length) { uiToast("수업계획에 '정기시험' 주나 평가방법 '수행평가'가 체크된 주가 없습니다.", { isErr: true }); return; }
+  evalImport = cands.map(cd => ({ ...cd, pick: true }));
+  evalRerender();
+  const p = document.getElementById('evalImportBox'); if (p) p.focus();
+}
+async function evalApplyImport() {
+  const picked = (evalImport || []).filter(x => x.pick);
+  if (!picked.length) { uiToast('적용할 항목을 하나 이상 고르세요.', { isErr: true }); return; }
+  if (evalState.items.length && !(await uiConfirm('지금 평가 항목 ' + evalState.items.length + '개를 가져온 항목 ' + picked.length + '개로 바꿉니다. 계속할까요?', { okLabel: '바꾸기' }))) return;
+  const ratios = evalDistribute(picked.length);
+  evalState.items = picked.map((x, i) => x.type === 'exam'
+    ? { type: 'exam', name: x.name, ratio: ratios[i], linkedCodes: x.linkedCodes, scoreChoice: '', scoreEssay: '', elements: '', period: x.period }
+    : { type: 'perf', name: x.name, ratio: ratios[i], linkedCodes: x.linkedCodes, elements: '', period: x.period, isEssay: false });
+  evalState.examCount = picked.filter(x => x.type === 'exam').length;
+  evalState.perfCount = picked.filter(x => x.type === 'perf').length;
+  evalState.generated = true;
+  evalImport = null;
+  evalSave(); evalRerender();
+  uiToast('수업계획에서 ' + picked.length + '개 항목을 가져왔습니다. 반영 비율은 고르게 나눴으니 조정하세요.');
+}
+function evalImportHtml() {
+  if (!evalImport) return '';
+  const row = (x, i) => '<li><label><input type="checkbox"' + (x.pick ? ' checked' : '') + ' data-onchange="ev:importPick" data-args="' + esc(JSON.stringify([i])) + '">'
+    + '<span class="eval-card-type ' + x.type + '">' + (x.type === 'exam' ? '정기시험' : '수행평가') + '</span>'
+    + '<strong>' + esc(x.name) + '</strong></label>'
+    + '<span class="eval-import-meta">' + esc(x.period) + ' · 성취기준 ' + x.linkedCodes.length + '개' + (x.linkedCodes.length ? ' (' + esc(x.linkedCodes.slice(0, 4).join(', ')) + (x.linkedCodes.length > 4 ? ' 외' : '') + ')' : '') + '</span></li>';
+  return '<div class="eval-import" id="evalImportBox" tabindex="-1" role="region" aria-label="수업계획에서 가져오기 미리보기">'
+    + '<div class="eval-import-title">수업계획에서 가져올 항목 <span>체크한 항목만 적용됩니다</span></div>'
+    + '<ul class="eval-import-list">' + evalImport.map(row).join('') + '</ul>'
+    + '<div class="eval-import-btns"><button class="pbtn pri" data-onclick="ev:importApply">적용</button><button class="pbtn sec" data-onclick="ev:importCancel">취소</button></div></div>';
+}
+// 같은 과목·학기 수업계획의 주차 목록(평가 시기 드롭다운용)
+function evalWeekOptions() {
+  const lesson = planCtx.consume('lesson');
+  if (!lesson || !lesson.generated) return [];
+  return [...new Set(lesson.rows.map(x => planCtx.formatMW(x.monthWeek)).filter(Boolean))];
 }
 
 function evalHideSummary() {  
@@ -88,7 +187,7 @@ function evalSummaryHtml() {
   </div>`;
 }
 
-function evalCardHtml(item, i) {
+function evalCardHtml(item, i, weeks = []) {
   const isExam = item.type === 'exam';
   const ai = esc(JSON.stringify([i]));
   const badgesHtml = item.linkedCodes.length
@@ -121,9 +220,10 @@ function evalCardHtml(item, i) {
   const periodPlaceholder = isExam ? (examPlaceholders[examIdx] || '예) 4월 4주') : '예) 5월 2주';
   const periodHtml = `<div class="eval-period-row">
     <span class="eval-period-label">평가 시기</span>
-    <input class="eval-period-input" type="text" value="${esc(item.period||'')}"
+    <input class="eval-period-input" id="evalPeriod_${i}" type="text" value="${esc(item.period||'')}"
       data-oninput="ev:period" data-args="${ai}"
-      placeholder="${periodPlaceholder}">
+      placeholder="${periodPlaceholder}" aria-label="${esc(item.name)} 평가 시기">
+    ${weeks.length ? `<select class="eval-period-pick" data-onchange="ev:periodPick" data-args="${ai}" aria-label="${esc(item.name)} 평가 시기를 수업계획 주차에서 고르기"><option value="">수업계획 주차</option>${weeks.map(w => `<option>${esc(w)}</option>`).join('')}</select>` : ''}
   </div>`;
   return `<div class="eval-card">
     <div style="display:flex;align-items:center;gap:8px">
@@ -152,39 +252,25 @@ function evalCardHtml(item, i) {
 }
 
 function renderEvalPlan() {  
-  const subjs = evalSubjects();  
-  const subjOpts = subjs.map(s => {    
-    const idx = SUBJECTS.indexOf(s);    
-    return `<option value="${idx}"${evalState.subjectIdx===idx?' selected':''}>${esc(s.name)}</option>`;  
-  }).join('');  
   const selSubj = SUBJECTS[evalState.subjectIdx];  
   let itemsHtml;  
   if (!evalState.generated) {    
-    itemsHtml = emptySteps(['학기·과목 설정', '평가 항목 생성', '비율·만점 입력 후 표 미리보기']);
+    itemsHtml = emptySteps(['수업계획에서 가져오기 또는 횟수 설정', '평가 항목 생성', '비율·만점 입력 후 표 미리보기']);
   } else if (!evalState.items.length) {    
     itemsHtml = `<div class="eval-empty">평가 항목이 없습니다. 시험 횟수 또는 수행평가 수를 1 이상으로 설정하세요.</div>`;  
   } else {    
-    itemsHtml = `<div class="eval-cards">${evalState.items.map((it,i) => evalCardHtml(it,i)).join('')}</div>`;  
+    itemsHtml = `<div class="eval-cards">${evalState.items.map((it,i) => evalCardHtml(it,i,evalWeekOptions())).join('')}</div>`;  
   }  
   return `<div class="eval-wrap">
     ${pageHead('수업/평가계획', '평가계획', '정기시험·수행평가 구성과 반영 비율을 설계해 표로 미리봅니다.')}
     <div class="eval-settings">
-      <div class="eval-settings-title">평가 설정</div>
-      <div class="eval-settings-row">        
-        <div class="eval-field">          
-          <span class="eval-label">학기</span>          
-          <div class="eval-toggle-group">            
-            <button class="eval-toggle${evalState.semester===1?' active':''}" data-onclick="ev:semester" data-args="[1]" aria-pressed="${evalState.semester===1}">1학기</button>
-            <button class="eval-toggle${evalState.semester===2?' active':''}" data-onclick="ev:semester" data-args="[2]" aria-pressed="${evalState.semester===2}">2학기</button>
-          </div>        
-        </div>        
-        <div class="eval-field">          
-          <span class="eval-label">과목</span>          
-          <select class="eval-select" data-onchange="ev:subject">${subjOpts}</select>
-        </div>      
-      </div>      
-      <div class="eval-settings-row">        
-        <div class="eval-field">          
+      <div class="eval-settings-title">평가 설정 <span class="eval-settings-sub">과목·학기는 위 기준을 따릅니다</span></div>
+      <div class="eval-settings-row eval-import-row">
+        <button class="pbtn sec" data-onclick="ev:importOpen">수업계획에서 가져오기</button>
+        <span class="eval-import-hint">같은 과목·학기 수업계획의 정기시험 주·수행평가 주를 평가 항목 후보로 만듭니다</span>
+      </div>
+      <div class="eval-settings-row">
+        <div class="eval-field">
           <span class="eval-label">정기시험 횟수 (0~2)</span>          
           <input type="number" class="eval-number" min="0" max="2" value="${evalState.examCount}" data-oninput="ev:examCount">
         </div>        
@@ -200,16 +286,11 @@ function renderEvalPlan() {
         </div>      
       </div>    
     </div>    
+    ${evalImportHtml()}
     ${itemsHtml}  
   </div>`;
 }
 
-function evalSetSemester(n) { evalState.semester=n; evalSave(); evalRerender(); }
-function evalSetSubject(idx) {  
-  evalState.subjectIdx = idx;  
-  evalState.items.forEach(it => it.linkedCodes = []);  
-  evalSave(); evalRerender();
-}
 function evalGenItems() {  
   const ec = evalState.examCount;  
   const pc = evalState.perfCount;  
@@ -269,9 +350,10 @@ async function evalReset() {
   if (!(await uiConfirm('모든 입력값이 초기화됩니다. 계속할까요?'))) return;
   const stash = JSON.parse(JSON.stringify(evalState)); // 되돌리기용 스냅샷
   // evalState는 export const — 재할당은 TypeError로 조용히 실패했음(버그 수정 2026-07-08). 내용 교체 + 저장.
-  Object.assign(evalState, { semester:1, subjectIdx:1, examCount:1, perfCount:3, items:[], generated:false });
+  const keep = { subjectIdx: evalState.subjectIdx, semester: evalState.semester };
+  Object.keys(evalState).forEach(k => delete evalState[k]);
+  Object.assign(evalState, evalDefault(), keep);
   evalSave();
-  localStorage.removeItem('evalplan');
   evalHideSummary();
   evalRerender();
   uiToast('평가계획을 초기화했습니다.', { actionLabel: '되돌리기', onAction() {
@@ -427,14 +509,16 @@ export {
   evalReset, evalOpenPreview, evalClosePreview
 };
 // 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어. 앱 렌더는 위 함수만 사용.
-export const __evalTest = { ratioSum: evalRatioSum, essayRatio: evalEssayRatio, distribute: evalDistribute, previewTableHtml: evalPreviewTableHtml };
+export const __evalTest = { candidates: evalCandidatesFromLesson, examNames: evalExamNames, reload: evalLoadSlot, ratioSum: evalRatioSum, essayRatio: evalEssayRatio, distribute: evalDistribute, previewTableHtml: evalPreviewTableHtml };
 // index.html 정적 모달 버튼(app.js bindStaticHandlers)이 참조 — 유지
 window.evalClosePreview = evalClosePreview;
 window.evalCopyPreviewTable = evalCopyPreviewTable;
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체) ──
 registerActions('click', {
-  'ev:semester':  function(el, e, n) { evalSetSemester(n); },
+  'ev:importOpen':   function() { evalOpenImport(); },
+  'ev:importApply':  function() { evalApplyImport(); },
+  'ev:importCancel': function() { evalImport = null; evalRerender(); },
   'ev:generate':  function() { evalGenItems(); },
   'ev:preview':   function() { evalOpenPreview(); },
   'ev:reset':     function() { evalReset(); },
@@ -452,6 +536,7 @@ registerActions('input', {
   'ev:perfCount':   function(el) { evalState.perfCount = Math.max(1, Math.min(5, +el.value||1)); },
 });
 registerActions('change', {
-  'ev:subject': function(el) { evalSetSubject(+el.value); },
+  'ev:importPick': function(el, e, i) { if (evalImport && evalImport[i]) evalImport[i].pick = el.checked; },
+  'ev:periodPick': function(el, e, i) { if (!el.value) return; evalUpdatePeriod(i, el.value); const inp = document.getElementById('evalPeriod_' + i); if (inp) inp.value = el.value; el.value = ''; },
   'ev:essay':   function(el, e, i) { evalToggleEssay(i, el.checked); },
 });

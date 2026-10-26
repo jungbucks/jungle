@@ -8,6 +8,7 @@ import { evalState, __evalTest as ep } from '../assets/evalplan.js';
 import { openStdPicker } from '../assets/stdpicker.js';
 import '../assets/lessonplan.js';
 import '../assets/rubric.js';
+import * as planCtx from '../assets/planctx.js';
 import { renderAll } from './render.mjs';
 import { runInvariants } from './invariants.mjs';
 
@@ -147,19 +148,22 @@ try {
     assert.throws(() => gc.parseCsv('번호,1차점수,2차점수,수행점수,1차응시\n1,80,90,30,maybe'), /응시/);
     assert.throws(() => gc.parseCsv('순위,번호,환산 총점,석차 백분율,예상 등급\n1,1,80,10%,1등급'), /산출결과/);
   });
-  await test('수업계획과 루브릭도 과목 고정', () => {
-    fire('change', 'lp:subject', [], { value: String(middle) });
+  await test('수업계획과 루브릭도 과목 고정(공통 기준 과목)', async () => {
+    planCtx.set({ subjectId: 'middle', semester: 1 });
+    fire('input', 'lp:startMW', [], { value: '9/1' });
+    fire('input', 'lp:endMW', [], { value: '9/1' });
+    fire('click', 'lp:generate');
+    await new Promise(r => setImmediate(r));
     fire('click', 'lp:openModal', [0]);
     window.stdPickerChangeSubject(high);
     fire('change', 'sp:toggle', [hc], { checked: true });
     window.stdPickerConfirm();
-    assert.deepEqual(JSON.parse(localStorage.getItem('jungle_lesson_plan')).rows[0].linkedCodes, []);
-    fire('change', 'rubric:subject', [], { value: String(middle) });
+    assert.deepEqual(JSON.parse(localStorage.getItem('jungle_lesson_plan')).slots['middle:1'].rows[0].linkedCodes, []);
     fire('click', 'rubric:openModal');
     window.stdPickerChangeSubject(high);
     fire('change', 'sp:toggle', [hc], { checked: true });
     window.stdPickerConfirm();
-    assert.deepEqual(JSON.parse(localStorage.getItem('jungle_rubric')).selectedCodes, []);
+    assert.deepEqual(JSON.parse(localStorage.getItem('jungle_rubric')).slots['middle:1'].selectedCodes, []);
   });
   await test('과목 전환 가능한 선택기는 잠금 상태를 이어받지 않음', () => {
     let chosen;

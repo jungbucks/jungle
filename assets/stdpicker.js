@@ -11,8 +11,12 @@ let _selected = new Set();
 let _onConfirm = null;
 let _selectAll = false;        // 도메인별 "단원 모두 포함" 버튼 표시 여부
 let _highlightDomain = '';     // 강조 + 자동 스크롤할 도메인명
+let _only = null;              // 이 코드들만 기본으로 보여 준다(정기시험 범위). null이면 전부
+let _showAll = false;          // '전체 보기'로 _only 제한을 잠시 푼 상태
 
-export function openStdPicker({ title = '성취기준 선택', subjectIdx = 1, preselected = [], onConfirm, selectAll = false, highlightDomain = '', hint = '', lockSubject = false } = {}) {
+export function openStdPicker({ title = '성취기준 선택', subjectIdx = 1, preselected = [], onConfirm, selectAll = false, highlightDomain = '', hint = '', lockSubject = false, onlyCodes = null, onlyLabel = '' } = {}) {
+  _only = onlyCodes && onlyCodes.length ? { codes: new Set(onlyCodes), label: onlyLabel || '지정 범위' } : null;
+  _showAll = false;
   _subjectIdx = SUBJECTS[subjectIdx]?.domains ? subjectIdx : 1;
   _lockSubject = !!lockSubject;
   _selected = new Set((preselected || []).filter(code => stdPickerValidCodes().has(code)));
@@ -90,8 +94,11 @@ function stdPickerRenderBody() {
     return '<option value="' + idx + '"' + (_subjectIdx === idx ? ' selected' : '') + '>' + esc(s.name) + '</option>';
   }).join('');
   let html = '';
+  const limit = _only && !_showAll ? _only.codes : null;
+  if (_only) html += '<div class="sp-scope">' + (limit ? esc(_only.label) + ' 성취기준 ' + _only.codes.size + '개만 보는 중' : '과목 전체를 보는 중') + ' <button type="button" class="pbtn sec" data-onclick="sp:scope">' + (limit ? '전체 보기' : esc(_only.label) + '만 보기') + '</button></div>';
   if (subj && subj.domains) {
     subj.domains.forEach(function(d, di) {
+      if (limit && !d.items.some(it => limit.has(it.code))) return;
       const isHl = _highlightDomain && d.name === _highlightDomain;
       const header = _selectAll
         ? '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2px"><div class="eval-domain-label" style="margin-bottom:0">' + esc(d.name) + '</div>'
@@ -99,6 +106,7 @@ function stdPickerRenderBody() {
         : '<div class="eval-domain-label">' + esc(d.name) + '</div>';
       html += '<div data-domain="' + esc(d.name) + '"' + (isHl ? ' style="background:var(--g50);border-radius:6px"' : '') + '>' + header;
       d.items.forEach(function(it) {
+        if (limit && !limit.has(it.code)) return;
         const chk = _selected.has(it.code);
         // <label>로 감싸 줄 전체가 클릭 대상 + 화면 읽기용 이름은 코드가 앞에 오도록 aria-label
         html += '<label class="eval-std-item">'
@@ -124,6 +132,7 @@ window.stdPickerChangeSubject = stdPickerChangeSubject;
 // ── 이벤트 위임 등록 (동적 템플릿 인라인 핸들러 대체) ──
 registerActions('click', {
   'sp:selectAll': function(el, e, subjectIdx, di) { stdPickerSelectAll(subjectIdx, di); },
+  'sp:scope': function() { _showAll = !_showAll; stdPickerRenderBody(); const b = document.querySelector('#stdPickerModalBody [data-onclick="sp:scope"]'); if (b) b.focus(); },
 });
 registerActions('change', {
   'sp:toggle': function(el, e, code) { stdPickerToggle(code, el.checked); },

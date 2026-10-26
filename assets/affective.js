@@ -1,4 +1,5 @@
-import { esc, clipboardWriteHTML, uiToast, registerActions } from './utils.js';
+import { esc, clipboardWriteHTML, uiToast, registerActions, pageHead } from './utils.js';
+import * as planCtx from './planctx.js';
 
 // ── 조회·조립 (순수 — DOM 모름) ──
 // AFFECTIVE는 data.js의 전역(boot.js가 window로 브리지). 데이터 있는 과목만 노출.
@@ -15,7 +16,7 @@ function affectiveRows(subjId) {
   return AFFECTIVE[subjId];
 }
 
-let _affSubjId = 'middle';   // 세션 상태 — 새로고침하면 초기화
+// 과목은 수업/평가계획 공통 컨텍스트를 따른다(2026-10 — 예전엔 세션 상태의 개별 선택)
 
 function affRowHtml(subj, r) {
   const values = r.values.map(v => `<div class="aff-val">${esc(v)}</div>`).join('');
@@ -30,28 +31,26 @@ function affRowHtml(subj, r) {
 
 function renderAffective() {
   const subs = affectiveSubjects();
-  const subj = SUBJECTS.find(s => s.id === _affSubjId) || SUBJECTS.find(s => s.id === subs[0].id);
-  const rows = affectiveRows(subj.id) || [];
+  const subj = planCtx.subject();
+  const rows = (subj && affectiveRows(subj.id)) || [];
   const verified = (typeof AFFECTIVE_VERIFIED !== 'undefined') && AFFECTIVE_VERIFIED;
-  const opts = subs.map(s => `<option value="${s.id}"${s.id === subj.id ? ' selected' : ''}>${esc(s.name)}</option>`).join('');
-  const badge = verified ? '' : `<span class="aff-flag">검수 예정 — 예시 초안입니다</span>`;
-  return `<div class="aff-wrap" style="max-width:1200px;margin:0 auto">
-    <div class="aff-head">
-      <div class="aff-title">정의적 영역 평가 예시 ${badge}</div>
-      <div class="aff-tools">
-        <select id="affSubjSel" class="eval-select" data-onchange="aff:subject" aria-label="과목 선택">${opts}</select>
-        <button class="dl-btn" data-onclick="aff:copy" data-args="${esc(JSON.stringify([subj.id]))}">전체 복사</button>
-      </div>
-    </div>
-    <p class="aff-sub">교육과정 가치·태도를 바탕으로 한 영역별 예시입니다. 표를 복사해 평가계획서에 붙여넣어 편집하세요.</p>
-    <table class="aff-table">
-      <thead><tr><th>정의적 영역</th><th>성취기준</th><th>평가내용</th></tr></thead>
-      <tbody>${rows.map(r => affRowHtml(subj, r)).join('')}</tbody>
-    </table>
-  </div>`;
+  // 초안 표시는 상단 배너 한 곳에서만 — 본문은 일반 글자색(흐린 회색이면 비활성 화면처럼 보였다)
+  const banner = verified ? '' : '<div class="aff-banner" role="note"><strong>검수 예정 · 예시 초안</strong> 교육과정 가치·태도를 바탕으로 만든 예시입니다. 학교 사정에 맞게 고쳐 쓰세요.</div>';
+  const head = pageHead('수업/평가계획', '정의적 영역 평가', '교육과정 가치·태도를 영역별 평가 예시로 정리했습니다. 표를 복사해 평가계획서에 붙여넣으세요.');
+  if (!rows.length) {
+    return '<div class="aff-wrap">' + head + banner
+      + '<div class="eval-empty">' + esc(subj ? subj.name : '이 과목') + '의 정의적 영역 예시는 아직 없습니다. 예시가 있는 과목: '
+      + subs.map(s => esc(s.name)).join(', ') + ' — 위 기준에서 과목을 바꿔 보세요.</div></div>';
+  }
+  return '<div class="aff-wrap">' + head + banner
+    + '<div class="aff-tools"><span class="aff-subj">' + esc(subj.name) + ' · 영역 ' + rows.length + '개</span>'
+    + '<button class="dl-btn" data-onclick="aff:copy" data-args="' + esc(JSON.stringify([subj.id])) + '">전체 복사</button></div>'
+    + '<table class="aff-table">'
+    + '<thead><tr><th>정의적 영역</th><th>성취기준</th><th>평가내용</th></tr></thead>'
+    + '<tbody>' + rows.map(r => affRowHtml(subj, r)).join('') + '</tbody>'
+    + '</table></div>';
 }
 
-function affSetSubject(id) { _affSubjId = id; document.getElementById('main').innerHTML = renderAffective(); }
 
 // 복사: 한글 표(HTML). CSS 변수가 해석 안 되므로 리터럴 hex(규칙 5 예외). 코드·평가내용 포함.
 function affCopy(subjId) {
@@ -69,7 +68,6 @@ function affCopy(subjId) {
 
 export { renderAffective };
 
-registerActions('change', { 'aff:subject': function(el) { affSetSubject(el.value); } });
 registerActions('click', { 'aff:copy': function(el, e, id) { affCopy(id); } });
 
 export const __affTest = { affectiveSubjects, affectiveRows };

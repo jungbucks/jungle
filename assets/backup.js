@@ -3,7 +3,7 @@ import { uiToast, uiConfirm } from './utils.js';
 // --- 데이터 백업/복원 (localStorage 소실 대비) ---
 // Gemini API 키는 보안상 제외. 성적 산출기의 번호·점수는 애초에 비영속(개인정보 방침)이라 백업 대상 아님.
 // 새 localStorage 키를 만들면 이 화이트리스트에도 추가할 것.
-const BACKUP_KEYS = ['jungle_collected', 'jungle_rubric', 'jungle_lesson_plan', 'jungle_evalplan', 'jungle_regexam', 'jungle_chasi', 'jungle_gradecalc', 'jungle_darkmode'];
+const BACKUP_KEYS = ['jungle_plan_ctx', 'jungle_collected', 'jungle_rubric', 'jungle_lesson_plan', 'jungle_evalplan', 'jungle_regexam', 'jungle_chasi', 'jungle_gradecalc', 'jungle_darkmode'];
 
 export function backupExport() {
   const payload = { app: 'jungle-backup', version: 1, exported: new Date().toISOString(), data: {} };

@@ -58,6 +58,8 @@ const { __achvTest } = await import('../assets/achv.js');
 const { __affTest } = await import('../assets/affective.js');
 const { __simTest } = await import('../assets/simulator.js');
 const { __lpTest } = await import('../assets/lessonplan.js');
+const { __rubricTest } = await import('../assets/rubric.js');
+const planCtx = await import('../assets/planctx.js');
 const { getAchvKey } = await import('../assets/utils.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
@@ -408,9 +410,67 @@ export function runLessonTests() {
   return { pass, fail: fails.length, fails };
 }
 
+// ── 수업/평가계획 연결(2026-10): 공통 기준·슬롯·가져오기 ──
+export function runPlanLinkTests() {
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { const g = JSON.stringify(got), w = JSON.stringify(want); if (g === w) pass++; else fails.push(name + ': got ' + g + ' · want ' + w); };
+  const { planByDomain, applyChasi, setState, state } = __lpTest;
+  // 1-5 단원 경계 배분: 중학교 정보, 수업 16주(18주 - 정기시험 2주)
+  const mid = SUBJECTS.find(s => s.id === 'middle');
+  const counts = mid.domains.map(d => d.items.length);
+  const p16 = planByDomain(counts, 16);
+  eq('16주: 섞이지 않음', p16.mixed, false);
+  eq('16주: 어떤 주에도 단원 1개', p16.weeks.every(w => new Set(w.map(x => x.d)).size <= 1), true);
+  eq('16주: 성취기준 전부 한 번씩', p16.weeks.flat().length, counts.reduce((a, b) => a + b, 0));
+  eq('16주: 단원마다 최소 1주', counts.map((_, d) => p16.weeks.filter(w => w.some(x => x.d === d)).length >= 1), counts.map(() => true));
+  eq('16주: 주 수 그대로', p16.weeks.length, 16);
+  eq('단원 순서 유지', p16.weeks.flat().map(x => x.d), [...p16.weeks.flat().map(x => x.d)].sort((a, b) => a - b));
+  const p3 = planByDomain(counts, 3);
+  eq('주 < 단원 수 → mixed', p3.mixed, true);
+  eq('mixed도 전부 배치', p3.weeks.flat().length, counts.reduce((a, b) => a + b, 0));
+  const p40 = planByDomain([2, 3], 40);
+  eq('주가 많으면 한 성취기준이 여러 주', p40.weeks.length, 40);
+  // 1-2 차시 계산기 → 주 계획
+  const ch = __chasiTest;
+  Object.assign(ch.state, { year: 2026, semester: 1, startDate: '2026-03-03', endDate: '2026-07-11', days: [1, 0, 1, 0, 0],
+    exceptions: [{ id: 1, label: '1차 고사', start: '2026-04-20', end: '2026-04-24' }, { id: 2, label: '2차 고사', start: '2026-06-29', end: '2026-07-03' }] });
+  const plan = ch.weekPlan();
+  eq('정기시험 주 2개', plan.weeks.filter(w => w.kind === 'exam').map(w => w.mw), ['4/3', '6/5']);
+  eq('시험 주 차시 0', plan.weeks.filter(w => w.kind === 'exam').map(w => w.hours), [0, 0]);
+  eq('주별 차시 합 = 총 차시', plan.total, ch.calc().total);
+  eq('요약 문구', ch.summary(plan).includes('정기시험 2주'), true);
+  ch.state.exceptions.push({ id: 3, label: '체육대회', start: '2026-05-04', end: '2026-05-08' }, { id: 4, label: '여름방학', start: '2026-07-06', end: '2026-07-10' });
+  const plan2 = ch.weekPlan();
+  eq('한 주 전체 행사 → 학교행사', plan2.weeks.find(w => w.mw === '5/1').kind, 'event');
+  eq('방학 사유 → 방학', plan2.weeks.find(w => w.mw === '7/1').kind, 'vacation');
+  // 1-3 수업계획 → 평가 후보
+  const L = (mw, kind, codes = [], dom = '', perf = false) => ({ monthWeek: mw, kind, domain: dom, linkedCodes: codes, content: '', methods: [], evalMethods: perf ? ['수행평가'] : [] });
+  const lesson = { generated: true, rows: [L('3/1', 'lesson', ['a'], 'D1'), L('3/2', 'lesson', ['b'], 'D1', true), L('4/3', 'exam'), L('5/1', 'lesson', ['c'], 'D2', true), L('5/2', 'lesson', ['d'], 'D2', true), L('6/5', 'exam'), L('7/1', 'lesson', ['e'], 'D3')] };
+  const cands = __evalTest.candidates(lesson);
+  eq('시험 2개 이름', cands.filter(x => x.type === 'exam').map(x => x.name), ['1차 정기시험(중간)', '2차 정기시험(기말)']);
+  eq('1차 범위 = 처음~직전 주', cands[0].linkedCodes, ['a', 'b']);
+  eq('2차 범위 = 1차 다음 주~직전 주', cands[1].linkedCodes, ['c', 'd']);
+  eq('시험 시기', cands.slice(0, 2).map(x => x.period), ['4월 3주', '6월 5주']);
+  eq('수행평가 단원별 묶음', cands.filter(x => x.type === 'perf').map(x => [x.linkedCodes, x.period]), [[['b'], '3월 2주'], [['c', 'd'], '5월 1주 ~ 5월 2주']]);
+  eq('시험 1회 기본 이름 = 2차(기말)', __evalTest.examNames(1), ['2차 정기시험(기말)']);
+  eq('시험 1회 중간 선택', __evalTest.examNames(1, 'mid'), ['1차 정기시험(중간)']);
+  eq('수업계획 없으면 null', __evalTest.candidates(null), null);
+  // 루브릭 ← 수행평가
+  eq('루브릭 불러오기 값', __rubricTest.fromPerf({ name: '프로젝트', linkedCodes: ['x'], ratio: 30 }).totalScore, '30');
+  // 슬롯 분리: 2학기로 바꿔도 1학기 수업계획은 남는다
+  planCtx.set({ subjectId: 'middle', semester: 1 });
+  setState({ subjectIdx: 1, semester: 1, startMW: '3/1', endMW: '3/2', generated: true, rows: [L('3/1', 'lesson', ['q'])] });
+  planCtx.set({ semester: 2 });
+  eq('2학기 슬롯은 비어 있음', state().generated, false);
+  planCtx.set({ semester: 1 });
+  eq('1학기로 돌아오면 그대로', state().rows.map(r => r.linkedCodes), [['q']]);
+  setState(null);
+  return { pass, fail: fails.length, fails };
+}
+
 // 전체 집계 (verify [5]가 호출)
 export function runAllTests() {
-  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()], ['simulator', runSimTests()], ['lessonplan', runLessonTests()]];
+  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()], ['simulator', runSimTests()], ['lessonplan', runLessonTests()], ['plan-link', runPlanLinkTests()]];
   let pass = 0; const fails = [];
   for (const [name, r] of parts) { pass += r.pass; r.fails.forEach(f => fails.push(name + ' — ' + f)); }
   return { pass, fail: fails.length, fails, parts };

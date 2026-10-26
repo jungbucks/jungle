@@ -1,24 +1,36 @@
 import { esc, loadState, saveState, registerActions, pageHead, uiConfirm } from './utils.js';
 import { openStdPicker } from './stdpicker.js';
+import * as planCtx from './planctx.js';
 
 // --- RegExam State ---
-let regExamState = (() => {
-  const s = loadState('jungle_regexam', null);
-  if (s) {
-    s.rows = s.rows.map((r, i) => ({
-      num: r.num || i+1,
-      topic: r.topic || '',
-      stds: r.stds || (r.std ? [r.std] : []),
-      level: r.level || '중',
-      score: r.score || 0
-    }));
-    if (!('scoreH' in s)) { s.scoreH = 4; s.scoreM = 3; s.scoreL = 2; }
-    return s;
-  }
-  return { rows: Array.from({length:20}, (_,i) => ({num:i+1, topic:'', stds:[], level:'중', score:0})), scoreH:4, scoreM:3, scoreL:2 };
-})();
-function regExamSave() { saveState('jungle_regexam', regExamState); }
-
+// 저장: jungle_regexam = { v:2, slots: { '<과목id>:<학기>': 출제 계획 } } — 예전 단일 객체는 지금 과목·학기 슬롯으로 옮긴다.
+function regExamBlank() { return { rows: Array.from({length:20}, (_,i) => ({num:i+1, topic:'', stds:[], level:'중', score:0})), scoreH:4, scoreM:3, scoreL:2, examIdx:0 }; }
+function regExamNormalize(s) {
+  s.rows = (s.rows || []).map((r, i) => ({
+    num: r.num || i+1,
+    topic: r.topic || '',
+    stds: r.stds || (r.std ? [r.std] : []),
+    level: r.level || '중',
+    score: r.score || 0
+  }));
+  if (!s.rows.length) s.rows = regExamBlank().rows;
+  if (!('scoreH' in s)) { s.scoreH = 4; s.scoreM = 3; s.scoreL = 2; }
+  if (typeof s.examIdx !== 'number') s.examIdx = 0;
+  return s;
+}
+const regExamStore = planCtx.slotStore('jungle_regexam', { legacyToSlot: raw => [planCtx.legacyKey(raw), regExamNormalize(raw)] });
+let regExamState = regExamNormalize(regExamStore.load() || regExamBlank());
+planCtx.subscribe(() => { regExamState = regExamNormalize(regExamStore.load() || regExamBlank()); });
+function regExamSave() { regExamStore.save(regExamState); }
+// 평가계획의 정기시험 목록과 지금 고른 시험
+function regExamExams() { return planCtx.consume('evalExams') || []; }
+function regExamCurrent() { const ex = regExamExams(); return ex[regExamState.examIdx] || ex[0] || null; }
+// 목표 총점: 평가계획에 선택형·논술형 배점을 넣었으면 그 합, 아니면 100점
+function regExamTarget() {
+  const ex = regExamCurrent();
+  const t = ex ? (Number(ex.scoreChoice) || 0) + (Number(ex.scoreEssay) || 0) : 0;
+  return t > 0 ? t : 100;
+}
 function regExamSetCount(n) {
   const cnt = Math.min(30, Math.max(15, parseInt(n) || 20));
   const cur = regExamState.rows;
@@ -29,6 +41,7 @@ function regExamSetCount(n) {
   }
   regExamSave(); regExamRerender();
 }
+function regExamSetExam(i) { regExamState.examIdx = +i || 0; regExamSave(); regExamRerender(); }
 function regExamSet(idx, field, val) {
   regExamState.rows[idx][field] = field === 'score' ? (parseFloat(val) || 0) : val;
   regExamSave();
@@ -36,14 +49,17 @@ function regExamSet(idx, field, val) {
 }
 function regExamOpenModal(rowIdx) {
   const row = regExamState.rows[rowIdx];
+  const ex = regExamCurrent();
   openStdPicker({
     title: '성취기준 선택',
-    subjectIdx: row.modalSubjIdx || 1,
+    subjectIdx: planCtx.subjectIdx(),
+    lockSubject: true,
     preselected: row.stds,
     selectAll: true,
-    onConfirm: (codes, subjIdx) => {
+    onlyCodes: ex && ex.linkedCodes.length ? ex.linkedCodes : null,
+    onlyLabel: ex ? ex.name + ' 범위' : '',
+    onConfirm: (codes) => {
       row.stds = codes;
-      row.modalSubjIdx = subjIdx;
       regExamSave();
       regExamRerender();
     }
@@ -66,7 +82,8 @@ function regExamUpdateTotal() {
   const el = document.getElementById('regExamTotal');
   if (!el) return;
   el.textContent = total + '점';
-  el.className = 'regexam-total-val' + (Math.abs(total - 100) < 0.001 ? ' ok' : total > 100 ? ' over' : ' under');
+  const target = regExamTarget();
+  el.className = 'regexam-total-val' + (Math.abs(total - target) < 0.001 ? ' ok' : total > target ? ' over' : ' under');
 }
 function regExamAutoScore() {
   const base = { '상': parseFloat(regExamState.scoreH) || 4, '중': parseFloat(regExamState.scoreM) || 3, '하': parseFloat(regExamState.scoreL) || 2 };
@@ -75,7 +92,7 @@ function regExamAutoScore() {
 }
 async function regExamReset() {
   if (!(await uiConfirm('입력 내용을 모두 초기화할까요?'))) return;
-  regExamState.rows = Array.from({length:20}, (_,i) => ({num:i+1, topic:'', stds:[], level:'중', score:0}));
+  regExamState.rows = regExamBlank().rows;
   regExamSave(); regExamRerender();
 }
 function regExamRerender() {
@@ -86,7 +103,14 @@ function renderRegExam() {
   const rows = regExamState.rows;
   const cnt  = rows.length;
   const total = Math.round(rows.reduce((s, r) => s + (parseFloat(r.score) || 0), 0) * 10) / 10;
-  const totalCls = 'regexam-total-val' + (Math.abs(total - 100) < 0.001 ? ' ok' : total > 100 ? ' over' : ' under');
+  const target = regExamTarget();
+  const totalCls = 'regexam-total-val' + (Math.abs(total - target) < 0.001 ? ' ok' : total > target ? ' over' : ' under');
+  const exams = regExamExams(), cur = regExamCurrent();
+  const examBar = exams.length
+    ? `<div class="regexam-exam-bar"><label class="regexam-cnt-label">어느 정기시험인가요?
+        <select class="eval-select" data-onchange="rx:exam">${exams.map((e, i) => `<option value="${i}"${e === cur ? ' selected' : ''}>${esc(e.name)}${e.period ? ' · ' + esc(e.period) : ''}</option>`).join('')}</select></label>
+        <span class="regexam-exam-meta">시험 범위 성취기준 ${cur.linkedCodes.length}개${(Number(cur.scoreChoice) || Number(cur.scoreEssay)) ? ` · 목표 총점 <strong>${target}점</strong> (선택형 ${Number(cur.scoreChoice) || 0} + 논술형 ${Number(cur.scoreEssay) || 0})` : ' · 평가계획에 배점을 넣으면 목표 총점으로 씁니다'}</span></div>`
+    : '<p class="regexam-exam-bar regexam-exam-none">평가계획에 정기시험 항목이 없어 과목 전체 성취기준에서 고릅니다. 목표 총점은 100점입니다.</p>';
 
   const lvStats = { '상': {cnt:0, score:0}, '중': {cnt:0, score:0}, '하': {cnt:0, score:0} };
   rows.forEach(r => {
@@ -130,6 +154,7 @@ function renderRegExam() {
 
   return `<div class="regexam-wrap">
     ${pageHead('수업/평가계획', '정기시험 출제 계획', '문항별 출제 주제·성취기준·난이도·배점을 정리합니다.')}
+    ${examBar}
     <div class="regexam-toolbar">
       <div class="regexam-toolbar-left">
         <label class="regexam-cnt-label">문항 수
@@ -143,13 +168,14 @@ function renderRegExam() {
         <label class="regexam-preset-item">상<input class="regexam-preset-input" type="number" min="0" step="0.5" value="${regExamState.scoreH}" data-oninput="rx:presetH"></label>
         <label class="regexam-preset-item">중<input class="regexam-preset-input" type="number" min="0" step="0.5" value="${regExamState.scoreM}" data-oninput="rx:presetM"></label>
         <label class="regexam-preset-item">하<input class="regexam-preset-input" type="number" min="0" step="0.5" value="${regExamState.scoreL}" data-oninput="rx:presetL"></label>
-        <span class="regexam-total-label">총점</span>
+        <span class="regexam-total-label">총점 (목표 ${target}점)</span>
         <span id="regExamTotal" class="${totalCls}">${total}점</span>
         <button class="pbtn pri" data-onclick="rx:auto">배점 자동계산</button>
         <button class="pbtn sec" data-onclick="rx:reset">초기화</button>
       </div>
     </div>
-    <div class="regexam-table-wrap">
+    <p class="scroll-hint" aria-hidden="true">← 옆으로 밀어 보기</p>
+    <div class="regexam-table-wrap scroll-fade">
       <table class="regexam-table">
         <colgroup><col style="width:48px"><col style="width:22%"><col><col style="width:64px"><col style="width:72px"></colgroup>
         <thead><tr>
@@ -158,11 +184,11 @@ function renderRegExam() {
         <tbody>${rowsHtml}</tbody>
         <tfoot><tr>
           <td colspan="4" style="text-align:right;font-weight:700;padding:8px 12px">합계</td>
-          <td id="regExamTotalFoot" style="font-weight:700;padding:8px 12px;text-align:center;color:${total===100?'#16a34a':total>100?'#dc2626':'#d97706'}">${total}점</td>
+          <td id="regExamTotalFoot" style="font-weight:700;padding:8px 12px;text-align:center;color:${Math.abs(total-target)<0.001?'var(--ok)':total>target?'var(--danger)':'var(--warn)'}">${total}점</td>
         </tr></tfoot>
       </table>
     </div>
-    <p class="regexam-hint">${Math.abs(total-100)<0.001?'✓ 총점이 100점입니다.':total>100?'⚠ 총점이 100점을 초과했습니다 ('+Math.round((total-100)*10)/10+'점 초과)':'⚠ 총점이 100점에 '+Math.round((100-total)*10)/10+'점 부족합니다.'}</p>
+    <p class="regexam-hint${Math.abs(total-target)<0.001?'':' warn'}" role="status">${Math.abs(total-target)<0.001?'✓ 총점이 목표('+target+'점)와 같습니다.':total>target?'⚠ 총점이 목표 '+target+'점보다 '+Math.round((total-target)*10)/10+'점 많습니다.':'⚠ 총점이 목표 '+target+'점에 '+Math.round((target-total)*10)/10+'점 부족합니다.'}</p>
     <div class="regexam-summary">
       <span class="regexam-sum-title">난이도별 집계</span>
       ${summaryHtml}
@@ -171,6 +197,7 @@ function renderRegExam() {
 }
 
 export { renderRegExam };
+export const __rxTest = { target: regExamTarget, current: regExamCurrent, state: () => regExamState };
 
 function regExamSetPreset(field, v) { regExamState[field] = parseFloat(v) || 0; regExamSave(); }
 
@@ -191,4 +218,5 @@ registerActions('change', {
   'rx:topic': function(el, e, i) { regExamSet(i, 'topic', el.value); },
   'rx:level': function(el, e, i) { regExamSet(i, 'level', el.value); },
   'rx:count': function(el) { regExamSetCount(el.value); },
+  'rx:exam':  function(el) { regExamSetExam(el.value); },
 });

@@ -23,6 +23,7 @@
 | 성취기준 다중선택 공용 모달 | `assets/stdpicker.js` |
 | 담은 성취기준 패널 | `assets/collect.js` |
 | 성취수준 모달 | `assets/achv.js` |
+| 수업/평가계획 공통 기준(과목·학기·학년도)·(과목:학기) 슬롯 저장소·도구 간 데이터 제공자 | `assets/planctx.js` (2026-10 — 각 도구는 `slotStore`로 저장, 서로는 `provide`/`consume`로 읽음, 가져오기는 미리보기+확인) |
 | 수업계획 / 평가계획 | `assets/lessonplan.js` / `assets/evalplan.js`(서브탭 상태 `evalPlanSubtab` 원천) |
 | 루브릭 / 정기시험 출제 | `assets/rubric.js` / `assets/regexam.js` |
 | 성적 산출기 / 차시 계산기 | `assets/gradecalc.js` / `assets/chasi.js` |
@@ -62,6 +63,9 @@
 4. 배포는 사용자 몫: **git commit/push**(저장소 있음) 또는 폴더 업로드. **부분 업로드 절대 금지**(JS·index.html·sw.js는 한 묶음 — 2026-07-07 부분배포 사고 전력).
 
 ## localStorage 키 (신규 추가 시 backup.js BACKUP_KEYS도 갱신)
+
+수업/평가계획 도구 키(`jungle_lesson_plan`·`jungle_evalplan`·`jungle_rubric`·`jungle_regexam`·`jungle_chasi`)는 2026-10부터 `{ v:2, slots: { "<과목id>:<학기>": 데이터 } }` 형식 — 예전 단일 객체는 첫 로드 때 그 과목·학기 슬롯으로 옮겨진다. 공통 기준은 `jungle_plan_ctx`.
+
 
 `jungle_collected`(2026-10 이전 `collected` — collect.js가 첫 로드 때 옮기고 삭제, 옛 백업 파일의 `collected`도 복원 시 변환) · `jungle_rubric` · `jungle_lesson_plan`(v2 행 형식 — lessonplan.js `lpMigrate`) · `jungle_evalplan` · `jungle_regexam` · `jungle_gradecalc`(반영비율·동점자 설정만 — **학생 점수·번호는 비영속**) · `jungle_chasi` · `jungle_darkmode` · `jungle_visited` · `jungle_last_used` · Gemini 키(gemini.js, 평문+삭제버튼, 헤더 전송). Gemini 키는 백업 제외.
 

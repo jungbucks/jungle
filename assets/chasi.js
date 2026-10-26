@@ -1,22 +1,36 @@
-import { esc, loadState, saveState, registerActions, pageHead, uiToast } from './utils.js';
+import { esc, registerActions, pageHead, uiToast } from './utils.js';
+import * as planCtx from './planctx.js';
 
 // --- Chasi State ---
-let chasiState = (() => {
-  const s = loadState('jungle_chasi', null);
-  if (s) {
-    if (!s.days) {
-      const n = s.weeklyHours || (s.dayHours ? s.dayHours.reduce((a,b)=>a+b,0) : 0) || 2;
-      s.days = Array.from({length:5}, (_,i) => i < n ? 1 : 0);
-    } else if (typeof s.days[0] === 'boolean') {
-      s.days = s.days.map(d => d ? 1 : 0);
-    }
-    if (!('blockTime' in s)) s.blockTime = false;
-    delete s.weeklyHours; delete s.dayHours;
-    return s;
+// 저장: jungle_chasi = { v:2, slots: { '<과목id>:<학기>': 상태 } }. 학년도·학기는 수업/평가계획 공통 컨텍스트가 원천.
+// chasiState는 같은 객체를 유지한다(테스트·다른 모듈이 참조) — 슬롯이 바뀌면 내용만 갈아끼운다.
+function chasiNormalize(s) {
+  if (!s.days) {
+    const n = s.weeklyHours || (s.dayHours ? s.dayHours.reduce((a,b)=>a+b,0) : 0) || 2;
+    s.days = Array.from({length:5}, (_,i) => i < n ? 1 : 0);
+  } else if (typeof s.days[0] === 'boolean') {
+    s.days = s.days.map(d => d ? 1 : 0);
   }
-  const y = new Date().getFullYear();
-  return { year:y, semester:1, startDate:`${y}-03-03`, endDate:`${y}-07-11`, days:[1,0,1,0,0], blockTime:false, exceptions:[] };
-})();
+  if (!('blockTime' in s)) s.blockTime = false;
+  if (!Array.isArray(s.exceptions)) s.exceptions = [];
+  delete s.weeklyHours; delete s.dayHours;
+  return s;
+}
+const chasiStore = planCtx.slotStore('jungle_chasi', { legacyToSlot: raw => [planCtx.legacyKey(raw), chasiNormalize(raw)] });
+const chasiState = {};
+let chasiPreview = null; // 수업계획 반영 미리보기(열려 있으면 계획 객체)
+function chasiLoadSlot() {
+  const cx = planCtx.get();
+  const s = chasiStore.load();
+  Object.keys(chasiState).forEach(k => delete chasiState[k]);
+  if (s) Object.assign(chasiState, chasiNormalize(s));
+  else Object.assign(chasiState, { days:[1,0,1,0,0], blockTime:false, exceptions:[] });
+  // 컨텍스트의 학년도·학기와 다르면(새 슬롯·학년도 변경) 학기 기본 날짜로 맞춘다
+  if (!s || chasiState.year !== cx.year || chasiState.semester !== cx.semester) {
+    chasiState.year = cx.year; chasiState.semester = cx.semester;
+    chasiApplySemesterDefaults();
+  }
+}
 let chasiExcForm = { label: '', start: '', end: '' };
 
 // 로컬 달력 날짜를 UTC로 변환하지 않는다. 월 경계와 주별 제외일 판정에 같은 키를 쓴다.
@@ -25,7 +39,7 @@ function chasiDateKey(d) {
 }
 
 // --- Chasi Calculator ---
-function chasiSave() { saveState('jungle_chasi', chasiState); }
+function chasiSave() { chasiStore.save(JSON.parse(JSON.stringify(chasiState))); }
 function chasiApplySemesterDefaults() {  
   const y = chasiState.year;  
   if (chasiState.semester === 1) {    
@@ -36,8 +50,8 @@ function chasiApplySemesterDefaults() {
     chasiState.endDate   = `${y + 1}-01-16`;  
   }
 }
-function chasiSetYear(y)      { chasiState.year = parseInt(y); chasiApplySemesterDefaults(); chasiSave(); chasiRerender(); }
-function chasiSetSemester(n)  { chasiState.semester = n; chasiApplySemesterDefaults(); chasiSave(); chasiRerender(); }
+chasiLoadSlot();
+planCtx.subscribe(() => { chasiLoadSlot(); chasiPreview = null; });
 function chasiSetStart(v)     { chasiState.startDate = v; chasiSave(); chasiRerender(); }
 function chasiSetEnd(v)       { chasiState.endDate = v; chasiSave(); chasiRerender(); }
 function chasiToggleDay(i) {  
@@ -145,6 +159,65 @@ function chasiWeeklyAlerts() {
   }  
   return alerts;
 }
+// 주(월~금) 단위 계획: 수업계획 행으로 바로 쓸 수 있는 형태. 월/주 표기는 그 주 월요일 기준(1~5주).
+// 사유에 '고사'·'시험' → 정기시험, '방학' → 방학, 그 밖에 수업이 전부 빠진 주 → 학교행사.
+function chasiWeekPlan() {
+  const { startDate, endDate, days, exceptions } = chasiState;
+  if (!startDate || !endDate || startDate > endDate) return null;
+  const reasonsOn = {};
+  exceptions.forEach(e => {
+    for (let d = new Date(e.start + 'T00:00:00'); d <= new Date(e.end + 'T00:00:00'); d.setDate(d.getDate() + 1)) {
+      const k = chasiDateKey(d);
+      (reasonsOn[k] = reasonsOn[k] || []).push(e.label);
+    }
+  });
+  const semStart = new Date(startDate + 'T00:00:00'), semEnd = new Date(endDate + 'T00:00:00');
+  const dow0 = semStart.getDay();
+  const mon = new Date(semStart); mon.setDate(semStart.getDate() + (dow0 === 0 ? -6 : 1 - dow0));
+  const weeks = [];
+  for (; mon <= semEnd; mon.setDate(mon.getDate() + 7)) {
+    let expected = 0, hours = 0, inRange = 0;
+    const reasons = new Set();
+    for (let i = 0; i < 5; i++) {
+      const day = new Date(mon); day.setDate(mon.getDate() + i);
+      const ds = chasiDateKey(day);
+      if (ds < startDate || ds > endDate) continue;
+      inRange++;
+      const off = reasonsOn[ds];
+      if (off) off.forEach(l => reasons.add(l));
+      const h = days[i] || 0;
+      expected += h;
+      if (!off) hours += h;
+    }
+    if (!inRange) continue;
+    const rs = [...reasons].join(' ');
+    const kind = /고사|시험/.test(rs) ? 'exam' : /방학/.test(rs) ? 'vacation' : (expected > 0 && hours === 0) ? 'event' : 'lesson';
+    weeks.push({ mw: (mon.getMonth() + 1) + '/' + Math.ceil(mon.getDate() / 7), hours, kind, reasons: [...reasons] });
+  }
+  const total = weeks.reduce((a, w) => a + w.hours, 0);
+  return { weeks, total };
+}
+function chasiPlanSummary(plan) {
+  const n = k => plan.weeks.filter(w => w.kind === k).length;
+  return [plan.weeks.length + '주', plan.total + '차시',
+    n('exam') && '정기시험 ' + n('exam') + '주', n('event') && '학교행사 ' + n('event') + '주', n('vacation') && '방학 ' + n('vacation') + '주']
+    .filter(Boolean).join(' · ');
+}
+function chasiOpenPreview() {
+  chasiPreview = chasiWeekPlan();
+  chasiRerender();
+  const p = document.getElementById('chasiPreview'); if (p) p.focus();
+}
+async function chasiApplyPreview() {
+  const plan = chasiPreview;
+  if (!plan) return;
+  const ok = await planCtx.consume('lessonApplyChasi', plan);
+  if (!ok) return;
+  chasiPreview = null;
+  chasiRerender();
+  uiToast('수업계획에 반영했습니다 — ' + chasiPlanSummary(plan), { actionLabel: '수업계획 보기', onAction() { location.hash = '#evalplan:lesson'; } });
+}
+
 function chasiCalc() {  
   const { startDate, endDate, days, exceptions } = chasiState;  
   const weeklyHours = (days || []).reduce((a, b) => a + b, 0);  
@@ -203,23 +276,7 @@ function renderChasi() {
     <div class="chasi-col">
     <div class="chasi-section">
       <div class="chasi-section-title" style="color:${aDark}">${icoCal} 기본 설정</div>
-      <div class="chasi-row">        
-        <div class="chasi-field">          
-          <label class="chasi-label">학년도</label>          
-          <select class="chasi-select" data-onchange="ch:year">            
-            ${YEARS.map(y => `<option value="${y}"${cs.year===y?' selected':''}>${y}년</option>`).join('')}          
-          </select>        
-        </div>        
-        <div class="chasi-field">          
-          <label class="chasi-label">학기</label>          
-          <div class="chasi-seg">            
-            <button class="chasi-seg-btn${cs.semester===1?' active':''}" data-onclick="ch:semester" data-args="[1]" aria-pressed="${cs.semester===1}"
-              style="${cs.semester===1?`background:${accent};color:#fff;border-color:${accent}`:''}">1학기</button>
-            <button class="chasi-seg-btn${cs.semester===2?' active':''}" data-onclick="ch:semester" data-args="[2]" aria-pressed="${cs.semester===2}"
-              style="${cs.semester===2?`background:${accent};color:#fff;border-color:${accent}`:''}">2학기</button>
-          </div>        
-        </div>      
-      </div>      
+      <p class="chasi-ctx-note">학년도·학기는 위 기준(${cs.year}학년도 ${cs.semester}학기)을 따릅니다. 시작일·종료일은 직접 바꿀 수 있습니다.</p>
       <div class="chasi-row">        
         <div class="chasi-field">          
           <label class="chasi-label">시작일</label>          
@@ -318,6 +375,7 @@ function renderChasi() {
           </tr>        
         </tbody>      
       </table>` : ''}      
+      ${total > 0 ? chasiPreviewHtml() : ''}
       ${weekAlerts.length > 0 ? `      
       <div class="chasi-alerts">        
         <div class="chasi-alerts-title">주별 수업 변동</div>
@@ -340,13 +398,29 @@ function renderChasi() {
   </div>`;
 }
 
+function chasiPreviewHtml() {
+  if (!chasiPreview) return '<div class="chasi-apply"><button class="pbtn pri" data-onclick="ch:preview">수업계획에 반영</button><span>주차·주별 차시·시험/행사 주를 같은 과목·학기의 수업계획 표로 보냅니다</span></div>';
+  const p = chasiPreview;
+  const lab = mw => mw.replace('/', '월 ') + '주';
+  const special = p.weeks.filter(w => w.kind !== 'lesson');
+  const KL = { exam: '정기시험', event: '학교행사', vacation: '방학' };
+  return '<div class="chasi-preview" id="chasiPreview" tabindex="-1" role="region" aria-label="수업계획 반영 미리보기">'
+    + '<div class="chasi-preview-sum"><strong>' + esc(chasiPlanSummary(p)) + '</strong></div>'
+    + '<p class="chasi-preview-range">' + lab(p.weeks[0].mw) + ' ~ ' + lab(p.weeks[p.weeks.length - 1].mw) + " · 주별 차시가 수업계획의 '차시' 열로 들어갑니다</p>"
+    + (special.length ? '<ul class="chasi-preview-list">' + special.map(w => '<li><span class="chasi-preview-kind k-' + w.kind + '">' + KL[w.kind] + '</span>' + lab(w.mw) + ' <span class="chasi-preview-why">' + esc(w.reasons.join(', ')) + '</span></li>').join('') + '</ul>' : '')
+    + '<div class="chasi-preview-btns"><button class="pbtn pri" data-onclick="ch:apply">반영하기</button><button class="pbtn sec" data-onclick="ch:cancelPreview">취소</button></div>'
+    + '</div>';
+}
+
 export { renderChasi };
 // 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어. 앱은 renderChasi만 사용.
-export const __chasiTest = { state: chasiState, calc: chasiCalc, alerts: chasiWeeklyAlerts };
+export const __chasiTest = { state: chasiState, calc: chasiCalc, alerts: chasiWeeklyAlerts, weekPlan: chasiWeekPlan, summary: chasiPlanSummary, reload: chasiLoadSlot };
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체) ──
 registerActions('click', {
-  'ch:semester': function(el, e, n) { chasiSetSemester(n); },
+  'ch:preview':  function() { chasiOpenPreview(); },
+  'ch:apply':    function() { chasiApplyPreview(); },
+  'ch:cancelPreview': function() { chasiPreview = null; chasiRerender(); },
   'ch:block':    function() { chasiToggleBlockTime(); },
   'ch:day':      function(el, e, i) { chasiToggleDay(i); },
   'ch:holidays': function() { chasiLoadHolidays(); },
@@ -354,7 +428,6 @@ registerActions('click', {
   'ch:rmExc':    function(el, e, id) { chasiRemoveException(id); },
 });
 registerActions('change', {
-  'ch:year':     function(el) { chasiSetYear(el.value); },
   'ch:start':    function(el) { chasiSetStart(el.value); },
   'ch:end':      function(el) { chasiSetEnd(el.value); },
   'ch:excLabel': function(el) { chasiExcSetField('label', el.value); },
