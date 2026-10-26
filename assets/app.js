@@ -30,8 +30,15 @@ let domainFilter = null;
 let homeMode = true;
 let overviewSubtab = 'map';
 let compareSubtab = 'standards';
-let isDark = (() => { try { return localStorage.getItem('jungle_darkmode') === '1'; } catch(e) { return false; } })();
-if (isDark) document.documentElement.setAttribute('data-theme', 'dark');
+let isDark = (() => {
+  const de = document.documentElement;
+  if (de.getAttribute) return de.getAttribute('data-theme') === 'dark'; // theme-init.js가 이미 정함
+  try { return localStorage.getItem('jungle_darkmode') === '1'; } catch(e) { return false; }
+})();
+
+// 드로어 테마 토글 아이콘 (index.html 헤더 토글과 같은 lucide 계열 stroke SVG)
+const THEME_MOON_SVG = '<svg class="theme-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>';
+const THEME_SUN_SVG = '<svg class="theme-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>';
 
 // --- Helpers ---
 function S() { return SUBJECTS[curIdx]; }
@@ -131,7 +138,8 @@ function renderTabs() {
       const active = isHS;
       const sty = active ? `color:${SUBJECTS[curIdx].accent};background:${SUBJECTS[curIdx].aLight};border-left-color:${SUBJECTS[curIdx].accent}` : '';
       return `<button class="nav-drawer-item${active?' active':''}" style="${sty}" aria-current="${active ? 'page' : 'false'}" data-onclick="app:hsGroupNav">성취기준 ▾</button>`;
-    }).join('') + `<button class="nav-drawer-item" data-onclick="app:suggest" style="margin-top:4px;border-top:1px solid var(--g100);color:var(--plan);font-weight:600">💬 건의사항</button>`;
+    }).join('') + `<button class="nav-drawer-item" data-onclick="app:suggest" style="margin-top:4px;border-top:1px solid var(--g100);color:var(--plan);font-weight:600">💬 건의사항</button>`
+      + `<button class="nav-drawer-item nav-theme" data-onclick="app:theme" aria-pressed="${isDark}">${isDark ? THEME_SUN_SVG : THEME_MOON_SVG}${isDark ? '라이트 모드로 바꾸기' : '다크 모드로 바꾸기'}</button>`;
   }
   
   const subtabBar = document.getElementById('subtabBar');  
@@ -242,12 +250,25 @@ function updateSearchVisibility() {
 }
 
 // --- Dark Mode ---
-function toggleDarkMode() {
-  isDark = !isDark;
+// 첫 테마는 <head>의 theme-init.js가 정한다(저장값 우선, 없으면 운영체제 설정). 여기서는 토글과 OS 변경만.
+function applyTheme(dark) {
+  isDark = dark;
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : '');
-  try { localStorage.setItem('jungle_darkmode', isDark ? '1' : '0'); } catch(e) {}
-  renderTabs();
+  const t = document.getElementById('themeToggle');
+  if (t) { t.setAttribute('aria-pressed', String(isDark)); t.title = isDark ? '라이트 모드로 바꾸기' : '다크 모드로 바꾸기'; }
+  renderTabs(); // 드로어의 토글 문구 갱신
 }
+function toggleDarkMode() {
+  applyTheme(!isDark);
+  try { localStorage.setItem('jungle_darkmode', isDark ? '1' : '0'); } catch(e) {}
+  announce(isDark ? '다크 모드' : '라이트 모드');
+}
+const DARK_MQ = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+if (DARK_MQ && DARK_MQ.addEventListener) DARK_MQ.addEventListener('change', e => {
+  let saved = null;
+  try { saved = localStorage.getItem('jungle_darkmode'); } catch (err) {}
+  if (saved === null) applyTheme(e.matches); // 사용자가 직접 고른 적 없을 때만 운영체제를 따른다
+});
 
 // --- URL Hash State ---
 // 형식: #<화면>[:<서브탭>][?q=<검색어>&scope=all|subject]
@@ -704,6 +725,7 @@ registerActions('click', {
   'app:hsGroup':        function() { selectHSGroup(); },
   'app:hsGroupNav':     function() { selectHSGroup(); closeMobileNav(); },
   'app:suggest':        function() { openSuggest(); },
+  'app:theme':          function() { toggleDarkMode(); },
   'app:ovSubtabSel':    function(el, e, key) { overviewSelectSubtab(key); },
   'app:ovSubtab':       function(el, e, key) { goToOverviewSubtab(key); },
   'app:epSubtab':       function(el, e, key) { lpSelectSubtab(key); },
@@ -739,6 +761,7 @@ function bindStaticHandlers() {
   const on = (id, ev, fn) => { const el = document.getElementById(id); if (el) el.addEventListener(ev, fn); };
   on('headerBrand', 'click', () => goHome());
   on('hamburger', 'click', () => toggleMobileNav());
+  on('themeToggle', 'click', () => toggleDarkMode());
   on('searchClear', 'click', () => clearSearch());
   on('fab', 'click', () => togglePanel());
   on('panelHeader', 'click', () => togglePanel());
@@ -769,6 +792,7 @@ if (location.hash && location.hash !== '#home') {
   hashDecode(location.hash);
 }
 bindStaticHandlers();
+document.getElementById('themeToggle').setAttribute('aria-pressed', String(isDark));
 bindSubtabArrows();
 initScrollFades(document.body);
 initDelegation(document.body);

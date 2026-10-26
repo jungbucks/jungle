@@ -6,6 +6,7 @@ const ASSETS = [
   './assets/fonts/PretendardVariable.woff2',
   './assets/app.js',
   './assets/boot.js',
+  './assets/theme-init.js',
   './assets/state.js',
   './assets/utils.js',
   './assets/data.js',

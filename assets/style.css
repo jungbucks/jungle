@@ -70,6 +70,15 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .tab.active{font-weight:700}
 
 /* HAMBURGER */
+/* 테마 토글: 데스크톱은 메뉴 오른쪽 끝, 1099px 이하(햄버거)에서는 드로어 항목으로 */
+.theme-toggle{display:flex;align-items:center;justify-content:center;align-self:center;width:40px;height:40px;margin-left:6px;padding:0;border:none;border-radius:8px;background:none;color:var(--g600);cursor:pointer;flex-shrink:0;transition:background .15s,color .15s}
+.theme-toggle:hover{background:var(--g100);color:var(--g900)}
+.theme-toggle:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.theme-ico{width:20px;height:20px;flex-shrink:0}
+.theme-ico-sun{display:none}
+[data-theme="dark"] .theme-toggle .theme-ico-moon{display:none}
+[data-theme="dark"] .theme-toggle .theme-ico-sun{display:block}
+.nav-theme{gap:10px;margin-top:4px;border-top:1px solid var(--g100)}
 .hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;background:none;border:none;cursor:pointer;padding:8px;border-radius:8px;margin-left:auto;flex-shrink:0;transition:background .15s}
 .hamburger:hover{background:var(--g100)}
 .hamburger span{display:block;width:22px;height:2px;background:var(--g700);border-radius:2px;transition:transform .22s,opacity .22s}
@@ -1045,7 +1054,7 @@ span.astore-card-author{color:var(--brand)}
 .lp-del-row:hover{color:var(--danger);background:var(--danger-soft)}
 .lp-add-row-btn{margin-top:10px;border:1px dashed var(--g300);border-radius:8px;padding:9px 22px;font-size:14px;color:var(--g500);cursor:pointer;background:#fff;width:100%;transition:color .15s,border-color .15s,background .15s;font-family:inherit}
 .lp-add-row-btn:hover{border-color:var(--accent);color:var(--accent);background:var(--accent-light)}
-.lp-week-input{width:140px;border:1px solid var(--g300);border-radius:6px;padding:5px 8px;font-size:14px;color:var(--g800);font-family:inherit;text-align:center}
+.lp-week-input{width:140px;border:1px solid var(--g300);border-radius:6px;padding:5px 8px;font-size:14px;color:var(--g800);background:var(--surface);font-family:inherit;text-align:center}
 .lp-week-input:focus{outline:none;border-color:var(--accent)}
 
 /* ── 정보교과서 ───────────────────────────────────── */
@@ -1215,9 +1224,10 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 
 /* 탭 9개는 한 줄에 ~1050px가 필요하다. 768px에서만 햄버거로 바꾸면 769~1049px
    (태블릿 가로·작은 노트북)에서 탭바가 뷰포트를 넘쳐 가로 스크롤이 생긴다.
-   → 1049px 이하는 전부 햄버거로 전환해 넘침을 없앤다. */
-@media(max-width:1049px){
+   → 1049px 이하는 전부 햄버거로 전환해 넘침을 없앤다. 2026-10 헤더에 테마 토글(46px)이 붙어 1099px로 올림. */
+@media(max-width:1099px){
   .tabs{display:none}
+  .theme-toggle{display:none}
   .hamburger{display:flex}
   .header-brand{border-right:none;padding-right:0;margin-right:0}
 }
@@ -1323,7 +1333,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .codevar-key-del{flex-shrink:0;padding:4px 10px;border:1px solid var(--danger-line);background:var(--danger-soft);color:var(--danger);border-radius:6px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:background .12s}
 .codevar-key-del:hover{background:var(--danger-line)}
 [data-theme="dark"] .codevar-key-del{background:#3B1D1D;border-color:#7F1D1D;color:#FCA5A5}
-[data-theme="dark"] .codevar-apikey-warn{color:var(--warn-line)}
+[data-theme="dark"] .codevar-apikey-warn{color:var(--warn-dark)}
 .codevar-apilink:hover{text-decoration:underline}
 .codevar-apikey-privacy{font-size:0.78rem;color:var(--g500);display:block;margin-top:5px;font-style:italic}
 .codevar-textarea{width:100%;padding:12px 14px;border:1.5px solid var(--g300);border-radius:8px;font-size:13px;font-family:ui-monospace,'SF Mono',Menlo,Consolas,monospace;color:var(--g800);background:#fff;outline:none;resize:vertical;line-height:1.65;transition:border-color .12s;box-sizing:border-box;tab-size:4;min-height:200px}
@@ -1524,8 +1534,33 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
   --g700: #E2E8F0;
   --g800: #F1F5F9;
   --g900: #F8FAFC;
+  /* 바탕·기능색 soft/line은 어둡게, -dark(글자용)는 밝게 — brand·curr와 같은 규칙 (2026-10 다크 점검) */
+  --surface: #1E293B;
+  --accent-light: #1E3A5F; --accent-line: #1E40AF;
+  --plan-soft: #2A2144; --plan-line: #4C3A8A; --plan-dark: #C4B5FD;
+  --book-soft: #0E2A21; --book-line: #1F5A45; --book-dark: #6EE7B7;
+  --teal-soft: #0F2E2C; --teal-line: #1F5F5A; --teal-dark: #5EEAD4;
+  --ovr-soft: #1E2246; --ovr-line: #3B3F8A; --ovr-dark: #A5B4FC;
+  --danger-soft: #3A1A1E; --danger-line: #7F1D1D; --danger-dark: #FCA5A5;
+  --warn-soft: #33270F; --warn-line: #78560F; --warn-dark: #FCD34D;
   color-scheme: dark;
 }
+/* -dark 토큰을 배경으로 쓰던 hover(흰 글자)는 다크에서도 진한 색 유지 */
+[data-theme="dark"] .eval-gen-btn:hover { background: #6D28D9; }
+[data-theme="dark"] .codevar-gen-btn:hover:not(:disabled), [data-theme="dark"] .aiidea-gen-btn:hover:not(:disabled) { background: #4338CA; }
+/* 인라인 파스텔 배경(데이터 색)을 쓰는 카드 — 다크에선 표면색으로 덮고 색은 테두리로만 */
+[data-theme="dark"] .sguide-step-box, [data-theme="dark"] .chasi-result-total { background: #1E293B !important; }
+[data-theme="dark"] .ov-eyebrow { color: var(--g800) !important; }
+[data-theme="dark"] .tool-step-num { color: var(--plan-dark); }
+[data-theme="dark"] .chasi-monthly-table thead th { background: #0F766E !important; }
+[data-theme="dark"] .rs-sec-cnt { color: #0F172A; }
+[data-theme="dark"] .cbadge-teal { color: var(--teal-dark); }
+[data-theme="dark"] .cbadge-blue { color: #93C5FD; }
+[data-theme="dark"] .cbadge-purple { color: var(--plan-dark); }
+/* ds-ai 비교: g900 반전 바탕(라이트에선 진한 남색)이 다크에선 흰색이 되어 흰 글자가 사라지던 문제 */
+[data-theme="dark"] #ds-ai-compare { --dac-line: #99F6E4; }
+[data-theme="dark"] .dac-summary { background: #0F172A; border: 1px solid #334155; }
+[data-theme="dark"] .dac-together { background: linear-gradient(100deg,#0F172A,#0b3a36); }
 [data-theme="dark"] body { background: #0F172A; }
 
 /* --- Layout --- */
@@ -1549,7 +1584,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 
 /* --- Buttons --- */
 [data-theme="dark"] .cbtn { background: #253347; color: #CBD5E1; border-color: #334155; }
-[data-theme="dark"] .cbtn.sm { color: var(--adark, var(--accent)); border-color: #334155; }
+[data-theme="dark"] .cbtn.sm { color: var(--accent); border-color: #334155; }
 [data-theme="dark"] .achv-btn,
 [data-theme="dark"] .domain-copy-btn { background: #253347; border-color: #334155; color: #CBD5E1; }
 [data-theme="dark"] .pbtn.sec { background: #253347; color: #CBD5E1; border-color: #334155; }
@@ -1571,7 +1606,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 [data-theme="dark"] .domain-expl-tx { color: #CBD5E1; }
 
 /* --- Mark / highlight --- */
-[data-theme="dark"] mark { background: var(--warn-dark); color: #FEF3C7; }
+[data-theme="dark"] mark { background: #92400E; color: #FEF3C7; }
 
 /* --- Page transition --- */
 @keyframes page-enter {
@@ -1646,8 +1681,8 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 [data-theme="dark"] .eval-preview-ft { border-color: #334155; }
 [data-theme="dark"] .eval-input-text { background: #253347; color: #E2E8F0; border-color: #334155; }
 [data-theme="dark"] .eval-card-type.exam { background: #1E3A5F; color: #93C5FD; }
-[data-theme="dark"] .eval-card-type.perf { background: #2E1F5E; color: var(--plan-line); }
-[data-theme="dark"] .eval-badge { background: #2E1F5E; color: var(--plan-line); }
+[data-theme="dark"] .eval-card-type.perf { background: #2E1F5E; color: var(--plan-dark); }
+[data-theme="dark"] .eval-badge { background: #2E1F5E; color: var(--plan-dark); }
 
 /* --- Simulator --- */
 [data-theme="dark"] .sim-palette { background: #1E293B; border-color: #334155; box-shadow: none; }
@@ -1733,7 +1768,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 [data-theme="dark"] .gsw-filter { background: #1E293B; border-color: #334155; color: #E2E8F0; }
 
 /* --- Subject guide --- */
-[data-theme="dark"] .sguide-card { background: #1E293B; }
+[data-theme="dark"] .sguide-card { background: #1E293B !important; }
 
 /* ===== AI 수업 아이디어 생성기 ===== */
 .aiidea-wrap{display:flex;flex-direction:column;gap:16px;padding:0 0 60px}
@@ -1784,7 +1819,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 /* dark mode */
 .aiidea-opt-btn.active{color:#fff !important}
 [data-theme="dark"] .aiidea-collect-toggle{background:var(--s2,#1E293B);border-color:#334155;color:#94A3B8}
-[data-theme="dark"] .aiidea-collect-toggle:hover{border-color:var(--ovr);color:var(--ovr-line);background:#1E293B}
+[data-theme="dark"] .aiidea-collect-toggle:hover{border-color:var(--ovr);color:var(--ovr-dark);background:#1E293B}
 [data-theme="dark"] .aiidea-collected-panel{background:#253347;border-color:#334155}
 [data-theme="dark"] .aiidea-std-pick{background:#1E293B !important}
 [data-theme="dark"] .aiidea-std-pick-text{color:#94A3B8}

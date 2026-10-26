@@ -69,6 +69,17 @@ function nestedInteractive(screen) {
 
 export const RULES = [
   {
+    id: 'theme-decided-before-paint',
+    왜: '다크 테마는 첫 페인트 전에 정해야 한다. 모듈(app.js)에서 정하면 운영체제 다크 사용자에게 흰 화면이 번쩍인다. 토글 버튼도 헤더에 있어야 한다(2026-10 이전엔 toggleDarkMode를 부르는 곳이 없었다).',
+    대상: 'homeShell',
+    검사: s => {
+      const head = (s.html.match(/<head>[\s\S]*?<\/head>/i) || [''])[0];
+      if (!/<script src="assets\/theme-init\.js"><\/script>/.test(head)) return '<head>에 theme-init.js가 없다';
+      return /id="themeToggle"/.test(s.html) ? null : '헤더에 테마 토글(#themeToggle)이 없다';
+    },
+    가짜: { html: '<html><head><link rel="stylesheet" href="assets/style.css"></head><body><div class="header"></div></body></html>', meta: {} },
+  },
+  {
     id: 'no-button-in-button',
     왜: '버튼 안의 버튼은 HTML 위반이고, 화면 읽기 도구는 바깥 버튼 이름만 읽어 안쪽 해설·성취수준·복사 버튼을 찾지 못한다(2026-10 영역 헤더).',
     대상: 'domainSection',
