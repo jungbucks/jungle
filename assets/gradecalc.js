@@ -454,6 +454,10 @@ function gcResultHtml() {
       <button class="pbtn sec" data-onclick="gc:csvRes">결과 CSV 내려받기</button>
     </div>
     <div class="gc-sum-row">${summary}</div>
+    <div class="gc-basis" role="note">
+      <p><strong>등급은 석차 백분율이 아니라</strong> '수강자수 × 누적비율'을 반올림한 등급별 누적 인원과 석차(동점 시 ${gcState.tieMode === 'eq' ? '같은 석차' : '중간석차'})를 비교해 정합니다. 그래서 표의 석차 백분율이 66%를 넘어도 3등급일 수 있습니다.</p>
+      <p class="gc-basis-cums">이번 계산(${N}명)의 등급별 누적 인원: ${gcGradeCums(N).map((c, i) => `<span><b>${i + 1}등급</b> ${c}명까지</span>`).join('')}</p>
+    </div>
     <div class="gc-table-box">
       <table class="gc-table gc-result-table">
         <thead><tr>

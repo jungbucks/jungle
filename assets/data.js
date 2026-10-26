@@ -1796,7 +1796,7 @@ const SUBJECTS = [
     accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
   { id:"textbook", name:"교과서", type:"textbook",
     accent:"#059669", aLight:"#ECFDF5", aDark:"#047857", domains:[] },
-  { id:"swrec", name:"수업 도구", type:"swrec",
+  { id:"swrec", name:"추천 SW", type:"swrec",
     accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
   { id:"appstore", name:"앱스토어", type:"appstore",
     accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] }

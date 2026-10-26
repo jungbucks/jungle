@@ -1,6 +1,6 @@
 import { esc, safeUrl, registerActions } from './utils.js';
 
-// resources.js — 수업 사이트(fav) · 수업 도구(swrec) 렌더링
+// resources.js — 수업 사이트(fav) · 추천 SW(swrec) 렌더링
 // 자료실 공통 문법: ov-head 표준 헤더 + rs-sec-hd 섹션 헤더 + rs-tile 이니셜/아이콘 타일
 
 // 카테고리 색 패밀리 — 섹션 단위 custom prop(--rs-*)으로 주입, 토큰만 사용
@@ -100,7 +100,7 @@ function siteResultsHtml() {
   return cats || '<div class="rs-empty">조건에 맞는 사이트가 없습니다. 검색어를 줄이거나 전체 분류를 선택해 보세요.</div>';
 }
 
-// ── 수업 도구 ────────────────────────────────────────
+// ── 추천 SW(swrec) ────────────────────────────────────────
 const SW_CAT_ICON = {
   '이미지': 'image', '이미지 뷰어': 'image', '검색': 'search', '유틸리티': 'wrench',
   '생산성': 'zap', '필기': 'pencil', '영상편집': 'video',
