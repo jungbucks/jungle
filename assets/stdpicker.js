@@ -100,11 +100,12 @@ function stdPickerRenderBody() {
       html += '<div data-domain="' + esc(d.name) + '"' + (isHl ? ' style="background:var(--g50);border-radius:6px"' : '') + '>' + header;
       d.items.forEach(function(it) {
         const chk = _selected.has(it.code);
-        html += '<div class="eval-std-item">'
-          + '<input type="checkbox" class="eval-std-chk" ' + (chk ? 'checked' : '') + ' data-onchange="sp:toggle" data-args="' + esc(JSON.stringify([it.code])) + '">'
+        // <label>로 감싸 줄 전체가 클릭 대상 + 화면 읽기용 이름은 코드가 앞에 오도록 aria-label
+        html += '<label class="eval-std-item">'
+          + '<input type="checkbox" class="eval-std-chk" ' + (chk ? 'checked' : '') + ' aria-label="' + esc(it.code + ' 선택') + '" data-onchange="sp:toggle" data-args="' + esc(JSON.stringify([it.code])) + '">'
           + '<span class="eval-std-code" style="background:' + subj.aLight + ';color:' + subj.accent + '">' + esc(it.code) + '</span>'
           + '<span class="eval-std-text">' + esc(it.text) + '</span>'
-          + '</div>';
+          + '</label>';
       });
       html += '</div>';
     });

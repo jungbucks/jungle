@@ -13,7 +13,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const assetsDir = join(root, 'assets');
 
 // kind별 최소 장수 — 렌더가 조용히 죽어 "위반 0건"으로 통과하는 것을 막는다
-export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2, stdCard: 1, homeShell: 1, simulator: 2 };
+export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2, stdCard: 1, homeShell: 1, simulator: 2, domainSection: 20, stdPicker: 7 };
 
 export function checkCounts(screens) {
   const problems = [];
@@ -158,11 +158,24 @@ export async function renderAll() {
   const { __stdTest } = await import(pathToFileURL(join(assetsDir, 'app.js')).href);
   for (const subj of globalThis.SUBJECTS) {
     if (['overview','simulator','evalplan'].includes(subj.type)) continue;
-    for (const domain of subj.domains || []) for (const item of domain.items) {
-      screens.push({kind:'stdCard', id:'stdCard/' + item.code,
-        html:__stdTest.stdCardHtml(subj, item, new Set()), meta:{code:item.code}});
+    for (const domain of subj.domains || []) {
+      // 영역 헤더(접기 버튼 + 해설·성취수준·복사 버튼)까지 포함한 단원 묶음
+      screens.push({kind:'domainSection', id:'domainSection/' + subj.id + '/' + domain.name,
+        html:__stdTest.domainSectionHtml(subj, domain, new Set()), meta:{}});
+      for (const item of domain.items) {
+        screens.push({kind:'stdCard', id:'stdCard/' + item.code,
+          html:__stdTest.stdCardHtml(subj, item, new Set()), meta:{code:item.code}});
+      }
     }
   }
+
+  // ── 성취기준 선택기(공용 모달) 본문 ── 과목마다 렌더
+  const { openStdPicker } = await import(pathToFileURL(join(assetsDir, 'stdpicker.js')).href);
+  globalThis.SUBJECTS.forEach((subj, i) => {
+    if (!subj.domains || !subj.domains.length) return;
+    const html = capture('stdPickerModalBody', () => openStdPicker({ subjectIdx: i, selectAll: true }));
+    screens.push({ kind: 'stdPicker', id: 'stdPicker/' + subj.id, html, meta: {} });
+  });
   return screens;
 }
 

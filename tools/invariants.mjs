@@ -54,7 +54,44 @@ function simCreditTotal(screen) {
   return total === sum ? null : `카드 학점 합 ${sum} ≠ 요약 총 ${total}학점`;
 }
 
+// <button> 안에 또 다른 버튼(진짜 <button> 또는 role="button")이 있으면 위반. 중첩 깊이를 세며 훑는다.
+function nestedInteractive(screen) {
+  let depth = 0;
+  for (const m of screen.html.matchAll(/<(\/?)(button)\b([^>]*)>|<[a-z]+\b[^>]*\brole="button"[^>]*>/gi)) {
+    if (m[2]) {
+      if (m[1]) { depth = Math.max(0, depth - 1); continue; }
+      if (depth > 0) return '버튼 안에 버튼이 있다: ' + m[0].slice(0, 60);
+      depth++;
+    } else if (depth > 0) return '버튼 안에 role=button 요소가 있다: ' + m[0].slice(0, 60);
+  }
+  return null;
+}
+
 export const RULES = [
+  {
+    id: 'no-button-in-button',
+    왜: '버튼 안의 버튼은 HTML 위반이고, 화면 읽기 도구는 바깥 버튼 이름만 읽어 안쪽 해설·성취수준·복사 버튼을 찾지 못한다(2026-10 영역 헤더).',
+    대상: 'domainSection',
+    검사: nestedInteractive,
+    가짜: { html: '<button class="domain-header"><span class="domain-name">데이터</span><span class="achv-btn" role="button">ABCDE</span></button>', meta: {} },
+  },
+  {
+    id: 'stdpicker-checkbox-name',
+    왜: '성취기준 선택기의 체크박스는 어떤 성취기준을 고르는지 이름(코드)이 있어야 한다.',
+    대상: 'stdPicker',
+    검사: s => {
+      const inputs = [...s.html.matchAll(/<input\b([^>]*class="eval-std-chk"[^>]*)>/g)];
+      if (!inputs.length) return '선택 체크박스를 찾지 못했다';
+      for (const m of inputs) {
+        let code = '';
+        try { code = JSON.parse(attribute(m[1], 'data-args').replace(/&quot;/g, '"'))[0] || ''; } catch (e) {}
+        const label = attribute(m[1], 'aria-label');
+        if (!code || !label.includes(code)) return `접근성 이름에 코드가 없다: ${code || '(코드 없음)'} → "${label}"`;
+      }
+      return null;
+    },
+    가짜: { html: '<div class="eval-std-item"><input type="checkbox" class="eval-std-chk" data-args="[&quot;[9정01-01]&quot;]"></div>', meta: {} },
+  },
   {
     id: 'sim-total-matches-cards',
     왜: '학점을 카드마다 바꿀 수 있으므로 요약 합계가 과목 기본값(옛 credit:3 하드코딩)이 아니라 카드에 고른 값을 더해야 한다.',

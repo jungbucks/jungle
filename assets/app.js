@@ -363,7 +363,7 @@ function toggleDomain(key) {
   const el = document.getElementById('d_' + cid(key));
   if (!el) return;
   el.classList.toggle('collapsed');
-  const btn = el.querySelector('.domain-header');
+  const btn = el.querySelector('.domain-toggle');
   if (btn) btn.setAttribute('aria-expanded', collapsed.has(key) ? 'false' : 'true');
 }
 
@@ -407,28 +407,30 @@ function domainSectionHtml(subj, d, collectedSet) {
   // 3번째 인자 = 모달 제목용 표시 라벨. achvKey는 '_고'/'_cs'가 붙어 제목에 쓰면 단원명과 어긋난다.
   const achvArgs = esc(JSON.stringify([achvKey, subj.accent, subj.name + ' · ' + d.name]));
   const achvBtn = ACHIEVEMENTS[achvKey]
-    ? `<span class="achv-btn" role="button" tabindex="0" data-onclick="app:achv" data-onkeydown="app:achv" data-args="${achvArgs}">ABCDE 성취수준</span>`
+    ? `<button type="button" class="achv-btn" data-onclick="app:achv" data-args="${achvArgs}">ABCDE 성취수준</button>`
     : '';
   // 단원 단위 성취기준 해설: 해설이 있는 성취기준만 모아 헤더의 개수 옆 토글로 펼친다.
   const explItems = (typeof ACHV_EXPL !== 'undefined') ? d.items.filter(it => ACHV_EXPL[it.code]) : [];
   const explId = 'dexpl_' + cid(key);
   const explBtn = explItems.length
-    ? `<span class="domain-expl-btn" role="button" tabindex="0" aria-expanded="false" aria-controls="${explId}" data-onclick="app:toggleDomainExpl" data-onkeydown="app:toggleDomainExpl" data-args="${esc(JSON.stringify([explId]))}">📖 해설 ${explItems.length}</span>`
+    ? `<button type="button" class="domain-expl-btn" aria-expanded="false" aria-controls="${explId}" data-onclick="app:toggleDomainExpl" data-args="${esc(JSON.stringify([explId]))}">📖 해설 ${explItems.length}</button>`
     : '';
   const explBox = explItems.length
     ? `<div class="domain-expl" id="${explId}" hidden>${explItems.map(it => `<div class="domain-expl-item"><span class="domain-expl-code" style="color:${subj.accent}">${esc(it.code)}</span><span class="domain-expl-tx">${esc(ACHV_EXPL[it.code])}</span></div>`).join('')}</div>`
     : '';
   return `<div class="domain-section${col?' collapsed':''}" id="d_${cid(key)}">
-    <button type="button" class="domain-header" data-key="${esc(key)}" data-onclick="app:toggleDomain" aria-expanded="${col?'false':'true'}" aria-controls="d_body_${cid(key)}">
+    <div class="domain-header" data-key="${esc(key)}" data-onclick="app:toggleDomain">
       <div class="domain-left">
-        <span class="domain-dot" style="background:${subj.accent}"></span>
-        <span class="domain-name">${esc(d.name)}</span>
-        <span class="domain-cnt">${d.items.length}개</span>
+        <button type="button" class="domain-toggle" data-key="${esc(key)}" data-onclick="app:toggleDomain" aria-expanded="${col?'false':'true'}" aria-controls="d_body_${cid(key)}">
+          <span class="domain-dot" style="background:${subj.accent}"></span>
+          <span class="domain-name">${esc(d.name)}</span>
+          <span class="domain-cnt">${d.items.length}개</span>
+        </button>
         ${explBtn}
       </div>
       ${achvBtn}
-      <span class="domain-copy-btn" role="button" tabindex="0" data-onclick="app:copyDomain" data-onkeydown="app:copyDomain" data-args="${esc(JSON.stringify(['d_' + cid(key)]))}">${query ? '검색된 성취기준 복사' : '성취기준 모두 복사'}</span>
-    </button>
+      <button type="button" class="domain-copy-btn" data-onclick="app:copyDomain" data-args="${esc(JSON.stringify(['d_' + cid(key)]))}">${query ? '검색된 성취기준 복사' : '성취기준 모두 복사'}</button>
+    </div>
     <div class="domain-body" id="d_body_${cid(key)}">${d.items.map(it => stdCardHtml(subj, it, collectedSet)).join('')}</div>
     ${explBox}
   </div>`;
@@ -686,9 +688,6 @@ registerActions('click', {
   'app:downloadTxt':    function() { downloadTxt(); },
 });
 registerActions('keydown', {
-  'app:achv':       function(el, e, key, accent, label) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openAchvModal(key, accent, label); } },
-  'app:copyDomain': function(el, e, secId) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); copyDomain(secId, el); } },
-  'app:toggleDomainExpl': function(el, e, id) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const b = document.getElementById(id); if (!b) return; const o = b.hidden; b.hidden = !o; el.setAttribute('aria-expanded', o ? 'true' : 'false'); el.classList.toggle('on', o); } },
   // role="tablist" 키보드 규약: 좌우 화살표로 서브탭 이동 (data-args는 무시)
   'app:subtabKey':  function(el, e) {
     if (e.key !== 'ArrowLeft' && e.key !== 'ArrowRight') return;
@@ -744,4 +743,4 @@ renderTabs();
 updateSearchVisibility();
 render();
 updatePanel();
-export const __stdTest = { stdCardHtml };
+export const __stdTest = { stdCardHtml, domainSectionHtml };
