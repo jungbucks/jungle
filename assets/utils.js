@@ -209,7 +209,7 @@ export async function clipboardWriteHTML(html, plain) {
     ok = document.execCommand('copy');
     sel.removeAllRanges();
   } catch (e) { ok = false; }
-  document.body.removeChild(div);
+  div.remove();
   if (ok) return true;
   try {
     if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write) {

@@ -57,6 +57,7 @@ const { __evalTest } = await import('../assets/evalplan.js');
 const { __achvTest } = await import('../assets/achv.js');
 const { __affTest } = await import('../assets/affective.js');
 const { __simTest } = await import('../assets/simulator.js');
+const { __lpTest } = await import('../assets/lessonplan.js');
 const { getAchvKey } = await import('../assets/utils.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
@@ -367,9 +368,49 @@ export function runSimTests() {
   return { pass, fail: fails.length, fails };
 }
 
+// ── 수업계획: 저장 형식 마이그레이션·주차 해석·자동 배분 ──
+export function runLessonTests() {
+  const { migrate, parseWeek, formatMW, distribute, copyPlain, copyHtml, setState } = __lpTest;
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { const g = JSON.stringify(got), w = JSON.stringify(want); if (g === w) pass++; else fails.push(name + ': got ' + g + ' · want ' + w); };
+  // v1 저장본(문자열 method/evalMethod)을 깨지 않고 배열로 옮긴다
+  const v1 = { subjectIdx: 2, semester: 1, startMW: '3/1', endMW: '7/2', generated: true,
+    rows: [{ monthWeek: '3/1', domain: '데이터', linkedCodes: ['[12정01-01]'], method: '실습', evalMethod: '수행평가' },
+           { monthWeek: '3/2', domain: '', linkedCodes: [], method: '', evalMethod: '' }] };
+  const m = migrate(structuredClone(v1));
+  eq('v1 method → methods', m.rows[0].methods, ['실습']);
+  eq('v1 evalMethod → evalMethods', m.rows[0].evalMethods, ['수행평가']);
+  eq('빈 문자열은 빈 배열', [m.rows[1].methods, m.rows[1].evalMethods], [[], []]);
+  eq('유형 기본 수업', m.rows.map(r => r.kind), ['lesson', 'lesson']);
+  eq('기존 값 보존', [m.subjectIdx, m.rows[0].domain, m.rows[0].linkedCodes], [2, '데이터', ['[12정01-01]']]);
+  eq('옛 필드 제거', 'method' in m.rows[0] || 'evalMethod' in m.rows[0], false);
+  eq('두 번 돌려도 같음', JSON.stringify(migrate(structuredClone(m))), JSON.stringify(m));
+  eq('startMW 없는 초기화 상태 복구', migrate({ subjectIdx: 1, semester: 2, generated: false, rows: [] }).startMW, '8/2');
+  // 주차: '3/1'·'3월 1주' 모두, 범위 밖 거부
+  eq('3/1', parseWeek('3/1'), { m: 3, w: 1 });
+  eq('3월 1주', parseWeek('3월 1주'), { m: 3, w: 1 });
+  eq('13/1 거부', parseWeek('13/1'), null);
+  eq('3/6 거부', parseWeek('3/6'), null);
+  eq('표시 형식', formatMW('11/4'), '11월 4주');
+  // 자동 배분: 순서 유지·누락/중복 없음
+  const flat = d => d.flat();
+  eq('12개→4주', distribute(12, 4), [[0, 1, 2], [3, 4, 5], [6, 7, 8], [9, 10, 11]]);
+  eq('10개→4주 전부 한 번씩', flat(distribute(10, 4)), [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  eq('10개→4주 고르게', distribute(10, 4).map(x => x.length), [2, 3, 2, 3]);
+  eq('3개→6주 걸쳐 배치', distribute(3, 6), [[0], [0], [1], [1], [2], [2]]);
+  eq('0주', distribute(5, 0), []);
+  // 복사: 비수업 행은 유형 이름, 성취기준·방법 비움
+  setState({ subjectIdx: 1, semester: 1, startMW: '3/1', endMW: '3/2', generated: true,
+    rows: [{ monthWeek: '3/1', kind: 'exam', domain: 'x', linkedCodes: ['a'], content: '중간고사', methods: ['실습'], evalMethods: [] }] });
+  eq('정기시험 행 복사', copyPlain().split('\n')[1], '3월 1주\t정기시험\t\t중간고사\t\t');
+  eq('HTML 표에 학습 내용 열', copyHtml().includes('>학습 내용</th>'), true);
+  setState(null);
+  return { pass, fail: fails.length, fails };
+}
+
 // 전체 집계 (verify [5]가 호출)
 export function runAllTests() {
-  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()], ['simulator', runSimTests()]];
+  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()], ['simulator', runSimTests()], ['lessonplan', runLessonTests()]];
   let pass = 0; const fails = [];
   for (const [name, r] of parts) { pass += r.pass; r.fails.forEach(f => fails.push(name + ' — ' + f)); }
   return { pass, fail: fails.length, fails, parts };

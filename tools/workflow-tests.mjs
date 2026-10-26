@@ -107,14 +107,20 @@ try {
     window.stdPickerConfirm(); assert.deepEqual(evalState.items[0].linkedCodes, []);
     assert.equal(document.getElementById('stdPickerSubjSel').disabled, true);
   });
-  await test('수업계획 복사는 평가방법 열을 포함', () => {
+  await test('수업계획 복사는 학습 내용·다중 평가방법을 포함', async () => {
     fire('input', 'lp:startMW', [], { value: '9/1' });
     fire('input', 'lp:endMW', [], { value: '9/1' });
     fire('click', 'lp:generate');
-    fire('change', 'lp:evalMethod', [0], { value: '수행평가' });
+    fire('change', 'lp:multi', [0, 'evalMethods', '수행평가'], { checked: true });
+    fire('change', 'lp:multi', [0, 'evalMethods', '지필평가'], { checked: true });
+    fire('input', 'lp:content', [0], { value: '정렬 알고리즘\n비교' });
     fire('click', 'lp:copy');
-    assert.equal(copied.split('\n')[0].split('\t').at(-1), '평가방법');
-    assert.equal(copied.split('\n')[1].split('\t').at(-1), '수행평가');
+    await new Promise(r => setImmediate(r));
+    const lines = copied.split('\n');
+    assert.deepEqual(lines[0].split('\t'), ['월/주', '단원명', '성취기준', '학습 내용', '수업방법', '평가방법']);
+    assert.equal(lines[1].split('\t')[0], '9월 1주');
+    assert.equal(lines[1].split('\t')[3], '정렬 알고리즘 비교');
+    assert.equal(lines[1].split('\t').at(-1), '지필평가, 수행평가');
   });
   await test('클래스가 추가된 행의 정렬 오류도 검출', async () => {
     const screens = await renderAll();
