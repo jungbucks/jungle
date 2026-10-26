@@ -1804,12 +1804,12 @@ const SUBJECTS = [
 
 // --- 시뮬레이터 데이터 ---
 const HS_SUBJECTS = [
-  { id:'s1', name:'정보',              type:'일반선택',         credit:3 },
-  { id:'s2', name:'정보과학',          type:'과학계열 진로선택', credit:3 },
-  { id:'s3', name:'데이터 과학',       type:'진로선택',         credit:3 },
-  { id:'s4', name:'인공지능 기초',     type:'진로선택',         credit:3 },
-  { id:'s5', name:'소프트웨어와 생활', type:'융합선택',         credit:3 },
-  { id:'s6', name:'프로그래밍',        type:'전문교과',         credit:3 },
+  { id:'s1', name:'정보',              type:'일반선택',         credit:4 },
+  { id:'s2', name:'정보과학',          type:'과학계열 진로선택', credit:4 },
+  { id:'s3', name:'데이터 과학',       type:'진로선택',         credit:4 },
+  { id:'s4', name:'인공지능 기초',     type:'진로선택',         credit:4 },
+  { id:'s5', name:'소프트웨어와 생활', type:'융합선택',         credit:4 },
+  { id:'s6', name:'프로그래밍',        type:'전문교과',         credit:4 },
 ];
 const HS_TYPE_COLOR = {
   '일반선택':         { c:'#10B981', l:'#ECFDF5' },

@@ -50,12 +50,23 @@ export function togglePanel() {
   document.getElementById('fab').setAttribute('aria-expanded', panelOpen);
 }
 
+// 열려 있으면 닫고 true (app.js Escape 핸들러용)
+export function closePanel() {
+  if (!panelOpen) return false;
+  togglePanel();
+  return true;
+}
+
 export function updatePanel() {
   const n = collected.length;
   document.getElementById('fabCnt').textContent = n;
   document.getElementById('panelCnt').textContent = n;
-  document.getElementById('fab').classList.add('on');
-  document.getElementById('fab').classList.toggle('empty', n === 0);
+  const fab = document.getElementById('fab');
+  // index.html의 hidden은 JS 로드 전 깜빡임 방지용. 0개면 .empty(작은 회색)로 두고,
+  // 성취기준과 무관한 화면에서 0개일 때만 CSS(body:not(.std-view))가 감춘다.
+  fab.hidden = false;
+  fab.classList.add('on');
+  fab.classList.toggle('empty', n === 0);
   const dlBtn = document.getElementById('downloadCollectedBtn');
   if (dlBtn) dlBtn.disabled = n === 0;
   if (n === 0) panelOpen = false;

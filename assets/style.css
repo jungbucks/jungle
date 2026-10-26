@@ -437,6 +437,7 @@ mark{background:#FEF08A;color:var(--g900);border-radius:2px;padding:0 1px}
 .fab.on{display:flex}
 /* 담은 항목 진입 버튼은 요청에 따라 잠시 숨긴다. 저장 데이터는 유지한다. */
 .fab[hidden]{display:none}
+body:not(.std-view) .fab.empty{display:none}
 .fab-cnt{background:#fff;color:var(--accent);border-radius:10px;padding:1px 8px;font-size:13px;font-weight:700}
 
 /* OVERVIEW */
@@ -869,6 +870,10 @@ span.astore-card-author{color:var(--brand)}
 .sim-placed-credit{font-size:13px;color:var(--g500)}
 .sim-mode-select{width:100%;padding:2px 5px;border:1px solid var(--g200);border-radius:4px;font-size:13px;font-family:'Pretendard',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;color:var(--g700);background:#fff;cursor:pointer;outline:none;transition:border-color .12s}
 .sim-mode-select:focus{border-color:var(--g400)}
+.sim-credit-select{padding:1px 4px;border:1px solid var(--g200);border-radius:4px;font-size:13px;font-family:inherit;color:var(--g700);background:var(--surface);cursor:pointer}
+.sim-credit-select:focus-visible{outline:2px solid var(--curr);outline-offset:1px}
+.sim-credit-note{margin:10px 0 0;font-size:13px;line-height:1.6;color:var(--g600)}
+.sim-credit-note span{display:block;color:var(--g500)}
 .sim-split-label{font-size:13px;color:var(--g500);display:block;margin-top:1px}
 .sim-rm-btn{background:none;border:none;color:var(--g300);cursor:pointer;font-size:17px;line-height:1;padding:0 2px;border-radius:4px;transition:background .1s,color .1s;flex-shrink:0}
 .sim-rm-btn:hover{background:var(--g100);color:var(--g700)}
@@ -1601,7 +1606,7 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 [data-theme="dark"] .sim-grid-wrap { border-color: #334155; box-shadow: none; }
 [data-theme="dark"] .sim-placed-card { background: #253347; border-color: #334155; }
 [data-theme="dark"] .sim-summary { background: #1E293B; border-color: #334155; box-shadow: none; }
-[data-theme="dark"] .sim-mode-select { background: #253347; color: #E2E8F0; border-color: #334155; }
+[data-theme="dark"] .sim-mode-select, [data-theme="dark"] .sim-credit-select { background: #253347; color: #E2E8F0; border-color: #334155; }
 [data-theme="dark"] .sim-opt-tab { background: #253347; border-color: #334155; color: #94A3B8; }
 [data-theme="dark"] .sim-cmp-btn { background: #253347; border-color: #334155; color: #CBD5E1; }
 

@@ -56,6 +56,7 @@ const { __chasiTest } = await import('../assets/chasi.js');
 const { __evalTest } = await import('../assets/evalplan.js');
 const { __achvTest } = await import('../assets/achv.js');
 const { __affTest } = await import('../assets/affective.js');
+const { __simTest } = await import('../assets/simulator.js');
 const { getAchvKey } = await import('../assets/utils.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
@@ -336,9 +337,39 @@ export function runEvalTests() {
   return { pass, fail: fails.length, fails };
 }
 
+
+// ── 고교학점제 시뮬레이터: 2022 개정 기본 4학점·카드별 3~5학점 ──
+export function runSimTests() {
+  const { setGrid, hsTotals, hsCopyText, hsSetCredit, grid } = __simTest;
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { const g = JSON.stringify(got), w = JSON.stringify(want); if (g === w) pass++; else fails.push(name + ': got ' + g + ' · want ' + w); };
+  eq('과목 기본 4학점', HS_SUBJECTS.map(s => s.credit), [4, 4, 4, 4, 4, 4]);
+  const e = id => ({ id, mode: 'solo', credit: 4 });
+  setGrid({ '1-1': [e('s1')], '1-2': [e('s3')], '2-1': [e('s4')], '2-2': [e('s5')], '3-1': [e('s2')], '3-2': [e('s6')] });
+  eq('6과목 배치 = 24학점', hsTotals().total, 24);
+  hsSetCredit('3-2', 0, '5');
+  eq('하나를 5학점으로 = 25학점', hsTotals().total, 25);
+  eq('학년별 합계 반영', hsTotals().yc, { 1: 8, 2: 8, 3: 9 });
+  eq('복사 텍스트에 5학점', hsCopyText().includes('[3학년 2학기] 프로그래밍(5학점)'), true);
+  eq('복사 텍스트 총계', hsCopyText().split('\n').pop(),'총 25학점 (1학년 8 · 2학년 8 · 3학년 9)');
+  hsSetCredit('3-2', 0, '7');
+  eq('범위 밖(7) 무시', hsTotals().total, 25);
+  // 옛 형태(credit 없음·문자열 id)는 과목 기본값으로 읽는다
+  setGrid({ '1-1': [{ id: 's1', mode: 'solo' }, 's3'] });
+  eq('credit 없는 옛 항목 = 기본 4학점', hsTotals().total, 8);
+  // 같은 학년 두 학기의 같은 과목(분반)은 한 번만 세고, 학점을 바꾸면 짝도 같이 바뀐다
+  setGrid({ '2-1': [e('s3')], '2-2': [e('s3')] });
+  eq('분반 짝 1회 계산', hsTotals().total, 4);
+  hsSetCredit('2-2', 0, 3);
+  eq('분반 짝 학점 동기화', grid()['2-1'][0].credit, 3);
+  eq('분반 짝 3학점', hsTotals().total, 3);
+  setGrid({});
+  return { pass, fail: fails.length, fails };
+}
+
 // 전체 집계 (verify [5]가 호출)
 export function runAllTests() {
-  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()]];
+  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()], ['simulator', runSimTests()]];
   let pass = 0; const fails = [];
   for (const [name, r] of parts) { pass += r.pass; r.fails.forEach(f => fails.push(name + ' — ' + f)); }
   return { pass, fail: fails.length, fails, parts };

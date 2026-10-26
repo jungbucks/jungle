@@ -4,6 +4,34 @@ let hsGrid = { '1-1':[], '1-2':[], '2-1':[], '2-2':[], '3-1':[], '3-2':[] };
 let hsDragId = null;
 let hsMobSelId = null;
 
+// 2022 개정: 선택 과목 기본 4학점, 1학점 범위에서 증감(3~5). 배치 카드마다 학점을 따로 가진다.
+const CREDIT_CHOICES = [3, 4, 5];
+function entryCredit(entry, s) {
+  const c = +(entry && entry.credit);
+  return CREDIT_CHOICES.includes(c) ? c : s.credit; // credit이 없던 옛 형태({id,mode}·문자열 id)는 과목 기본값
+}
+// 같은 학년 두 학기에 같은 과목 = 분반(집중이수) 1과목 → 학점은 한 번만 센다
+function hsTotals() {
+  const pairs = hsSameYearPairs();
+  const counted = new Set();
+  let total = 0; const yc = {1:0, 2:0, 3:0};
+  HS_SEMS.forEach(sem => {
+    (hsGrid[sem.key]||[]).forEach(entry => {
+      const id = entry.id || entry;
+      const s = HS_SUBJECTS.find(x => x.id === id);
+      if (!s) return;
+      const pKey = `${sem.yr}_${id}`;
+      if (pairs.has(id) && pairs.get(id).has(sem.yr)) {
+        if (counted.has(pKey)) return;
+        counted.add(pKey);
+      }
+      const c = entryCredit(entry, s);
+      total += c; yc[sem.yr] += c;
+    });
+  });
+  return { total, yc };
+}
+
 function hsGridCells() {
   const pairs = hsSameYearPairs();  
   return HS_SEMS.map(sem => {    
@@ -25,14 +53,16 @@ function hsGridCells() {
           let splitLabel = '';          
           if (isSplit) {            
             const tag = mode === 'A' ? 'A반 분반 운영' : mode === 'B' ? 'B반 분반 운영' : '분반 운영';            
-            splitLabel = `<span class="sim-split-label">↔ ${tag} (${s.credit}학점)</span>`;          
+            splitLabel = `<span class="sim-split-label">↔ ${tag} (${entryCredit(entry, s)}학점)</span>`;          
           }          
           const aCell = esc(JSON.stringify([sem.key, idx]));
           return `<div class="sim-placed-card" style="border-left:${borderLeft}" data-onclick="sim:cardNoop">
             <div class="sim-placed-row">
               <div class="sim-placed-info">
                 <span class="sim-placed-name">${esc(s.name)}</span>
-                <span class="sim-placed-credit">${s.credit}학점</span>
+                <select class="sim-credit-select" data-onchange="sim:credit" data-args="${aCell}" aria-label="${esc(s.name)} 학점">
+                  ${CREDIT_CHOICES.map(c => `<option value="${c}"${entryCredit(entry, s) === c ? ' selected' : ''}>${c}학점</option>`).join('')}
+                </select>
               </div>
               <button class="sim-rm-btn" data-onclick="sim:remove" data-args="${aCell}" aria-label="${esc(s.name)} 제거">×</button>
             </div>
@@ -54,23 +84,8 @@ function hsGridCells() {
   }).join('');
 }
 
-function renderSimSummary() {  
-  const pairs = hsSameYearPairs();  
-  const counted = new Set();  
-  let total = 0; const yc = {1:0, 2:0, 3:0};  
-  HS_SEMS.forEach(sem => {    
-    (hsGrid[sem.key]||[]).forEach(entry => {      
-      const id = entry.id || entry;      
-      const s = HS_SUBJECTS.find(x => x.id === id);      
-      if (!s) return;      
-      const pKey = `${sem.yr}_${id}`;      
-      if (pairs.has(id) && pairs.get(id).has(sem.yr)) {        
-        if (!counted.has(pKey)) { counted.add(pKey); total += s.credit; yc[sem.yr] += s.credit; }      
-      } else {        
-        total += s.credit; yc[sem.yr] += s.credit;      
-      }    
-    });  
-  });  
+function renderSimSummary() {
+  const { total, yc } = hsTotals();
   return `<div class="sim-summary">    
     <span class="sim-sum-total">총 ${total}학점</span>    
     <div class="sum-sep"></div>    
@@ -93,7 +108,7 @@ function renderSimulator() {
       <div class="sim-pal-name">${esc(s.name)}</div>      
       <div class="sim-pal-meta">        
         <span class="sim-type-badge" style="background:${col.l};color:${col.c}">${esc(s.type)}</span>        
-        <span class="sim-pal-credit">${s.credit}학점</span>      
+        <span class="sim-pal-credit">${s.credit}학점${s.type === '전문교과' ? '*' : ''}</span>
       </div>    
     </div>`;  
   }).join('');  
@@ -108,6 +123,7 @@ function renderSimulator() {
     <div class="sim-palette">
       <div class="sim-palette-title">과목 팔레트<span class="sim-palette-hint sim-hint-mouse">드래그 앤 드롭으로 아래 학기 셀에 배치하세요</span><span class="sim-palette-hint sim-hint-touch">과목 카드를 탭한 뒤, 원하는 학기 칸을 탭하면 배치돼요</span></div>
       <div class="sim-pal-scroll">${palHtml}</div>
+      <p class="sim-credit-note">선택 과목은 기본 4학점이며 1학점 범위에서 늘리거나 줄일 수 있습니다(3~5학점). 배치한 카드에서 학점을 바꾸세요. <span>* 프로그래밍 등 전문교과의 학점은 시·도 교육감이 정합니다.</span></p>
     </div>
     <div class="sim-right">
       <div class="sim-scroll-hint">↔ 좌우로 밀면 6개 학기가 모두 보여요</div>
@@ -142,6 +158,19 @@ function hsSetMode(sem, idx, mode) {
     hsGrid[sem][idx].mode = mode;    
     hsRefresh();  
   }
+}
+
+// 분반 짝(같은 학년 다른 학기의 같은 과목)은 한 과목이라 학점도 함께 바꾼다
+function hsSetCredit(sem, idx, credit) {
+  const c = +credit;
+  if (!hsGrid[sem] || hsGrid[sem][idx] == null || !CREDIT_CHOICES.includes(c)) return;
+  const toObj = (list, i) => { if (typeof list[i] !== 'object') list[i] = { id: list[i], mode: 'solo' }; return list[i]; };
+  const entry = toObj(hsGrid[sem], idx);
+  entry.credit = c;
+  const [yr, half] = sem.split('-');
+  const partner = hsGrid[yr + '-' + (half === '1' ? '2' : '1')] || [];
+  partner.forEach((e, i) => { if ((e.id || e) === entry.id) toObj(partner, i).credit = c; });
+  hsRefresh();
 }
 
 function hsRefresh() {  
@@ -181,7 +210,7 @@ function hsDrop(e, el) {
   e.preventDefault();  
   hsDragLeave(el);  
   const sem = el.dataset.sem;  
-  if (hsDragId && sem) { hsGrid[sem].push({id:hsDragId,mode:'solo'}); hsRefresh(); }  
+  if (hsDragId && sem) { hsGrid[sem].push({id:hsDragId,mode:'solo',credit:HS_SUBJECTS.find(x => x.id === hsDragId)?.credit}); hsRefresh(); }  
   hsDragId = null;
 }
 
@@ -197,7 +226,7 @@ function hsMobSelect(id) {
 
 function hsMobDrop(sem) {  
   if (!hsMobSelId) return;  
-  hsGrid[sem].push({id:hsMobSelId,mode:'solo'});  
+  hsGrid[sem].push({id:hsMobSelId,mode:'solo',credit:HS_SUBJECTS.find(x => x.id === hsMobSelId)?.credit});  
   document.getElementById('sp_' + hsMobSelId)?.classList.remove('mob-sel');  
   hsMobSelId = null;  
   hsRefresh();
@@ -213,11 +242,8 @@ function hsReset() {
   hsRefresh();
 }
 
-function hsCopy(btn) {
-  const pairs = hsSameYearPairs();
-  const counted = new Set();
+function hsCopyText() {
   const lines = [];
-  let total = 0;
   HS_SEMS.forEach(sem => {
     (hsGrid[sem.key]||[]).forEach(entry => {
       const id = entry.id || entry;
@@ -225,23 +251,24 @@ function hsCopy(btn) {
       const s = HS_SUBJECTS.find(x => x.id === id);
       if (!s) return;
       const modeLabel = mode === 'A' ? ' A반' : mode === 'B' ? ' B반' : '';
-      lines.push(`[${sem.label}] ${s.name}${modeLabel}(${s.credit})`);
-      const pKey = `${sem.yr}_${id}`;
-      if (pairs.has(id) && pairs.get(id).has(sem.yr)) {
-        if (!counted.has(pKey)) { counted.add(pKey); total += s.credit; }
-      } else {
-        total += s.credit;
-      }
+      lines.push(`[${sem.label}] ${s.name}${modeLabel}(${entryCredit(entry, s)}학점)`);
     });
   });
+  const { total, yc } = hsTotals();
   if (lines.length) lines.push('');
-  lines.push(`총 ${total}학점`);
-  clipboardWriteText(lines.join('\n'));
+  lines.push(`총 ${total}학점 (1학년 ${yc[1]} · 2학년 ${yc[2]} · 3학년 ${yc[3]})`);
+  return lines.join('\n');
+}
+
+function hsCopy(btn) {
+  clipboardWriteText(hsCopyText());
   const orig = btn.textContent;
   btn.textContent = '복사됨!'; setTimeout(() => btn.textContent = orig, 1500);
 }
 
 export { renderSimulator };
+// 테스트 전용: 편성 상태 주입 + 합계·복사 텍스트 (tools/test.mjs)
+export const __simTest = { setGrid(g) { Object.keys(hsGrid).forEach(k => hsGrid[k] = (g[k] || []).slice()); }, hsTotals, hsCopyText, hsSetCredit, grid: () => hsGrid };
 
 // ── 이벤트 위임 등록 (인라인 핸들러 대체 — 드래그 이벤트 포함) ──
 registerActions('click', {
@@ -254,6 +281,7 @@ registerActions('click', {
 });
 registerActions('change', {
   'sim:mode': function(el, e, sem, idx) { hsSetMode(sem, idx, el.value); },
+  'sim:credit': function(el, e, sem, idx) { hsSetCredit(sem, idx, el.value); },
 });
 registerActions('dragstart', { 'sim:dragStart': function(el, e) { hsDragStart(el, e); } });
 registerActions('dragend',   { 'sim:dragEnd':   function(el) { hsDragEnd(el); } });

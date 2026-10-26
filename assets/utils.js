@@ -148,7 +148,12 @@ export function resetAccent() {
 
 let _lastFocused = null;
 export function trapFocus(modalEl) {
-  _lastFocused = document.activeElement;
+  // 모달 안에서 모달을 다시 그리는 경우(성취수준 모드 전환 등) 지금 포커스는 곧 사라질 모달 안 버튼이다.
+  // 원래 연 버튼이 살아 있으면 그대로 둬야 닫을 때 그 버튼으로 돌아간다.
+  // (innerHTML로 갈아끼우면 그 버튼이 떨어져 나가 activeElement가 body가 되기도 한다)
+  const a = document.activeElement;
+  const transient = !a || a === document.body || (a.closest && a.closest('[aria-modal="true"]'));
+  if (!(transient && _lastFocused && _lastFocused.isConnected)) _lastFocused = a;
   const sel = 'button:not([disabled]),[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
   const nodes = Array.from(modalEl.querySelectorAll(sel));
   if (nodes.length) nodes[0].focus();

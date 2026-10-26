@@ -13,7 +13,7 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const assetsDir = join(root, 'assets');
 
 // kind별 최소 장수 — 렌더가 조용히 죽어 "위반 0건"으로 통과하는 것을 막는다
-export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2, stdCard: 1, homeShell: 1 };
+export const EXPECTED_MIN = { achvModal: 27, evalPreview: 2, stdCard: 1, homeShell: 1, simulator: 2 };
 
 export function checkCounts(screens) {
   const problems = [];
@@ -141,6 +141,18 @@ export async function renderAll() {
       meta: { 구성: c.이름, dataColumns: c.items.length + 1 },
     });
   }
+
+  // ── 고교학점제 시뮬레이터 ── 편성 상태를 주입해 카드 학점과 합계가 같은 값을 보는지 확인한다
+  const sim = await import(pathToFileURL(join(assetsDir, 'simulator.js')).href);
+  const 편성들 = [
+    { 이름: '6과목 기본', grid: { '1-1': [{ id: 's1', mode: 'solo', credit: 4 }], '1-2': [{ id: 's3', mode: 'solo', credit: 4 }], '2-1': [{ id: 's4', mode: 'solo', credit: 4 }], '2-2': [{ id: 's5', mode: 'solo', credit: 4 }], '3-1': [{ id: 's2', mode: 'solo', credit: 4 }], '3-2': [{ id: 's6', mode: 'solo', credit: 4 }] } },
+    { 이름: '학점 혼합·옛 형태', grid: { '1-1': [{ id: 's1', mode: 'solo', credit: 5 }, { id: 's3', mode: 'solo' }], '2-2': [{ id: 's6', mode: 'solo', credit: 3 }] } },
+  ];
+  for (const p of 편성들) {
+    sim.__simTest.setGrid(p.grid);
+    screens.push({ id: `simulator/${p.이름}`, kind: 'simulator', html: sim.renderSimulator(), meta: {} });
+  }
+  sim.__simTest.setGrid({});
 
   // 실제 카드 렌더를 사용해 접근성 이름 누락을 방지한다.
   const { __stdTest } = await import(pathToFileURL(join(assetsDir, 'app.js')).href);

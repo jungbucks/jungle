@@ -17,7 +17,7 @@ import { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOv
 import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvPicker } from './achv.js';
 import { renderAffective } from './affective.js';
 import { renderHome } from './home.js';
-import { collected, updatePanel, togglePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
+import { collected, updatePanel, togglePanel, closePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
 import { backupExport, backupImport } from './backup.js';
 import { initTypedPlaceholder } from './searchfx.js';
 
@@ -70,11 +70,16 @@ function closeMobileNav() {
 }
 document.addEventListener('keydown', function(e) {
   if (e.key !== 'Escape') return;
+  // 위에 뜬 것부터 닫는다: 성취수준 모달(body 끝에 동적 생성) → 정적 모달 → 담은 항목 패널 → 드로어
+  // (uiConfirm·홈 이용 안내 <dialog>는 각자 Escape를 처리한다)
+  const achvOverlay = document.getElementById('achvOverlay');
+  if (achvOverlay && achvOverlay.style.display !== 'none') { closeAchvModal(); return; }
   const stdPickerModal = document.getElementById('stdPickerModal');
   if (stdPickerModal && stdPickerModal.style.display !== 'none') { stdPickerClose(); return; }
   const evalPreviewModal = document.getElementById('evalPreviewModal');  
   if (evalPreviewModal && evalPreviewModal.style.display !== 'none') { evalClosePreview(); return; }  
-  if (document.getElementById('navDrawer').classList.contains('open')) closeMobileNav();
+  if (document.getElementById('navDrawer').classList.contains('open')) { closeMobileNav(); return; }
+  if (closePanel()) document.getElementById('fab').focus();
 });
 
 // --- Tabs ---
@@ -471,6 +476,8 @@ function render() {
   saveTextbookView();
   evalHideSummary();
   resetAccent(); // 과목 페이지의 accent 오버라이드 복원 — 과목 목록 렌더 시에만 setAccent로 다시 칠함
+  // 성취기준 화면(과목·검색 결과)에서만 0개짜리 '담은 항목' 버튼을 보인다 — 다른 화면에선 담은 게 있을 때만
+  document.body.classList.toggle('std-view', !homeMode && !NON_SUBJECT_TYPES.includes(S().type));
   if (homeMode) { document.getElementById('main').innerHTML = renderHome(); return; }
   const s = S();
   if (s.type === 'overview') {

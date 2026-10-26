@@ -46,6 +46,11 @@ try {
   assert.ok(await section.locator('.domain-expl').isVisible());
   assert.equal(await section.locator('.domain-expl-tx').first().innerText(),await page.evaluate(code=>ACHV_EXPL[code],code));
   await explanationButton.click();assert.equal(await explanationButton.getAttribute('aria-expanded'),'false');
+  // ABCDE 성취수준 모달: ESC로 닫히고 연 버튼으로 포커스가 돌아온다
+  const achvButton=section.locator('.achv-btn');
+  if(await achvButton.count()){await achvButton.click();assert.ok(await page.locator('#achvOverlay .achv-modal').isVisible());
+   await page.keyboard.press('Escape');assert.equal(await page.locator('#achvOverlay').isVisible(),false);
+   assert.ok(await achvButton.evaluate(el=>el===document.activeElement));}
   assert.equal(await card.locator('.std-text').innerText(),await card.locator('.card-chk').getAttribute('data-text'));
   await page.screenshot({path:join(root,'.ui-review','standards-'+width+'.png')});
   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));
@@ -54,10 +59,19 @@ try {
   assert.ok(footerHeight <= (width < 640 ? 125 : 85),'compact footer height: '+footerHeight);
   await page.screenshot({path:join(root,'.ui-review','footer-compact-'+width+'.png')});
   console.log(width+'px footer: '+footerHeight+'px');
+  // 담은 항목 버튼: 성취기준 화면에선 0개여도 보이고, 담으면 숫자가 오르며 눌러서 패널을 연다.
+  assert.equal(await page.locator('#fab').isVisible(),true);
   await card.locator('.card-chk').check();
-  assert.equal(await page.locator('#fab').isVisible(),false);
-  // 숨긴 진입 버튼과 별개로 기존 담기/복사 기능의 회귀 검증은 유지한다.
-  await page.evaluate(async()=>{const {togglePanel}=await import('/assets/collect.js');togglePanel();});
+  await page.locator('.std-card').nth(1).locator('.card-chk').check();
+  assert.equal(await page.locator('#fabCnt').innerText(),'2');
+  await page.locator('#fab').click();
+  assert.equal(await page.locator('#collectPanel').getAttribute('aria-hidden'),'false');
+  await page.keyboard.press('Escape');
+  assert.equal(await page.locator('#collectPanel').getAttribute('aria-hidden'),'true');
+  await page.reload();await page.locator('#fab').waitFor();
+  assert.equal(await page.locator('#fabCnt').innerText(),'2');
+  await page.locator('.std-card').nth(1).locator('.card-chk').uncheck();
+  await page.locator('#fab').click();
   await page.evaluate(()=>{Object.defineProperty(navigator,'clipboard',{configurable:true,value:{writeText:async()=>{throw Error('denied')}}});document.execCommand=()=>false;});
   await page.locator('#copyAllBtn').click();assert.equal(await page.locator('#copyAllBtn').innerText(),'전체 복사');
   await page.locator('#panelCloseBtn').click();

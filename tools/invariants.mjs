@@ -43,7 +43,25 @@ function evalTableAlignment(screen) {
   return null;
 }
 
+// 시뮬레이터: 배치 카드의 선택된 학점 합 = 요약의 "총 N학점" (분반 짝이 없는 편성 기준)
+function simCreditTotal(screen) {
+  const selects = [...screen.html.matchAll(/<select class="sim-credit-select"[\s\S]*?<\/select>/g)];
+  if (!selects.length) return '배치 카드의 학점 선택이 없다(학점이 고정 표시로 돌아갔을 수 있다)';
+  const picked = selects.map(m => (m[0].match(/<option value="(\d)" selected>/) || [])[1]);
+  if (picked.some(v => !v)) return '선택된 학점이 없는 카드가 있다';
+  const sum = picked.reduce((a, v) => a + +v, 0);
+  const total = +((screen.html.match(/총 (\d+)학점/) || [])[1]);
+  return total === sum ? null : `카드 학점 합 ${sum} ≠ 요약 총 ${total}학점`;
+}
+
 export const RULES = [
+  {
+    id: 'sim-total-matches-cards',
+    왜: '학점을 카드마다 바꿀 수 있으므로 요약 합계가 과목 기본값(옛 credit:3 하드코딩)이 아니라 카드에 고른 값을 더해야 한다.',
+    대상: 'simulator',
+    검사: simCreditTotal,
+    가짜: { html: '<select class="sim-credit-select"><option value="4" selected>4학점</option></select><span class="sim-sum-total">총 3학점</span>', meta: {} },
+  },
   {
     id: 'home-cover-svg-safe-fallback-size',
     왜: '홈 나무 SVG는 새 HTML과 이전 CSS가 잠시 섞여도 브라우저 기본 크기로 커지지 않아야 한다.',
