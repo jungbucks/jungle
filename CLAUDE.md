@@ -7,7 +7,7 @@
 
 ## 구조 (실측 2026-07-09)
 
-- **로드 순서**(index.html 하단): `data.js`(classic) → `boot.js`(classic) → `app.js`(`type=module`). 나머지 assets/*.js는 app.js가 import하는 ES 모듈. modulepreload 목록(index.html 9~31행)이 프리로드 관리.
+- **로드 순서**: `<head>`의 `theme-init.js`(classic, 첫 페인트 전 다크 테마 결정 — modulepreload 대상 아님) → index.html 하단 `data.js`(classic) → `boot.js`(classic) → `app.js`(`type=module`). 나머지 assets/*.js는 app.js가 import하는 ES 모듈. modulepreload 목록(index.html 9~31행)이 프리로드 관리.
 - **데이터**: 전부 `assets/data.js`(classic script, `const` 전역). ACHIEVEMENTS·SUBJECTS·HS_SUBJECTS·RECOMMENDED_SITES·SW_DATA·APPSTORE_APPS 등. `boot.js`가 이 전역들을 `window.*`로 브리지.
 - **CSP**: `script-src 'self'`(인라인 전면 차단). connect-src = self + generativelanguage.googleapis.com(Gemini) + date.nager.at(공휴일).
 
