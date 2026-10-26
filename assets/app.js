@@ -1,4 +1,4 @@
-import { matchesStandard, highlightStandard, uiToast } from './utils.js';
+import { matchesStandard, highlightStandard, uiToast, initScrollFades } from './utils.js';
 import { esc, safeUrl, hi, cid, announce, setAccent, resetAccent, initDelegation, registerActions, clipboardWriteText, getAchvKey, findTextByCode } from './utils.js';
 import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META } from './state.js';
 import { renderSimulator } from './simulator.js';
@@ -190,7 +190,38 @@ function renderTabs() {
   // 모바일 가로 스크롤에서 활성 서브탭이 화면 밖일 수 있음(해시 직링크 진입 등) — 중앙으로
   const actSub = subtabBar.querySelector ? subtabBar.querySelector('.subtab.active') : null;
   if (actSub && actSub.scrollIntoView) actSub.scrollIntoView({ inline: 'center', block: 'nearest' });
+  updateSubtabArrows();
 }
+
+// 서브탭이 넘칠 때 더 볼 쪽에만 페이드+화살표(.can-prev/.can-next)를 켠다
+function updateSubtabArrows() {
+  const box = document.getElementById('subtabBox');
+  const inner = document.getElementById('subtabBarInner');
+  if (!box || !inner || !(inner.scrollWidth > 0)) return;
+  const max = inner.scrollWidth - inner.clientWidth;
+  box.classList.toggle('can-prev', inner.scrollLeft > 2);
+  box.classList.toggle('can-next', inner.scrollLeft < max - 2);
+}
+function bindSubtabArrows() {
+  const inner = document.getElementById('subtabBarInner');
+  const box = document.getElementById('subtabBox');
+  if (!inner || !box) return;
+  inner.addEventListener('scroll', updateSubtabArrows, { passive: true });
+  window.addEventListener('resize', updateSubtabArrows);
+  box.addEventListener('click', e => {
+    const arrow = e.target.closest && e.target.closest('.subtab-arrow');
+    if (arrow) inner.scrollBy({ left: +arrow.dataset.dir * inner.clientWidth * 0.7, behavior: 'smooth' });
+  });
+}
+
+// 좁은 화면(≤480px)에선 예시가 잘리므로 짧은 문구 — 홈의 타자 애니메이션(searchfx)은 홈에서만 돌아 충돌하지 않는다
+const NARROW_MQ = window.matchMedia ? window.matchMedia('(max-width: 480px)') : null;
+function searchPlaceholder() {
+  return NARROW_MQ && NARROW_MQ.matches ? '성취기준 검색' : '성취기준 검색 (예: 알고리즘, 12정01-01)';
+}
+if (NARROW_MQ && NARROW_MQ.addEventListener) NARROW_MQ.addEventListener('change', () => {
+  if (!homeMode) document.getElementById('searchInput').placeholder = searchPlaceholder();
+});
 
 function selectHSGroup() {
   // homeMode 체크 필수: 홈에서 누르면 curIdx가 이전 HS 과목을 가리키고 있어도 다시 진입해야 함
@@ -205,7 +236,7 @@ function updateSearchVisibility() {
   const ss = document.getElementById('searchSection');  
   ss.style.display = hideSearch ? 'none' : '';  
   ss.classList.toggle('home-mode', homeMode);  
-  document.getElementById('searchInput').placeholder = '성취기준 검색 (예: 알고리즘, 12정01-01)';
+  document.getElementById('searchInput').placeholder = searchPlaceholder();
   document.getElementById('domainFilter').style.display = hideDomain ? 'none' : '';  
   document.getElementById('jungleImg').style.display = homeMode ? '' : 'none';
 }
@@ -738,6 +769,8 @@ if (location.hash && location.hash !== '#home') {
   hashDecode(location.hash);
 }
 bindStaticHandlers();
+bindSubtabArrows();
+initScrollFades(document.body);
 initDelegation(document.body);
 renderTabs();
 updateSearchVisibility();

@@ -410,7 +410,7 @@ function gcTableHtml() {
     `<label class="gc-attend gc-attend-all" title="이 시험 전체 응시/결시 일괄 선택">
       <input type="checkbox" ${gcAllAttend(key) ? 'checked' : ''}
         data-onchange="gc:allAttend" data-args="${esc(JSON.stringify([key]))}">전체 응시</label>`;
-  return `<div class="gc-table-box">
+  return `<p class="scroll-hint" aria-hidden="true">← 옆으로 밀어 보기</p><div class="gc-table-box scroll-fade">
     <table class="gc-table">
       <thead>
         <tr>
@@ -458,7 +458,7 @@ function gcResultHtml() {
       <p><strong>등급은 석차 백분율이 아니라</strong> '수강자수 × 누적비율'을 반올림한 등급별 누적 인원과 석차(동점 시 ${gcState.tieMode === 'eq' ? '같은 석차' : '중간석차'})를 비교해 정합니다. 그래서 표의 석차 백분율이 66%를 넘어도 3등급일 수 있습니다.</p>
       <p class="gc-basis-cums">이번 계산(${N}명)의 등급별 누적 인원: ${gcGradeCums(N).map((c, i) => `<span><b>${i + 1}등급</b> ${c}명까지</span>`).join('')}</p>
     </div>
-    <div class="gc-table-box">
+    <p class="scroll-hint" aria-hidden="true">← 옆으로 밀어 보기</p><div class="gc-table-box scroll-fade">
       <table class="gc-table gc-result-table">
         <thead><tr>
           <th>석차</th><th>번호</th><th>환산 총점</th><th>석차 백분율</th><th>최종 등급</th>

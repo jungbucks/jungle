@@ -369,7 +369,7 @@ function renderLessonTable(selSubj) {
       <button class="pbtn sec" data-onclick="lp:fillCollected"${nCollected ? '' : ' disabled'} title="담은 성취기준을 빈 수업 주차에 순서대로 넣습니다">담은 성취기준으로 채우기${nCollected ? ` (${nCollected})` : ''}</button>
       <span class="lp-legend"><i class="lp-row-exam"></i>정기시험 <i class="lp-row-event"></i>학교행사 <i class="lp-row-vacation"></i>방학 <i class="lp-row-perf"></i>수행평가</span>
     </div>
-    <p class="lp-scroll-hint">← 옆으로 밀어 보기</p>
+    <p class="scroll-hint" aria-hidden="true">← 옆으로 밀어 보기</p>
     <div class="lp-table-wrap scroll-fade">
     <table class="lp-table">
       <thead><tr>

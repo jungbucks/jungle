@@ -93,18 +93,18 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .nav-drawer-item.active{font-weight:700}
 
 /* SUBTAB BAR */
-/* 좌우 스크롤 섀도(local-attachment 트릭): 덮개 2장은 내용과 함께 스크롤(local), 그림자 2장은 가장자리에 고정 —
-   더 볼 내용이 있는 쪽에만 그림자가 비침. 배경을 바꿀 땐 덮개 색도 함께 바꿀 것(다크 규칙 참조) */
-.subtab-bar{background:
-  linear-gradient(90deg,var(--g50) 33%,transparent) left/44px 100% no-repeat local,
-  linear-gradient(270deg,var(--g50) 33%,transparent) right/44px 100% no-repeat local,
-  radial-gradient(farthest-side at 0 50%,rgba(15,23,42,.14),transparent) left/16px 100% no-repeat,
-  radial-gradient(farthest-side at 100% 50%,rgba(15,23,42,.14),transparent) right/16px 100% no-repeat
-  var(--g50);
-  border-bottom:1px solid var(--g200);overflow-x:auto;scrollbar-width:none;position:sticky;top:58px;z-index:99;visibility:hidden}
-.subtab-bar::-webkit-scrollbar{display:none}
+/* 가로로 넘치는 서브탭: 스크롤은 안쪽(.subtab-bar-inner)이 맡고, 바깥 상자(.subtab-box)가 양 끝 페이드+화살표를 얹는다.
+   .can-prev/.can-next는 app.js updateSubtabArrows()가 스크롤 위치로 켠다(더 볼 탭이 있는 쪽에만 보임). */
+.subtab-bar{background:var(--g50);border-bottom:1px solid var(--g200);position:sticky;top:58px;z-index:99;visibility:hidden}
 .subtab-bar.visible{visibility:visible}
-.subtab-bar-inner{max-width:1200px;margin:0 auto;padding:0 20px;display:flex;gap:0;height:40px}
+.subtab-box{position:relative;max-width:1200px;margin:0 auto}
+.subtab-bar-inner{padding:0 20px;display:flex;gap:0;height:40px;overflow-x:auto;scrollbar-width:none}
+.subtab-bar-inner::-webkit-scrollbar{display:none}
+.subtab-arrow{position:absolute;top:0;bottom:0;z-index:1;width:40px;border:none;padding:0;font-family:inherit;font-size:20px;font-weight:700;line-height:1;color:var(--g600);cursor:pointer;opacity:0;pointer-events:none;transition:opacity .15s}
+.subtab-arrow.prev{left:0;text-align:left;padding-left:6px;background:linear-gradient(90deg,var(--g50) 55%,transparent)}
+.subtab-arrow.next{right:0;text-align:right;padding-right:6px;background:linear-gradient(270deg,var(--g50) 55%,transparent)}
+.subtab-arrow:hover{color:var(--g900)}
+.subtab-box.can-prev .subtab-arrow.prev,.subtab-box.can-next .subtab-arrow.next{opacity:1;pointer-events:auto}
 .subtab{background:none;border:none;border-bottom:3px solid transparent;box-sizing:border-box;cursor:pointer;padding:0 16px;height:100%;font-size:14px;font-weight:500;color:var(--g500);white-space:nowrap;transition:color .15s,border-color .15s;font-family:inherit;display:flex;align-items:center;flex-direction:column;justify-content:center;flex-shrink:0}
 .subtab::after{content:attr(data-text);display:block;font-weight:700;height:0;visibility:hidden;overflow:hidden;pointer-events:none}
 .subtab:hover{color:var(--g800)}
@@ -1029,7 +1029,7 @@ span.astore-card-author{color:var(--brand)}
 .lp-week-note.err{color:var(--danger-dark)}
 .lp-week-input[aria-invalid="true"],.lp-mw.bad{border-color:var(--danger);outline:1px solid var(--danger);background:var(--danger-soft)}
 .lp-settings-row{align-items:flex-start}
-.lp-scroll-hint{display:none;margin:10px 0 0;font-size:13px;color:var(--g500)}
+
 .lp-table td{padding:6px 8px;vertical-align:top}
 .lp-mw{min-width:44px;outline:none;border-radius:4px;padding:3px 5px;cursor:text;color:var(--g800);font-size:14px;font-family:inherit;line-height:1.4}
 .lp-mw:focus{background:var(--g50);outline:1px solid var(--g300)}
@@ -1530,13 +1530,9 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 
 /* --- Layout --- */
 [data-theme="dark"] .header { background: #1E293B; border-color: #334155; box-shadow: 0 1px 3px rgba(0,0,0,.4); }
-[data-theme="dark"] .subtab-bar { background:
-  linear-gradient(90deg,#162132 33%,transparent) left/44px 100% no-repeat local,
-  linear-gradient(270deg,#162132 33%,transparent) right/44px 100% no-repeat local,
-  radial-gradient(farthest-side at 0 50%,rgba(0,0,0,.55),transparent) left/16px 100% no-repeat,
-  radial-gradient(farthest-side at 100% 50%,rgba(0,0,0,.55),transparent) right/16px 100% no-repeat
-  #162132;
-  border-color: #334155; }
+[data-theme="dark"] .subtab-bar { background: #162132; border-color: #334155; }
+[data-theme="dark"] .subtab-arrow.prev { background: linear-gradient(90deg,#162132 55%,transparent); }
+[data-theme="dark"] .subtab-arrow.next { background: linear-gradient(270deg,#162132 55%,transparent); }
 [data-theme="dark"] .nav-drawer { background: #1E293B; }
 [data-theme="dark"] .nav-overlay { background: rgba(0,0,0,.65); }
 [data-theme="dark"] .site-footer { border-color: #253347; }
@@ -1856,6 +1852,18 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .std-search-scope button{font:inherit;min-height:40px;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;background:var(--g50);color:var(--g700);cursor:pointer}
 .std-search-scope button[aria-pressed="true"]{border-color:var(--brand);color:var(--brand);font-weight:700}
 .std-search-scope button:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+/* 가로 스크롤 단서(utils initScrollFades가 .fade-l/.fade-r/.is-scrollable를 켠다) — 마스크는 색이 아니라 알파만 쓴다 */
+.scroll-fade.fade-r{-webkit-mask-image:linear-gradient(to right,black calc(100% - 36px),transparent);mask-image:linear-gradient(to right,black calc(100% - 36px),transparent)}
+.scroll-fade.fade-l{-webkit-mask-image:linear-gradient(to right,transparent,black 36px);mask-image:linear-gradient(to right,transparent,black 36px)}
+.scroll-fade.fade-l.fade-r{-webkit-mask-image:linear-gradient(to right,transparent,black 36px,black calc(100% - 36px),transparent);mask-image:linear-gradient(to right,transparent,black 36px,black calc(100% - 36px),transparent)}
+.scroll-hint{display:none;margin:10px 0 6px;font-size:13px;font-weight:600;color:var(--g500)}
+@media (max-width:640px){
+  .scroll-hint:has(+ .scroll-fade.is-scrollable){display:block}
+  /* 영역 필터 칩: 3줄로 쌓이던 것을 한 줄 가로 스크롤로 */
+  .domain-filter{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+  .domain-filter::-webkit-scrollbar{display:none}
+  .domain-filter .dchip{flex-shrink:0}
+}
 /* 전체 과목 검색 중: 서브탭의 '현재 과목' 강조를 끄고(인라인 과목색을 덮는다) 결과 상단 배너로 범위를 알린다 */
 .subtab-bar.scope-all .subtab.active{color:var(--g500)!important;border-bottom-color:transparent!important;font-weight:500}
 .search-scope-banner{font-size:14px;color:var(--g600);line-height:1.6}

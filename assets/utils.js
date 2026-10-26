@@ -236,6 +236,24 @@ export async function clipboardWriteText(text) {
   finally { ta.remove(); focused?.focus?.(); }
 }
 
+// 가로로 넘치는 영역(.scroll-fade)에 '더 있음' 페이드를 켠다: 스크롤 위치에 따라 .fade-l/.fade-r,
+// 넘치면 .is-scrollable(앞의 .scroll-hint 문구가 CSS :has로 이걸 보고 나타난다). 화면이 바뀌면 다시 잰다.
+export function initScrollFades(root) {
+  if (!root || typeof MutationObserver === 'undefined') return;
+  const update = el => {
+    const max = el.scrollWidth - el.clientWidth;
+    el.classList.toggle('is-scrollable', max > 2);
+    el.classList.toggle('fade-l', el.scrollLeft > 2);
+    el.classList.toggle('fade-r', max > 2 && el.scrollLeft < max - 2);
+  };
+  let raf = 0;
+  const schedule = () => { if (!raf) raf = requestAnimationFrame(() => { raf = 0; root.querySelectorAll('.scroll-fade').forEach(update); }); };
+  new MutationObserver(schedule).observe(root, { childList: true, subtree: true });
+  root.addEventListener('scroll', e => { const t = e.target; if (t && t.classList && t.classList.contains('scroll-fade')) update(t); }, true);
+  window.addEventListener('resize', schedule);
+  schedule();
+}
+
 export function openModal(id) {
   const m = document.getElementById(id);
   if (!m) return;
