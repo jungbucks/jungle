@@ -1,5 +1,6 @@
-import { esc, clipboardWriteText, loadState, registerActions } from './utils.js';
+import { esc, clipboardWriteText, registerActions } from './utils.js';
 import { geminiGenerateJSON, loadGeminiKey, saveGeminiKey, clearGeminiKey } from './gemini.js';
+import { collected } from './collect.js';
 
 const IDEA_ACCENT = ['#0EA5E9', '#F59E0B', '#10B981', '#8B5CF6', '#EF4444'];
 const IDEA_LIGHT  = ['#F0F9FF', '#FFFBEB', '#ECFDF5', '#F5F3FF', '#FEF2F2'];
@@ -140,7 +141,6 @@ function aiideaToggleCollected() {
 }
 
 function aiideaRenderCollectedPanel(panel) {
-  const collected = loadState('collected', []);
   if (!collected.length) {
     panel.innerHTML = `<div class="aiidea-collected-empty">담은 성취기준이 없습니다. 성취기준 검색에서 ☑ 체크해보세요.</div>`;
     return;

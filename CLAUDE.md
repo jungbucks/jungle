@@ -63,7 +63,7 @@
 
 ## localStorage 키 (신규 추가 시 backup.js BACKUP_KEYS도 갱신)
 
-`collected` · `jungle_rubric` · `jungle_lesson_plan` · `jungle_evalplan` · `jungle_gradecalc`(반영비율·동점자 설정만 — **학생 점수·번호는 비영속**) · `jungle_chasi` · `jungle_darkmode` · `jungle_visited` · `jungle_last_used` · Gemini 키(gemini.js, 평문+삭제버튼, 헤더 전송). Gemini 키는 백업 제외.
+`jungle_collected`(2026-10 이전 `collected` — collect.js가 첫 로드 때 옮기고 삭제, 옛 백업 파일의 `collected`도 복원 시 변환) · `jungle_rubric` · `jungle_lesson_plan`(v2 행 형식 — lessonplan.js `lpMigrate`) · `jungle_evalplan` · `jungle_regexam` · `jungle_gradecalc`(반영비율·동점자 설정만 — **학생 점수·번호는 비영속**) · `jungle_chasi` · `jungle_darkmode` · `jungle_visited` · `jungle_last_used` · Gemini 키(gemini.js, 평문+삭제버튼, 헤더 전송). Gemini 키는 백업 제외.
 
 ## 형제 프로젝트 (별도 폴더·별도 배포 — 정글 규칙 끌어오지 말 것, **각 폴더의 CLAUDE.md가 그 프로젝트의 진입점**)
 

@@ -3,7 +3,7 @@ import { uiToast, uiConfirm } from './utils.js';
 // --- 데이터 백업/복원 (localStorage 소실 대비) ---
 // Gemini API 키는 보안상 제외. 성적 산출기의 번호·점수는 애초에 비영속(개인정보 방침)이라 백업 대상 아님.
 // 새 localStorage 키를 만들면 이 화이트리스트에도 추가할 것.
-const BACKUP_KEYS = ['collected', 'jungle_rubric', 'jungle_lesson_plan', 'jungle_evalplan', 'jungle_chasi', 'jungle_gradecalc', 'jungle_darkmode'];
+const BACKUP_KEYS = ['jungle_collected', 'jungle_rubric', 'jungle_lesson_plan', 'jungle_evalplan', 'jungle_regexam', 'jungle_chasi', 'jungle_gradecalc', 'jungle_darkmode'];
 
 export function backupExport() {
   const payload = { app: 'jungle-backup', version: 1, exported: new Date().toISOString(), data: {} };
@@ -29,6 +29,8 @@ export function backupImport(file) {
     try {
       const obj = JSON.parse(String(reader.result));
       if (!obj || obj.app !== 'jungle-backup' || typeof obj.data !== 'object') throw new Error('format');
+      // 2026-10 이전 백업 파일은 담은 성취기준을 'collected' 키로 담고 있다
+      if (typeof obj.data.collected === 'string' && typeof obj.data.jungle_collected !== 'string') obj.data.jungle_collected = obj.data.collected;
       const keys = BACKUP_KEYS.filter(k => typeof obj.data[k] === 'string'); // 화이트리스트 밖 키는 무시
       if (!keys.length) throw new Error('empty');
       const when = obj.exported ? obj.exported.slice(0, 10) : '날짜 미상';

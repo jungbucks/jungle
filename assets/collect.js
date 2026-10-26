@@ -2,11 +2,24 @@ import { esc, clipboardWriteText, loadState, saveState, registerActions, uiToast
 
 // --- 담은 성취기준 (수집 패널) — app.js에서 분리 (2026-07-08 F2) ---
 // collected는 export let 라이브 바인딩: app.js 렌더가 최신 값을 읽는다. 재할당은 이 모듈 안에서만.
-export let collected = loadState('collected', []);
+// 저장 키: jungle_collected (2026-10 이전엔 접두어 없는 'collected' — 처음 읽을 때 옮기고 지운다)
+export let collected = loadCollected();
 let panelOpen = false;
 
+function loadCollected() {
+  try {
+    const legacy = localStorage.getItem('collected');
+    if (legacy !== null) {
+      if (localStorage.getItem('jungle_collected') === null) localStorage.setItem('jungle_collected', legacy);
+      localStorage.removeItem('collected');
+    }
+  } catch (e) {}
+  const list = loadState('jungle_collected', []);
+  return Array.isArray(list) ? list : [];
+}
+
 function saveCollected() {
-  saveState('collected', collected);
+  saveState('jungle_collected', collected);
 }
 
 function onCheck(chk) {
