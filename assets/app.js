@@ -219,20 +219,32 @@ function toggleDarkMode() {
 }
 
 // --- URL Hash State ---
+// 형식: #<화면>[:<서브탭>][?q=<검색어>&scope=all|subject]
+// 화면 부분(? 앞)이 바뀌면 pushState(뒤로가기로 돌아올 수 있게), 같은 화면의 검색어·범위만 바뀌면 replaceState.
 function hashEncode() {
   if (homeMode) return '#home';
   const id = SUBJECTS[curIdx] ? SUBJECTS[curIdx].id : 'home';
   if (id === 'overview') return '#overview:' + overviewSubtab;
   if (id === 'evalplan') return '#evalplan:' + evalPlanSubtab;
+  if (query && !NON_SUBJECT_TYPES.includes(S().type)) return '#' + id + '?q=' + encodeURIComponent(query) + '&scope=' + searchScope;
   return '#' + id;
 }
 
 function hashDecode(hash) {
-  if (!hash || hash === '#' || hash === '#home') { homeMode = true; return; }
-  const raw = hash.slice(1);
-  const [base, sub] = raw.split(':');
+  const raw = (hash || '').replace(/^#/, '');
+  const qAt = raw.indexOf('?');
+  const head = qAt < 0 ? raw : raw.slice(0, qAt);
+  const params = new URLSearchParams(qAt < 0 ? '' : raw.slice(qAt + 1));
+  query = (params.get('q') || '').trim();
+  searchScope = params.get('scope') === 'all' ? 'all' : 'subject';
+  syncSearchInput();
+  if (!head || head === 'home') { homeMode = true; query = ''; syncSearchInput(); return; }
+  // 첫 ':'에서만 나눈다 — 검색어는 ? 뒤에 있어 ':'가 들어가도 화면 부분을 깨지 않는다
+  const colon = head.indexOf(':');
+  const base = colon < 0 ? head : head.slice(0, colon);
+  const sub = colon < 0 ? '' : head.slice(colon + 1);
   const idx = SUBJECTS.findIndex(s => s.id === base);
-  if (idx < 0) { homeMode = true; return; }
+  if (idx < 0) { homeMode = true; query = ''; syncSearchInput(); return; }
   homeMode = false;
   curIdx = idx;
   // 시뮬레이터는 교육과정(overview)의 하위 탭으로 렌더된다 → orphan '#simulator' 딥링크를 정규화(북마크·새로고침 견고성)
@@ -243,10 +255,20 @@ function hashDecode(hash) {
 
 function pushHash() {
   const h = hashEncode();
-  if (location.hash !== h) history.replaceState(null, '', h);
+  if (location.hash === h) return;
+  const screenOf = x => (x || '#home').split('?')[0];
+  if (screenOf(location.hash) === screenOf(h)) history.replaceState(null, '', h);
+  else history.pushState(null, '', h);
+}
+
+function syncSearchInput() {
+  const inp = document.getElementById('searchInput');
+  if (inp) inp.value = query;
+  document.getElementById('searchClear').classList.toggle('on', query.length > 0);
 }
 
 window.addEventListener('popstate', () => {
+  domainFilter = null;
   hashDecode(location.hash);
   renderTabs(); updateSearchVisibility(); renderWithFade();
 });
@@ -268,6 +290,7 @@ function onHomeSearch(val) {
   homeMode = false; curIdx = 1; domainFilter = null;
   document.getElementById('searchInput').value = query;
   document.getElementById('searchClear').classList.add('on');
+  pushHash();
   renderTabs(); updateSearchVisibility(); renderWithFade();
 }
 
@@ -317,15 +340,21 @@ document.getElementById('searchInput').addEventListener('input', e => {
     const pos = inp.selectionEnd;    
     requestAnimationFrame(() => { inp.focus(); inp.setSelectionRange(pos, pos); });  
   }  
-  clearTimeout(_searchTimer);  
-  _searchTimer = setTimeout(render, 150);
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => { render(); pushHash(); }, 150);
 });
 
-function clearSearch() {  
-  query = ''; domainFilter = null;  
-  document.getElementById('searchInput').value = '';  
-  document.getElementById('searchClear').classList.remove('on');  
-  render();
+function clearSearch() {
+  query = ''; domainFilter = null;
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchClear').classList.remove('on');
+  render(); pushHash();
+}
+
+// 전체 과목 검색 중에는 '지금 과목' 서브탭 강조를 끈다 (CSS .scope-all) — 검색을 지우면 원래대로
+function syncSubtabScope() {
+  const bar = document.getElementById('subtabBar');
+  if (bar) bar.classList.toggle('scope-all', !homeMode && !!query && searchScope === 'all' && HS_SUBTAB_ORDER.includes(curIdx));
 }
 
 // --- Domain toggle ---
@@ -424,8 +453,9 @@ function renderGlobalSearch() {
     });
     if (matchedDomains.length) results.push({subj, domains: matchedDomains});
   });
+  const scopeAll = searchScope === 'all';
   let html = searchScopeHtml() + `<div class="subject-meta">
-    <span style="font-size:13px;color:var(--g600)">${searchScope === 'all' ? '전체 과목' : esc(S().name)}에서 검색 중 &mdash; <strong style="color:var(--g900)">${totalVis}개</strong> 성취기준</span>
+    <span class="search-scope-banner${scopeAll ? ' all' : ''}" role="status">${scopeAll ? '<strong>전체 과목</strong>' : esc(S().name)}에서 검색 중 &mdash; <strong>${totalVis}개</strong> 성취기준${scopeAll ? ' · 위 과목 탭과 관계없이 7과목을 모두 찾습니다' : ''}</span>
   </div>`;
   if (!results.length) {
     html += noResHtml(query);
@@ -478,6 +508,7 @@ function render() {
   resetAccent(); // 과목 페이지의 accent 오버라이드 복원 — 과목 목록 렌더 시에만 setAccent로 다시 칠함
   // 성취기준 화면(과목·검색 결과)에서만 0개짜리 '담은 항목' 버튼을 보인다 — 다른 화면에선 담은 게 있을 때만
   document.body.classList.toggle('std-view', !homeMode && !NON_SUBJECT_TYPES.includes(S().type));
+  syncSubtabScope();
   if (homeMode) { document.getElementById('main').innerHTML = renderHome(); return; }
   const s = S();
   if (s.type === 'overview') {
@@ -633,7 +664,7 @@ window.compareSelectSubtab = compareSelectSubtab;
 
 // ── 이벤트 위임 등록 (동적 템플릿 인라인 핸들러 대체) ──
 registerActions('click', {
-  'app:searchScope': function(el) { searchScope = el.dataset.scope === 'all' ? 'all' : 'subject'; render(); document.querySelector('.std-search-scope [data-scope="' + searchScope + '"]')?.focus(); },
+  'app:searchScope': function(el) { searchScope = el.dataset.scope === 'all' ? 'all' : 'subject'; render(); pushHash(); document.querySelector('.std-search-scope [data-scope="' + searchScope + '"]')?.focus(); },
   'app:domainFilter':   function(el, e, name) { setDomainFilter(name); },
   'app:subject':        function(el, e, idx) { selectSubject(idx); },
   'app:subjectNav':     function(el, e, idx) { selectSubject(idx); closeMobileNav(); },

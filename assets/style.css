@@ -1803,6 +1803,12 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .std-search-scope button{font:inherit;min-height:40px;padding:8px 12px;border:1px solid var(--g200);border-radius:8px;background:var(--g50);color:var(--g700);cursor:pointer}
 .std-search-scope button[aria-pressed="true"]{border-color:var(--brand);color:var(--brand);font-weight:700}
 .std-search-scope button:focus-visible{outline:2px solid var(--brand);outline-offset:3px}
+/* 전체 과목 검색 중: 서브탭의 '현재 과목' 강조를 끄고(인라인 과목색을 덮는다) 결과 상단 배너로 범위를 알린다 */
+.subtab-bar.scope-all .subtab.active{color:var(--g500)!important;border-bottom-color:transparent!important;font-weight:500}
+.search-scope-banner{font-size:14px;color:var(--g600);line-height:1.6}
+.search-scope-banner strong{color:var(--g900)}
+.search-scope-banner.all{display:block;width:100%;padding:10px 14px;border-radius:8px;background:var(--brand-soft);border:1px solid var(--brand-line);color:var(--brand-dark)}
+.search-scope-banner.all strong{color:var(--brand)}
 
 .std-card .card-body{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:baseline}
 @media(max-width:640px){
