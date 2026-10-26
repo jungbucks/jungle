@@ -1,4 +1,4 @@
-const CACHE = 'jungle-v82';
+const CACHE = 'jungle-v83';
 
 const ASSETS = [
   './',
@@ -31,6 +31,7 @@ const ASSETS = [
   './assets/backup.js',
   './assets/searchfx.js',
   './images/jungle.png',
+  './images/hero-jungle.webp',
   './images/icon.svg',
   './images/icon-192.png',
   './images/icon-512.png',

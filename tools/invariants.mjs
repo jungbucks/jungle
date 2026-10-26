@@ -112,12 +112,12 @@ export const RULES = [
   },
   {
     id: 'home-cover-svg-safe-fallback-size',
-    왜: '홈 나무 SVG는 새 HTML과 이전 CSS가 잠시 섞여도 브라우저 기본 크기로 커지지 않아야 한다.',
+    왜: '홈 히어로 그림(2026-10부터 webp <img>, 그 전엔 SVG)은 새 HTML과 이전 CSS가 잠시 섞여도 원본 크기로 커지지 않아야 한다.',
     대상: 'homeShell',
     검사: s => {
-      const svg = [...s.html.matchAll(/<svg\b([^>]*)>/gi)]
+      const svg = [...s.html.matchAll(/<(?:svg|img)\b([^>]*)>/gi)]
         .find(m => attribute(m[1], 'class').split(/\s+/).includes('cover-tree'));
-      if (!svg) return 'cover-tree SVG를 찾지 못했다';
+      if (!svg) return 'cover-tree 그림(svg/img)을 찾지 못했다';
       const width = Number(attribute(svg[1], 'width'));
       const height = Number(attribute(svg[1], 'height'));
       return width > 0 && width <= 64 && height > 0 && height <= 64
