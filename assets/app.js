@@ -1,4 +1,4 @@
-import { matchesStandard, highlightStandard, uiToast, initScrollFades } from './utils.js';
+import { matchesStandard, highlightStandard, uiToast, initScrollFades, particle } from './utils.js';
 import { esc, safeUrl, hi, cid, announce, setAccent, resetAccent, initDelegation, registerActions, clipboardWriteText, getAchvKey, findTextByCode } from './utils.js';
 import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META, NAV, PLAN_TOOLS, AI_TOOLS } from './state.js';
 import { renderSimulator } from './simulator.js';
@@ -470,17 +470,46 @@ function toggleDomain(key) {
 }
 
 // --- Empty state ---
-function noResHtml(q) {
+// 결과가 없을 때 대신 찾아볼 말 — 교육과정 문서가 쓰는 용어로 바꿔 준다(키는 소문자·공백 없이)
+const SEARCH_SYNONYMS = {
+  '파이썬': ['프로그래밍', '자료형', '함수'],
+  'python': ['프로그래밍', '자료형'],
+  '코딩': ['알고리즘', '프로그래밍'],
+  'ai': ['인공지능', '기계학습'],
+  '머신러닝': ['기계학습', '인공지능'],
+  '딥러닝': ['인공지능', '기계학습'],
+  '엑셀': ['데이터', '시각화'],
+  '스프레드시트': ['데이터', '시각화'],
+  '스크래치': ['프로그래밍', '알고리즘'],
+  '블록코딩': ['프로그래밍', '알고리즘'],
+  '아두이노': ['피지컬 컴퓨팅', '센서'],
+  '챗gpt': ['인공지능', '생성형'],
+  '해킹': ['보안', '정보 보호'],
+  '저작권': ['저작권', '디지털 윤리'],
+};
+// 동의어 중 실제로 결과가 나오는 말만 칩으로(빈 결과로 또 보내지 않게)
+function suggestTerms(q) {
+  const key = q.normalize('NFKC').toLowerCase().replace(/\s+/g, '');
+  const cand = new Set();
+  Object.entries(SEARCH_SYNONYMS).forEach(([k, vs]) => { if (key === k || (key.length >= 2 && key.includes(k))) vs.forEach(v => cand.add(v)); });
+  const items = SUBJECTS.flatMap(s => (s.domains || []).flatMap(d => d.items));
+  return [...cand].filter(t => t !== q && items.some(it => matchesStandard(it, t))).slice(0, 4);
+}
+function noResHtml(q, { retry = false } = {}) {
   const msgs = [
     { icon:'🤔', main:'성취기준이 이 키워드를 성취하지 못했습니다', sub:'검색어를 줄이거나 다른 키워드로 바꿔 보세요' },
-    { icon:'😅', main:`"${esc(q)}"는 교육과정에 아직 편입 신청을 안 한 것 같아요`, sub:'비슷한 단어나 성취기준 코드로 찾아 보세요' },
+    { icon:'😅', main:`"${esc(q)}"${particle(q, '은/는')} 교육과정에 아직 편입 신청을 안 한 것 같아요`, sub:'비슷한 단어나 성취기준 코드로 찾아 보세요' },
     { icon:'🏫', main:'교육부도 처음 들어본 키워드인 것 같습니다', sub:'혹시 교과서 용어라면 다른 말로 검색해 보세요' },
     { icon:'✍️', main:'이 키워드로 새 교육과정을 만드실 계획인가요?', sub:'아직은 없으니 다른 검색어를 써 보세요' },
     { icon:'📋', main:'전국 성취기준을 다 뒤졌는데 없어요', sub:'철자를 확인하거나 핵심 단어만 입력해 보세요' },
   ];
   const idx = [...q].reduce((a, c) => a + c.charCodeAt(0), 0) % msgs.length;
   const { icon, main, sub } = msgs[idx];
-  return `<div class="no-res"><div class="no-res-icon">${icon}</div><div class="no-res-text">${main}</div><div class="no-res-sub">${sub}</div></div>`;
+  const terms = q ? suggestTerms(q) : [];
+  const chips = terms.length
+    ? `<div class="no-res-suggest"><span>이 말로 찾아 보세요</span>${terms.map(t => `<button type="button" class="no-res-chip" data-onclick="app:suggestQuery" data-query="${esc(t)}">${esc(t)}</button>`).join('')}</div>` : '';
+  const retryBtn = retry ? `<button type="button" class="pbtn pri no-res-retry" data-onclick="app:retryAll">전체 과목에서 다시 찾기</button>` : '';
+  return `<div class="no-res"><div class="no-res-icon">${icon}</div><div class="no-res-text">${main}</div><div class="no-res-sub">${sub}</div>${chips}${retryBtn}</div>`;
 }
 
 // --- Shared markup: domain section + standard card (render / renderGlobalSearch 공용) ---
@@ -562,7 +591,7 @@ function renderGlobalSearch() {
     <span class="search-scope-banner${scopeAll ? ' all' : ''}" role="status">${scopeAll ? '<strong>전체 과목</strong>' : esc(S().name)}에서 검색 중 &mdash; <strong>${totalVis}개</strong> 성취기준${scopeAll ? ' · 위 과목 탭과 관계없이 7과목을 모두 찾습니다' : ''}</span>
   </div>`;
   if (!results.length) {
-    html += noResHtml(query);
+    html += noResHtml(query, { retry: searchScope !== 'all' });
   } else {
     results.forEach(({subj, domains}) => {
       html += `<div style="display:flex;align-items:center;gap:8px;margin:16px 0 8px;padding-bottom:6px;border-bottom:2px solid ${subj.aLight}">
@@ -788,6 +817,8 @@ registerActions('click', {
   'app:toggleDomainExpl': function(el, e, id) { const b = document.getElementById(id); if (!b) return; const o = b.hidden; b.hidden = !o; el.setAttribute('aria-expanded', o ? 'true' : 'false'); el.classList.toggle('on', o); },
   'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvPicker(subjId, accent); },
   'app:focusSearch':    function() { focusSearch(); },
+  'app:suggestQuery':   function(el) { query = el.dataset.query || ''; domainFilter = null; document.getElementById('searchInput').value = query; document.getElementById('searchClear').classList.toggle('on', !!query); render(); pushHash(); announce(query + ' 검색'); },
+  'app:retryAll':       function() { searchScope = 'all'; render(); pushHash(); document.querySelector('.std-search-scope [data-scope="all"]')?.focus(); },
   'app:exampleSearch': function(el) { onHomeSearch(el.dataset.query); },
   'app:lucky':          function() { luckyJump(); },
   'app:downloadTxt':    function() { downloadTxt(); },

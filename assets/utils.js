@@ -14,6 +14,21 @@ export function hi(s, q) {
   return esc(s).replace(r, m => `<mark>${m}</mark>`);
 }
 
+// 받침에 따라 조사를 고른다: particle('파이썬','은/는') → '은', josa('AI','은/는') → 'AI는'
+// pair = '받침 있을 때/없을 때' (은/는·이/가·을/를·과/와·으로/로). 끝 글자가 한글이 아니면 읽는 소리로 판단한다.
+export function particle(word, pair) {
+  const [withB, withoutB] = pair.split('/');
+  const ch = String(word).trim().replace(/["'”’)\]]+$/, '').slice(-1);
+  const code = ch.charCodeAt(0);
+  let jong = -1; // -1: 받침 없음, 0: 받침 있음(ㄹ 아님), 8: ㄹ 받침
+  if (code >= 0xAC00 && code <= 0xD7A3) { const j = (code - 0xAC00) % 28; jong = j === 0 ? -1 : j === 8 ? 8 : 0; }
+  else if (/[0-9]/.test(ch)) jong = '178'.includes(ch) ? 8 : '036'.includes(ch) ? 0 : -1;   // 일·칠·팔(ㄹ) / 영·삼·육 / 이·사·오·구
+  else if (/[a-z]/i.test(ch)) jong = 'lr'.includes(ch.toLowerCase()) ? 8 : 'mn'.includes(ch.toLowerCase()) ? 0 : -1; // 엘·알(ㄹ) / 엠·엔
+  if (pair === '으로/로') return jong === 0 ? withB : withoutB; // ㄹ 받침은 '로'
+  return jong === -1 ? withoutB : withB;
+}
+export function josa(word, pair) { return String(word) + particle(word, pair); }
+
 export function cid(code) { return code.replace(/[\[\]-]/g,'_'); }
 
 export function announce(msg) {

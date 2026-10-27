@@ -2128,3 +2128,9 @@ body:has(.home-guide-modal[open]){overflow:hidden}
 @media(max-width:640px){:root{--plan-sticky-top:93px}}
 .home-card-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--plan-soft);color:var(--plan-dark);font-size:12px;font-weight:800;flex-shrink:0}
 .home-card:has(.home-card-step) .home-card-desc{padding-left:28px}
+/* 결과 없음: 대체 검색어 칩·전체 과목 다시 찾기 */
+.no-res-suggest{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:8px;margin-top:18px;font-size:14px;color:var(--g600)}
+.no-res-chip{font:inherit;font-size:14px;font-weight:600;min-height:36px;padding:6px 14px;border:1px solid var(--brand-line);border-radius:999px;background:var(--surface);color:var(--brand-dark);cursor:pointer}
+.no-res-chip:hover{background:var(--brand-soft)}
+.no-res-chip:focus-visible,.no-res-retry:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+.no-res-retry{margin-top:16px}

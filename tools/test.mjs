@@ -60,7 +60,7 @@ const { __simTest } = await import('../assets/simulator.js');
 const { __lpTest } = await import('../assets/lessonplan.js');
 const { __rubricTest } = await import('../assets/rubric.js');
 const planCtx = await import('../assets/planctx.js');
-const { getAchvKey } = await import('../assets/utils.js');
+const { getAchvKey, josa } = await import('../assets/utils.js');
 
 // ── 테스트 헬퍼 ──────────────────────────────────────────────
 function makeStudents(rows) {
@@ -476,9 +476,20 @@ export function runPlanLinkTests() {
   return { pass, fail: fails.length, fails };
 }
 
+// ── 조사 유틸(결과 없음 문구 '"파이썬"는' 오류 방지) ──
+export function runJosaTests() {
+  let pass = 0; const fails = [];
+  const eq = (name, got, want) => { if (got === want) pass++; else fails.push(name + ': got ' + got + ' · want ' + want); };
+  const cases = [['파이썬', '은/는', '파이썬은'], ['코딩', '은/는', '코딩은'], ['알고리즘', '이/가', '알고리즘이'], ['데이터', '은/는', '데이터는'],
+    ['AI', '은/는', 'AI는'], ['HTML', '은/는', 'HTML은'], ['12정01-01', '을/를', '12정01-01을'], ['3', '은/는', '3은'], ['2', '은/는', '2는'],
+    ['서울', '으로/로', '서울로'], ['학교', '으로/로', '학교로'], ['교실', '으로/로', '교실로'], ['책상', '으로/로', '책상으로'], ['"파이썬"', '은/는', '"파이썬"은']];
+  cases.forEach(([w, p, want]) => eq(w + ' ' + p, josa(w, p), want));
+  return { pass, fail: fails.length, fails };
+}
+
 // 전체 집계 (verify [5]가 호출)
 export function runAllTests() {
-  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()], ['simulator', runSimTests()], ['lessonplan', runLessonTests()], ['plan-link', runPlanLinkTests()]];
+  const parts = [['gradecalc', runGradeTests()], ['chasi', runChasiTests()], ['evalplan', runEvalTests()], ['achv', runAchvTests()], ['affective', runAffectiveTests()], ['simulator', runSimTests()], ['lessonplan', runLessonTests()], ['plan-link', runPlanLinkTests()], ['josa', runJosaTests()]];
   let pass = 0; const fails = [];
   for (const [name, r] of parts) { pass += r.pass; r.fails.forEach(f => fails.push(name + ' — ' + f)); }
   return { pass, fail: fails.length, fails, parts };
