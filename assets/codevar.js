@@ -1,5 +1,5 @@
 import { esc, clipboardWriteText, registerActions } from './utils.js';
-import { geminiGenerateJSON, loadGeminiKey, saveGeminiKey, clearGeminiKey } from './gemini.js';
+import { geminiGenerateJSON, clearGeminiKey, geminiKeyPanelHtml, readGeminiKey } from './gemini.js';
 
 // --- Code Variation Generator ---
 let codevarLang = 'Python';
@@ -15,7 +15,6 @@ const CODEVAR_TYPES  = [
 ];
 
 function renderCodeVar() {
-  const savedKey = loadGeminiKey();
   const isVar = codevarMode === 'variation';
 
   const typeChips = CODEVAR_TYPES.map((t, i) =>
@@ -49,32 +48,20 @@ function renderCodeVar() {
 
   return `<div class="codevar-wrap">
     <div class="ov-head">
-      <span class="ov-eyebrow" style="color:var(--plan);background:var(--plan-soft)">수업/평가계획 · AI</span>
+      <span class="ov-eyebrow" style="color:var(--ovr-dark);background:var(--ovr-soft)">AI 도구</span>
       <h2 class="ov-h2">코드 변형 생성기</h2>
       <p class="ov-sub" id="codevarIntroSub">${isVar
         ? '소스 코드를 붙여넣으면 Gemini AI가 수행평가·시험 출제용 변형 3가지를 자동 생성합니다.'
         : '만들고 싶은 문제를 설명하면 Gemini AI가 예시 정답 코드가 포함된 문제 3개를 생성합니다.'
       }</p>
     </div>
+    ${geminiKeyPanelHtml()}
     <div class="eval-settings">
       <div id="codevarTypeRow" class="codevar-type-block" style="${isVar ? '' : 'display:none'}">
         <p class="codevar-type-title">생성되는 3가지 변형 <span>— 고르는 것이 아니라, 한 번 생성하면 세 가지가 모두 만들어집니다</span></p>
         <div class="codevar-type-row">${typeChips}</div>
       </div>
       <div id="codevarProblemInfo" style="${isVar ? 'display:none' : ''}">${problemInfo}</div>
-      <div class="eval-settings-row codevar-row-key">
-        <div class="eval-field codevar-key-field">
-          <div class="codevar-apikey-label-row">
-            <label class="eval-label" for="codevarApiKey">Gemini API Key&nbsp;<span class="codevar-free-badge">무료</span></label>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="codevar-apilink">API 키가 없으신가요? →</a>
-          </div>
-          <input type="password" id="codevarApiKey" class="codevar-apikey-input" placeholder="여기에 Gemini API 키를 붙여넣으세요 (자동 저장됨)" value="${esc(savedKey)}" autocomplete="off" spellcheck="false">
-          <div class="codevar-apikey-foot">
-            <em class="codevar-apikey-privacy">API 키를 추가해 사용하셔도 '정글' 사이트에는 해당 정보가 전송되지 않습니다. <strong class="codevar-apikey-warn">공용 PC에서는 사용 후 저장된 키를 꼭 삭제하세요.</strong></em>
-            <button type="button" class="codevar-key-del" data-onclick="cv:delKey">저장된 키 삭제</button>
-          </div>
-        </div>
-      </div>
       <div class="eval-settings-row codevar-row-opts">
         <div class="eval-field">
           <span class="eval-label">언어</span>
@@ -157,18 +144,15 @@ function codevarSetMode(mode) {
 }
 
 async function codevarGenerate() {
-  const apiKeyEl = document.getElementById('codevarApiKey');
   const sourceEl = document.getElementById('codevarSource');
-  if (!apiKeyEl || !sourceEl) return;
+  if (!sourceEl) return;
 
-  const apiKey = apiKeyEl.value.trim();
+  const apiKey = readGeminiKey();
   const source = sourceEl.value.trim();
   const isVar = codevarMode === 'variation';
 
   if (!apiKey) { codevarShowError('API 키를 입력해주세요.'); return; }
   if (!source) { codevarShowError(isVar ? '소스 코드를 입력해주세요.' : '문제 요구사항을 입력해주세요.'); return; }
-
-  saveGeminiKey(apiKey);
 
   codevarSetLoading(true);
   codevarHideError();
@@ -312,9 +296,9 @@ registerActions('click', {
   'cv:mode':     function(el, e, mode) { codevarSetMode(mode); },
   'cv:generate': function() { codevarGenerate(); },
   'cv:copy':     function(el, e, i) { codevarCopy(el, i); },
-  'cv:delKey':   function(el) {
+  'gem:delKey':  function(el) {
     clearGeminiKey();
-    const inp = document.getElementById('codevarApiKey');
+    const inp = document.getElementById('geminiKeyInput');
     if (inp) inp.value = '';
     el.textContent = '삭제됨';
     setTimeout(function() { el.textContent = '저장된 키 삭제'; }, 1400);

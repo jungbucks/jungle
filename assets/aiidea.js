@@ -1,5 +1,5 @@
 import { esc, clipboardWriteText, registerActions } from './utils.js';
-import { geminiGenerateJSON, loadGeminiKey, saveGeminiKey, clearGeminiKey } from './gemini.js';
+import { geminiGenerateJSON, geminiKeyPanelHtml, readGeminiKey } from './gemini.js';
 import { collected } from './collect.js';
 
 const IDEA_ACCENT = ['#0EA5E9', '#F59E0B', '#10B981', '#8B5CF6', '#EF4444'];
@@ -17,7 +17,6 @@ function timeBtn(t)   { return `<button class="codevar-lang-btn aiidea-opt-btn${
 function countBtn(n)  { return `<button class="codevar-lang-btn aiidea-opt-btn${aiideaCount===n?' active':''}" data-opt="count" data-value="${n}" data-onclick="ai:count" data-args="[${n}]">${n}개</button>`; }
 
 function renderAiIdea() {
-  const savedKey = loadGeminiKey();
   _collectedOpen = false;
 
   const skelCards = [0,1,2].map(() =>
@@ -33,10 +32,11 @@ function renderAiIdea() {
 
   return `<div class="aiidea-wrap">
     <div class="ov-head">
-      <span class="ov-eyebrow" style="color:var(--plan);background:var(--plan-soft)">수업/평가계획 · AI</span>
+      <span class="ov-eyebrow" style="color:var(--ovr-dark);background:var(--ovr-soft)">AI 도구</span>
       <h2 class="ov-h2">AI 수업 아이디어</h2>
       <p class="ov-sub">성취기준 코드나 수업 주제를 입력하면 Gemini AI가 바로 수업에 적용할 수 있는 활동 아이디어를 제안합니다.</p>
     </div>
+    ${geminiKeyPanelHtml()}
     <div class="eval-settings">
 
       <div class="eval-settings-row">
@@ -56,22 +56,6 @@ function renderAiIdea() {
           <span class="eval-label">아이디어 수</span>
           <div class="codevar-lang-group">
             ${[3,4,5].map(countBtn).join('')}
-          </div>
-        </div>
-      </div>
-
-      <div class="eval-settings-row">
-        <div class="eval-field" style="flex:1;min-width:200px">
-          <div class="codevar-apikey-label-row">
-            <label class="eval-label" for="aiideaApiKey">Gemini API Key&nbsp;<span class="codevar-free-badge">무료</span></label>
-            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="codevar-apilink">API 키가 없으신가요? →</a>
-          </div>
-          <input type="password" id="aiideaApiKey" class="codevar-apikey-input"
-            placeholder="여기에 Gemini API 키를 붙여넣으세요 (자동 저장됨)"
-            value="${esc(savedKey)}" autocomplete="off" spellcheck="false">
-          <div class="codevar-apikey-foot">
-            <em class="codevar-apikey-privacy">API 키를 추가해 사용하셔도 '정글' 사이트에는 해당 정보가 전송되지 않습니다. <strong class="codevar-apikey-warn">공용 PC에서는 사용 후 저장된 키를 꼭 삭제하세요.</strong></em>
-            <button type="button" class="codevar-key-del" data-onclick="ai:delKey">저장된 키 삭제</button>
           </div>
         </div>
       </div>
@@ -189,17 +173,14 @@ function aiideaPickStd(code, text) {
 
 // ── generate ──────────────────────────────────────────────────────────────
 async function aiideaGenerate() {
-  const apiKeyEl = document.getElementById('aiideaApiKey');
   const topicEl  = document.getElementById('aiideaTopic');
-  if (!apiKeyEl || !topicEl) return;
+  if (!topicEl) return;
 
-  const apiKey = apiKeyEl.value.trim();
+  const apiKey = readGeminiKey();
   const topic  = topicEl.value.trim();
 
   if (!apiKey) { aiideaShowError('Gemini API 키를 입력해주세요.'); return; }
   if (!topic)  { aiideaShowError('성취기준 코드나 수업 주제를 입력해주세요.'); return; }
-
-  saveGeminiKey(apiKey);
 
   aiideaSetLoading(true);
   aiideaHideError();
@@ -319,13 +300,6 @@ registerActions('click', {
   'ai:count':     function(el, e, n) { aiideaSetCount(n); },
   'ai:generate':  function() { aiideaGenerate(); },
   'ai:copyCard':  function(el, e, i) { aiideaCopyCard(i); },
-  'ai:delKey':    function(el) {
-    clearGeminiKey();
-    const inp = document.getElementById('aiideaApiKey');
-    if (inp) inp.value = '';
-    el.textContent = '삭제됨';
-    setTimeout(function() { el.textContent = '저장된 키 삭제'; }, 1400);
-  },
   'ai:collected': function() { aiideaToggleCollected(); },
   'ai:pickStd':   function(el, e, code, text) { aiideaPickStd(code, text); },
 });

@@ -17,6 +17,29 @@ export function loadGeminiKey() {
   } catch(e) { return ''; }
 }
 
+// AI 도구 공용 키 입력 패널 — 코드 변형 생성기·AI 수업 아이디어가 같은 자리·같은 저장 키(jungle_gemini_api_key)를 쓴다
+export function geminiKeyPanelHtml() {
+  const k = loadGeminiKey().replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;');
+  return `<div class="eval-settings gemini-key-panel">
+    <div class="codevar-apikey-label-row">
+      <label class="eval-label" for="geminiKeyInput">Gemini API Key&nbsp;<span class="codevar-free-badge">무료</span> <span class="gemini-key-shared">AI 도구 두 개가 함께 씁니다</span></label>
+      <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener noreferrer" class="codevar-apilink">API 키가 없으신가요? →</a>
+    </div>
+    <input type="password" id="geminiKeyInput" class="codevar-apikey-input" placeholder="여기에 Gemini API 키를 붙여넣으세요 (자동 저장됨)" value="${k}" autocomplete="off" spellcheck="false">
+    <div class="codevar-apikey-foot">
+      <em class="codevar-apikey-privacy">API 키를 추가해 사용하셔도 '정글' 사이트에는 해당 정보가 전송되지 않습니다. <strong class="codevar-apikey-warn">공용 PC에서는 사용 후 저장된 키를 꼭 삭제하세요.</strong></em>
+      <button type="button" class="codevar-key-del" data-onclick="gem:delKey">저장된 키 삭제</button>
+    </div>
+  </div>`;
+}
+// 생성 버튼을 누를 때 읽는다: 입력칸 값(있으면 저장) → 없으면 저장된 키
+export function readGeminiKey() {
+  const el = document.getElementById('geminiKeyInput');
+  const v = el && el.value ? el.value.trim() : '';
+  if (v) { saveGeminiKey(v); return v; }
+  return loadGeminiKey();
+}
+
 export function saveGeminiKey(key) {
   try { localStorage.setItem(KEY_STORAGE, key); } catch(e) {}
 }

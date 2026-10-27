@@ -151,11 +151,24 @@ function evalShowSummary() {
   p.classList.add('visible');
 }
 
-function evalAllCodes() {  
-  const subj = SUBJECTS[evalState.subjectIdx];  
-  if (!subj || !subj.domains) return [];  
-  return subj.domains.flatMap(d => d.items.map(it => it.code));
+// 커버리지 분모: 같은 과목·학기 수업계획에 배치된 성취기준(학기 기준). 수업계획이 없으면 학년 전체.
+function evalCoverageBase() {
+  const lesson = planCtx.consume('lesson');
+  const placed = lesson && lesson.generated
+    ? [...new Set(lesson.rows.filter(r => r.kind === 'lesson').flatMap(r => r.linkedCodes))] : [];
+  if (placed.length) return { codes: placed, semester: true };
+  const subj = SUBJECTS[evalState.subjectIdx];
+  return { codes: subj && subj.domains ? subj.domains.flatMap(d => d.items.map(it => it.code)) : [], semester: false };
 }
+function evalAllCodes() { return evalCoverageBase().codes; }
+// 상태 점(서브탭): 없음 / 작성 중 / 완료(비율 합 100% + 커버리지 100%)
+function evalStatus() {
+  if (!evalState.generated || !evalState.items.length) return 'none';
+  const linked = evalLinkedSet();
+  const all = evalAllCodes();
+  return evalRatioSum(evalState.items) === 100 && all.length && all.every(c => linked.has(c)) ? 'done' : 'draft';
+}
+planCtx.provide('evalStatus', evalStatus);
 
 function evalLinkedSet() {  
   const s = new Set();  

@@ -1799,7 +1799,10 @@ const SUBJECTS = [
   { id:"swrec", name:"추천 SW", type:"swrec",
     accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
   { id:"appstore", name:"앱스토어", type:"appstore",
-    accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] }
+    accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
+  // 2026-10 수업/평가계획에서 분리 — 해시 #ai:codevar / #ai:idea (id 'ai'는 인공지능 기초 과목이라 aitools)
+  { id:"aitools", name:"AI 도구", type:"aitools",
+    accent:"var(--ovr)", aLight:"var(--ovr-soft)", aDark:"var(--ovr-dark)", domains:[] }
 ];
 
 // --- 시뮬레이터 데이터 ---

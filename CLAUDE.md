@@ -27,7 +27,7 @@
 | 수업계획 / 평가계획 | `assets/lessonplan.js` / `assets/evalplan.js`(서브탭 상태 `evalPlanSubtab` 원천) |
 | 루브릭 / 정기시험 출제 | `assets/rubric.js` / `assets/regexam.js` |
 | 성적 산출기 / 차시 계산기 | `assets/gradecalc.js` / `assets/chasi.js` |
-| 코드 변형 생성기 / AI 수업 아이디어 | `assets/codevar.js` / `assets/aiidea.js` |
+| 코드 변형 생성기 / AI 수업 아이디어 (메인 메뉴 "AI 도구", 해시 `#ai:codevar`·`#ai:idea` — `#ai` 단독은 인공지능 기초 과목) | `assets/codevar.js` / `assets/aiidea.js` (키 입력은 gemini.js `geminiKeyPanelHtml` 공용) |
 | Gemini API 공용 | `assets/gemini.js` |
 | 교과서 / 앱스토어 / 자료실(사이트·도구) | `assets/textbook.js` / `assets/appstore.js` / `assets/resources.js` |
 | 백업·복원 | `assets/backup.js` (BACKUP_KEYS 화이트리스트) |

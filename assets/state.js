@@ -4,7 +4,7 @@
 export const HS_SUBTAB_ORDER = ['middle','high','ai','ds','sw','cs','prog'].map(id => SUBJECTS.findIndex(s => s.id === id));
 export const HS_SUBTAB_LABELS = ['중학교 정보', '고등학교 정보 (일반선택)', '인공지능 기초 (진로선택)', '데이터 과학 (진로선택)', '소프트웨어와 생활 (융합선택)', '정보과학 (과학계열 진로선택)', '프로그래밍 (전문교과)'];
 
-export const NON_SUBJECT_TYPES = ['overview','simulator','evalplan','fav','textbook','swrec','chasi','appstore'];
+export const NON_SUBJECT_TYPES = ['overview','simulator','evalplan','fav','textbook','swrec','chasi','appstore','aitools'];
 
 export const LP_SEM_DEFAULTS = { 1:{startMW:'3/1',endMW:'7/2'}, 2:{startMW:'8/2',endMW:'1/2'} };
 
@@ -17,7 +17,8 @@ export const HOME_CARD_META = {
   sw:        { label:'SW',  desc:'융합선택' },
   cs:        { label:'CS',  desc:'과학계열 진로선택' },
   prog:      { label:'전문', desc:'전문교과' },
-  evalplan:  { label:'계획', desc:'수업 설계 및 평가계획 작성', tags:['수업계획','평가계획','루브릭','정기시험 출제','차시계산기','코드 변형 생성기'] },
+  evalplan:  { label:'계획', desc:'수업 설계 및 평가계획 작성', tags:['차시계산기','수업계획','평가계획','루브릭','정기시험 출제','성적 산출'] },
+  aitools:   { label:'AI', desc:'Gemini로 코드 변형·수업 아이디어 만들기', tags:['코드 변형 생성기','AI 수업 아이디어'] },
   simulator: { label:'시뮬', desc:'고등학교 과목 배치 시뮬레이션' },
   swrec:     { label:'SW',  desc:'정보교사 추천 소프트웨어' },
   fav:       { label:'사이트', desc:'수업 활용 사이트 모음' },

@@ -90,6 +90,25 @@ document.addEventListener('keydown', function(e) {
   if (closePanel()) document.getElementById('fab').focus();
 });
 
+// --- 수업/평가계획 서브탭: 업무 흐름 순서 그룹 (2026-10) ---
+const EP_GROUPS = [
+  { label: '준비',     tabs: [{ key: 'chasi', label: '차시 계산기' }] },
+  { label: '계획',     tabs: [{ key: 'lesson', label: '수업계획' }, { key: 'eval', label: '평가계획' }] },
+  { label: '평가 설계', tabs: [{ key: 'affective', label: '정의적 영역 평가' }, { key: 'rubric', label: '수행평가 루브릭 설계' }, { key: 'regexam', label: '정기시험 출제 계획' }] },
+  { label: '성적',     tabs: [{ key: 'grade', label: '내신 5등급제 성적 산출기' }] },
+];
+// AI 도구(코드 변형 생성기·AI 수업 아이디어)는 수업/평가계획에서 분리된 별도 메뉴. 해시 #ai:codevar / #ai:idea
+const AI_TABS = [{ key: 'codevar', label: '코드 변형 생성기' }, { key: 'idea', label: 'AI 수업 아이디어' }];
+let aiSubtab = 'codevar';
+// 계획 탭 상태 점: 없음 / 작성 중 / 완료 (현재 공통 기준의 과목·학기 기준)
+const STATUS_TEXT = { none: '아직 없음', draft: '작성 중', done: '완료' };
+function planStatusDot(key) {
+  const name = key === 'lesson' ? 'lessonStatus' : key === 'eval' ? 'evalStatus' : '';
+  const st = name && planCtx.consume(name);
+  if (!st) return '';
+  return `<span class="tab-status st-${st}" aria-hidden="true" title="${STATUS_TEXT[st]}"></span><span class="sr-only">(${STATUS_TEXT[st]})</span>`;
+}
+
 // --- Tabs ---
 function renderTabs() {  
   const idxOf = id => SUBJECTS.findIndex(s => s.id === id);  
@@ -99,6 +118,7 @@ function renderTabs() {
     {type:'hsgroup'},
     {type:'subject', idx:idxOf('evalplan')},
     {type:'subject', idx:idxOf('textbook')},
+    {type:'subject', idx:idxOf('aitools')},
     {type:'subject', idx:idxOf('swrec')},
     {type:'subject', idx:idxOf('fav')},
     {type:'subject', idx:idxOf('appstore')},
@@ -108,7 +128,7 @@ function renderTabs() {
       const s = SUBJECTS[item.idx];      
       const active = !homeMode && item.idx === curIdx;      
       const styleStr = active ? `color:${s.accent};border-bottom-color:${s.accent}` : '';      
-      if (s.type === 'evalplan' || s.type === 'overview') {
+      if (s.type === 'evalplan' || s.type === 'overview' || s.type === 'aitools') {
         return `<button class="tab${active?' active':''}" data-text="${esc(s.name)} ▾" data-onclick="app:subject" data-args="[${item.idx}]"
           style="${styleStr}" aria-current="${active ? 'page' : 'false'}">
           <span class="tab-inner">${esc(s.name)}<span style="font-size:10px;line-height:1">▾</span></span></button>`;
@@ -133,8 +153,11 @@ function renderTabs() {
         const s = SUBJECTS[item.idx];
         const active = !homeMode && item.idx === curIdx;
         const sty = active ? `color:${s.accent};background:${s.aLight};border-left-color:${s.accent}` : '';
-        const label = (s.type === 'evalplan' || s.type === 'overview') ? `${esc(s.name)} ▾` : esc(s.name);
-        return `<button class="nav-drawer-item${active?' active':''}" style="${sty}" aria-current="${active ? 'page' : 'false'}" data-onclick="app:subjectNav" data-args="[${item.idx}]">${label}</button>`;
+        const label = (s.type === 'evalplan' || s.type === 'overview' || s.type === 'aitools') ? `${esc(s.name)} ▾` : esc(s.name);
+        const main = `<button class="nav-drawer-item${active?' active':''}" style="${sty}" aria-current="${active ? 'page' : 'false'}" data-onclick="app:subjectNav" data-args="[${item.idx}]">${label}</button>`;
+        if (s.type !== 'evalplan') return main;
+        // 서브탭과 같은 그룹 구조(준비·계획·평가 설계·성적)로 바로 가기
+        return main + `<div class="nav-drawer-sub" role="group" aria-label="수업/평가계획 도구">${EP_GROUPS.map(g => `<span class="nav-drawer-group">${g.label}</span>` + g.tabs.map(t => `<button class="nav-drawer-subitem${active && evalPlanSubtab === t.key ? ' active' : ''}" data-onclick="app:epSubtabNav" data-args="${esc(JSON.stringify([t.key]))}"${active && evalPlanSubtab === t.key ? ' aria-current="page"' : ''}>${t.label}</button>`).join('')).join('')}</div>`;
       }
       const active = isHS;
       const sty = active ? `color:${SUBJECTS[curIdx].accent};background:${SUBJECTS[curIdx].aLight};border-left-color:${SUBJECTS[curIdx].accent}` : '';
@@ -145,7 +168,8 @@ function renderTabs() {
   
   const subtabBar = document.getElementById('subtabBar');  
   const isOverview = !homeMode && S().type === 'overview';  
-  const isEvalPlan = !homeMode && S().type === 'evalplan';  
+  const isEvalPlan = !homeMode && S().type === 'evalplan';
+  const isAiTools = !homeMode && S().type === 'aitools';
   if (isOverview) {    
     const ovAccent = S().accent;    
     document.getElementById('subtabBarInner').innerHTML = [      
@@ -173,25 +197,25 @@ function renderTabs() {
         ${HS_SUBTAB_LABELS[i]}</button>`;
     }).join('');    
     subtabBar.classList.add('visible');  
-  } else if (isEvalPlan) {    
-    const epAccent = S().accent;    
-    document.getElementById('subtabBarInner').innerHTML = [      
-      {key:'lesson',  label:'수업계획'},
-      {key:'eval',    label:'평가계획'},
-      {key:'affective', label:'정의적 영역 평가'},
-      {key:'rubric',  label:'수행평가 루브릭 설계'},
-      {key:'regexam',   label:'정기시험 출제 계획'},
-      {key:'grade',   label:'내신 5등급제 성적 산출기'},
-      {key:'chasi',   label:'차시 계산기'},
-      {key:'codevar', label:'코드 변형 생성기'},
-      {key:'aiidea',  label:'AI 수업 아이디어'}
-    ].map(({key, label}) => {      
-      const active = evalPlanSubtab === key;      
-      return `<button class="subtab${active?' active':''}" role="tab" aria-selected="${active}" data-text="${label}" data-onclick="app:epSubtab" data-onkeydown="app:subtabKey" data-args="${esc(JSON.stringify([key]))}"
+  } else if (isEvalPlan) {
+    const epAccent = S().accent;
+    // 그룹 라벨은 탭이 아니다(role=presentation) — 좌우 화살표 이동은 .subtab만 훑으므로 그룹이 있어도 끊기지 않는다
+    document.getElementById('subtabBarInner').innerHTML = EP_GROUPS.map((g, gi) =>
+      `<span class="subtab-group${gi ? ' sep' : ''}" role="presentation">${g.label}</span>` + g.tabs.map(({ key, label }) => {
+        const active = evalPlanSubtab === key;
+        return `<button class="subtab${active?' active':''}" role="tab" aria-selected="${active}" data-text="${label}" data-onclick="app:epSubtab" data-onkeydown="app:subtabKey" data-args="${esc(JSON.stringify([key]))}"
         style="${active ? `color:${epAccent};border-bottom-color:${epAccent}` : ''}">
-        ${label}</button>`;
-    }).join('');    
-    subtabBar.classList.add('visible');  
+        <span class="subtab-label">${label}${planStatusDot(key)}</span></button>`;
+      }).join('')).join('');
+    subtabBar.classList.add('visible');
+  } else if (isAiTools) {
+    const aiAccent = S().accent;
+    document.getElementById('subtabBarInner').innerHTML = AI_TABS.map(({ key, label }) => {
+      const active = aiSubtab === key;
+      return `<button class="subtab${active?' active':''}" role="tab" aria-selected="${active}" data-text="${label}" data-onclick="app:aiSubtab" data-onkeydown="app:subtabKey" data-args="${esc(JSON.stringify([key]))}"
+        style="${active ? `color:${aiAccent};border-bottom-color:${aiAccent}` : ''}">${label}</button>`;
+    }).join('');
+    subtabBar.classList.add('visible');
   } else {
     subtabBar.classList.remove('visible');
     document.getElementById('subtabBarInner').innerHTML = '';
@@ -279,6 +303,7 @@ function hashEncode() {
   const id = SUBJECTS[curIdx] ? SUBJECTS[curIdx].id : 'home';
   if (id === 'overview') return '#overview:' + overviewSubtab;
   if (id === 'evalplan') return '#evalplan:' + evalPlanSubtab;
+  if (id === 'aitools') return '#ai:' + aiSubtab;
   if (query && !NON_SUBJECT_TYPES.includes(S().type)) return '#' + id + '?q=' + encodeURIComponent(query) + '&scope=' + searchScope;
   return '#' + id;
 }
@@ -296,6 +321,15 @@ function hashDecode(hash) {
   const colon = head.indexOf(':');
   const base = colon < 0 ? head : head.slice(0, colon);
   const sub = colon < 0 ? '' : head.slice(colon + 1);
+  // AI 도구: #ai:codevar / #ai:idea ('#ai' 단독은 인공지능 기초 과목 — 서브탭이 있을 때만 AI 도구로 읽는다)
+  // 옛 북마크 #evalplan:codevar / #evalplan:aiidea도 AI 도구로 정규화한다
+  const aiSub = (base === 'ai' && (sub === 'codevar' || sub === 'idea')) ? sub
+    : (base === 'evalplan' && sub === 'codevar') ? 'codevar' : (base === 'evalplan' && sub === 'aiidea') ? 'idea' : '';
+  if (aiSub) {
+    homeMode = false; curIdx = SUBJECTS.findIndex(s => s.id === 'aitools'); aiSubtab = aiSub;
+    hashNeedsCanonical = base === 'evalplan';
+    return;
+  }
   const idx = SUBJECTS.findIndex(s => s.id === base);
   if (idx < 0) { homeMode = true; query = ''; syncSearchInput(); return; }
   homeMode = false;
@@ -303,7 +337,15 @@ function hashDecode(hash) {
   // 시뮬레이터는 교육과정(overview)의 하위 탭으로 렌더된다 → orphan '#simulator' 딥링크를 정규화(북마크·새로고침 견고성)
   if (base === 'simulator') { const ov = SUBJECTS.findIndex(s => s.id === 'overview'); if (ov >= 0) { curIdx = ov; overviewSubtab = 'simulator'; } }
   if (base === 'overview' && sub) overviewSubtab = sub;
-  if (base === 'evalplan' && sub) setEvalPlanSubtab(sub);
+  if (base === 'evalplan' && sub) setEvalPlanSubtab(EP_GROUPS.some(g => g.tabs.some(t => t.key === sub)) ? sub : 'lesson');
+}
+
+// 옛 해시로 들어온 경우 주소를 새 해시로 바꿔 둔다(히스토리를 쌓지 않음)
+let hashNeedsCanonical = false;
+function canonicalizeHash() {
+  if (!hashNeedsCanonical) return;
+  hashNeedsCanonical = false;
+  history.replaceState(null, '', hashEncode());
 }
 
 function pushHash() {
@@ -323,6 +365,7 @@ function syncSearchInput() {
 window.addEventListener('popstate', () => {
   domainFilter = null;
   hashDecode(location.hash);
+  canonicalizeHash();
   renderTabs(); updateSearchVisibility(); renderWithFade();
 });
 
@@ -584,6 +627,7 @@ function render() {
   if (s.type === 'textbook')   { document.getElementById('main').innerHTML = renderTextbook(); restoreTextbookView(); return; }
   if (s.type === 'appstore')   { document.getElementById('main').innerHTML = renderAppStore(); return; }
   if (s.type === 'chasi')      { document.getElementById('main').innerHTML = renderChasi(); return; }
+  if (s.type === 'aitools')   { document.getElementById('main').innerHTML = aiSubtab === 'idea' ? renderAiIdea() : renderCodeVar(); return; }
   if (s.type === 'evalplan') {
     if (evalPlanSubtab === 'eval') {
       document.getElementById('main').innerHTML = renderEvalPlan();
@@ -598,10 +642,6 @@ function render() {
       document.getElementById('main').innerHTML = renderRegExam();
     } else if (evalPlanSubtab === 'grade') {
       document.getElementById('main').innerHTML = renderGradeCalc();
-    } else if (evalPlanSubtab === 'codevar') {
-      document.getElementById('main').innerHTML = renderCodeVar();
-    } else if (evalPlanSubtab === 'aiidea') {
-      document.getElementById('main').innerHTML = renderAiIdea();
     } else {
       document.getElementById('main').innerHTML = renderLessonPlan();
     }
@@ -732,6 +772,8 @@ registerActions('click', {
   'app:ovSubtabSel':    function(el, e, key) { overviewSelectSubtab(key); },
   'app:ovSubtab':       function(el, e, key) { goToOverviewSubtab(key); },
   'app:epSubtab':       function(el, e, key) { lpSelectSubtab(key); },
+  'app:epSubtabNav':    function(el, e, key) { const i = SUBJECTS.findIndex(s => s.id === 'evalplan'); if (homeMode || curIdx !== i) { homeMode = false; curIdx = i; query = ''; domainFilter = null; } lpSelectSubtab(key); updateSearchVisibility(); closeMobileNav(); },
+  'app:aiSubtab':       function(el, e, key) { aiSubtab = key === 'idea' ? 'idea' : 'codevar'; pushHash(); renderTabs(); renderWithFade(); },
   'app:copy':           function(el) { doCopy(el); },
   'app:toggleDomain':   function(el) { toggleDomain(el.dataset.key); },
   'app:copyDomain':     function(el, e, secId) { copyDomain(secId, el); },
@@ -793,6 +835,7 @@ function bindStaticHandlers() {
 // --- Init ---
 if (location.hash && location.hash !== '#home') {
   hashDecode(location.hash);
+  canonicalizeHash();
 }
 bindStaticHandlers();
 // 공통 기준이 바뀌면(각 도구 모듈이 먼저 슬롯을 갈아끼운 뒤) 지금 화면과 서브탭 상태 점을 다시 그린다

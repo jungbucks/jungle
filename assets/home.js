@@ -39,7 +39,7 @@ export function renderHome() {
 
     <div class="home-nav-section">
       <div class="home-nav-label">수업·평가 도구</div>
-      <div class="home-card-grid">${['evalplan'].map(subCard).join('')}</div>
+      <div class="home-card-grid">${['evalplan','aitools'].map(subCard).join('')}</div>
     </div>
     <div class="home-nav-section">
       <div class="home-nav-label">자료실</div>
