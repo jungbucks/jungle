@@ -464,6 +464,14 @@ export function runPlanLinkTests() {
   eq('2학기 슬롯은 비어 있음', state().generated, false);
   planCtx.set({ semester: 1 });
   eq('1학기로 돌아오면 그대로', state().rows.map(r => r.linkedCodes), [['q']]);
+  // 3-2 커버리지 분모: 수업계획이 있으면 거기 배치된 성취기준(학기), 없으면 학년 전체
+  const { coverageBase } = __evalTest;
+  eq('수업계획 있음 → 학기 기준', coverageBase(), { codes: ['q'], semester: true });
+  setState(null);
+  planCtx.set({ semester: 2 });
+  eq('수업계획 없음 → 학년 전체', coverageBase().semester, false);
+  eq('학년 전체 = 과목 성취기준 수', coverageBase().codes.length, counts.reduce((a, b) => a + b, 0));
+  planCtx.set({ semester: 1 });
   setState(null);
   return { pass, fail: fails.length, fails };
 }

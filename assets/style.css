@@ -938,7 +938,7 @@ span.astore-card-author{color:var(--brand)}
 .eval-card-type.perf{background:var(--plan-soft);color:var(--plan)}
 .eval-card-name{width:100%;padding:8px 10px;border:1.5px solid var(--g300);border-radius:7px;font-size:14px;font-family:inherit;color:var(--g800);outline:none;transition:border-color .12s;box-sizing:border-box}
 .eval-card-name:focus{border-color:var(--plan)}
-.eval-ratio-row{display:flex;align-items:center;gap:8px}
+.eval-ratio-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 .eval-ratio-input{width:64px;padding:7px 8px;border:1.5px solid var(--g300);border-radius:7px;font-size:14px;font-family:inherit;color:var(--g800);outline:none;text-align:center;transition:border-color .12s}
 .eval-ratio-input:focus{border-color:var(--plan)}
 .eval-ratio-label{font-size:13px;color:var(--g500)}
@@ -2099,3 +2099,20 @@ body:has(.home-guide-modal[open]){overflow:hidden}
 .nav-drawer-subitem.active{font-weight:700;color:var(--plan-dark);border-left-color:var(--plan)}
 .gemini-key-panel{margin-bottom:16px}
 .gemini-key-shared{font-weight:400;font-size:13px;color:var(--g500);margin-left:4px}
+/* 평가계획 하단 요약 바(2026-10): 기본 한 줄, '미연결 N개'로 칩 펼침, 칩 → 연결할 항목 팝오버 */
+.eval-sum-line{display:flex;align-items:center;flex-wrap:wrap;gap:4px 8px;font-size:14px;color:var(--g600)}
+.eval-sum-ratio{font-size:15px;font-weight:700;color:var(--g700)}
+.eval-sum-dot{color:var(--g400)}
+.eval-sum-base{font-size:13px;color:var(--g500)}
+.eval-sum-ok{font-size:13px;font-weight:600;color:var(--ok)}
+.eval-sum-toggle{font:inherit;font-size:14px;font-weight:600;padding:2px 10px;border:1px solid var(--g300);border-radius:6px;background:var(--surface);color:var(--g700);cursor:pointer}
+.eval-sum-toggle.warn{border-color:var(--danger-line);color:var(--danger-dark);background:var(--danger-soft)}
+.eval-sum-toggle:focus-visible,.eval-sum-uncov-badge:focus-visible,.eval-sum-pop button:focus-visible{outline:2px solid var(--plan);outline-offset:2px}
+.eval-sum-inner{flex-direction:column;align-items:stretch}
+.eval-sum-uncov{margin-top:6px}
+.eval-sum-uncov-badge{border:1px solid var(--danger-line);cursor:pointer;font-family:inherit}
+.eval-sum-uncov.neutral .eval-sum-uncov-badge{background:var(--g100);color:var(--g700);border-color:var(--g200)}
+.eval-sum-chip-wrap{position:relative;display:inline-block}
+.eval-sum-pop{position:absolute;bottom:calc(100% + 6px);left:0;z-index:5;min-width:180px;display:flex;flex-direction:column;padding:4px;border:1px solid var(--g200);border-radius:8px;background:var(--surface);box-shadow:0 6px 20px rgba(0,0,0,.15)}
+.eval-sum-pop button{font:inherit;font-size:14px;text-align:left;padding:7px 10px;border:none;border-radius:6px;background:none;color:var(--g800);cursor:pointer;white-space:nowrap}
+.eval-sum-pop button:hover{background:var(--plan-soft)}

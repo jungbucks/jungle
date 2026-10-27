@@ -139,16 +139,26 @@ function evalWeekOptions() {
   return [...new Set(lesson.rows.map(x => planCtx.formatMW(x.monthWeek)).filter(Boolean))];
 }
 
-function evalHideSummary() {  
-  const p = document.getElementById('evalSumPanel');  
+let evalSumPop = null; // 팝오버를 연 미연결 성취기준 코드
+function evalHideSummary() {
+  const p = document.getElementById('evalSumPanel');
   if (p) p.classList.remove('visible');
+  const m = document.getElementById('main');
+  if (m) m.style.paddingBottom = '';
 }
 
-function evalShowSummary() {  
-  const p = document.getElementById('evalSumPanel');  
-  if (!p) return;  
-  p.innerHTML = evalSummaryHtml();  
+// 패널이 본문 마지막 카드를 가리지 않게 본문 아래에 패널 높이만큼 여백을 준다
+function evalShowSummary() {
+  const p = document.getElementById('evalSumPanel');
+  if (!p) return;
+  p.innerHTML = evalSummaryHtml();
   p.classList.add('visible');
+  if (!p._keyBound) {
+    p._keyBound = true;
+    p.addEventListener('keydown', e => { if (e.key === 'Escape' && evalSumPop) { e.stopPropagation(); const code = evalSumPop; evalSumPop = null; evalShowSummary(); p.querySelector('[data-code="' + code + '"]')?.focus(); } });
+  }
+  const m = document.getElementById('main');
+  if (m && p.offsetHeight) m.style.paddingBottom = (p.offsetHeight + 24) + 'px';
 }
 
 // 커버리지 분모: 같은 과목·학기 수업계획에 배치된 성취기준(학기 기준). 수업계획이 없으면 학년 전체.
@@ -178,28 +188,55 @@ function evalLinkedSet() {
 
 function evalSummaryHtml() {
   const total = evalRatioSum(evalState.items);
-  const all = evalAllCodes();
+  const base = evalCoverageBase();
+  const all = base.codes;
   const linked = evalLinkedSet();
   const uncov = all.filter(c => !linked.has(c));
+  const covered = all.length - uncov.length;
   const ok = total === 100;
   const essayRatio = evalEssayRatio(evalState.items);
-  const hasExam = evalState.items.some(it => it.type === 'exam');
-  let uncovHtml = '';  
-  if (uncov.length) {    
-    uncovHtml = `<div class="sum-sep"></div>      
-      <div class="eval-sum-uncov">미연결 성취기준:        
-        ${uncov.map(c => `<span class="eval-sum-uncov-badge">${esc(c)}</span>`).join('')}      
-      </div>`;  
-  }  
-  return `<div class="eval-sum-inner">    
-    <span class="eval-sum-ratio ${ok?'ok':'warn'}">비율 합계 ${total}%${ok?'':total>100?' ▲초과':' ▼미달'}</span>    
-    <div class="sum-sep"></div>    
-    <span class="eval-sum-cov">성취기준 커버리지 <strong>${linked.size} / ${all.length}개</strong></span>    
-    ${hasExam ? `<div class="sum-sep"></div><span class="eval-sum-cov">논술형 반영비율 <strong>${essayRatio.toFixed(1)}%</strong></span>` : ''}    
-    ${uncovHtml}  
+  // 처음엔 중립색: 아직 어떤 항목에도 성취기준을 연결하지 않았으면 미연결을 빨갛게 몰아세우지 않는다
+  const started = evalState.items.some(it => it.linkedCodes.length);
+  const open = !!evalState.sumOpen && uncov.length > 0;
+  const baseNote = base.semester ? '학기 기준 · 수업계획에 배치된 성취기준' : '학년 전체 기준 · 수업계획을 만들면 학기 기준으로 계산';
+  const chips = open ? `<div class="eval-sum-uncov${started ? '' : ' neutral'}" id="evalSumChips">
+      ${uncov.map(cd => `<span class="eval-sum-chip-wrap"><button type="button" class="eval-sum-uncov-badge" data-code="${esc(cd)}" data-onclick="ev:sumChip" data-args="${esc(JSON.stringify([cd]))}" aria-haspopup="menu" aria-expanded="${evalSumPop === cd}" title="${esc(cd)} — 연결할 평가 항목 고르기">${esc(cd)}</button>${evalSumPop === cd ? evalSumPopHtml(cd) : ''}</span>`).join('')}
+    </div>` : '';
+  return `<div class="eval-sum-inner">
+    <span class="eval-sum-line">
+      <span class="eval-sum-ratio ${ok ? 'ok' : started || total ? 'warn' : ''}">비율 합계 ${total}%${ok ? '' : total > 100 ? ' ▲초과' : ' ▼미달'}</span>
+      <span class="eval-sum-dot">·</span>
+      <span class="eval-sum-cov">커버리지 <strong>${covered}/${all.length}</strong> <span class="eval-sum-base">(${baseNote})</span></span>
+      <span class="eval-sum-dot">·</span>
+      <span class="eval-sum-cov">논술형 <strong>${essayRatio.toFixed(1)}%</strong></span>
+      ${uncov.length ? `<span class="eval-sum-dot">·</span><button type="button" class="eval-sum-toggle${started ? ' warn' : ''}" data-onclick="ev:sumToggle" aria-expanded="${open}" aria-controls="evalSumChips">미연결 ${uncov.length}개 ${open ? '▾' : '▸'}</button>` : '<span class="eval-sum-dot">·</span><span class="eval-sum-ok">모든 성취기준 연결됨</span>'}
+    </span>
+    ${chips}
   </div>`;
 }
+function evalSumPopHtml(code) {
+  return '<div class="eval-sum-pop" role="menu" aria-label="' + esc(code) + '을(를) 연결할 평가 항목">'
+    + evalState.items.map((it, i) => '<button type="button" role="menuitem" data-onclick="ev:sumLink" data-args="' + esc(JSON.stringify([code, i])) + '">' + esc(it.name || ('항목 ' + (i + 1))) + '</button>').join('')
+    + '</div>';
+}
+function evalSumLink(code, i) {
+  const it = evalState.items[i];
+  if (!it) return;
+  if (!it.linkedCodes.includes(code)) it.linkedCodes.push(code);
+  evalSumPop = null;
+  evalSave();
+  evalRerender();
+  uiToast(code + ' → ' + (it.name || '항목') + '에 연결했습니다.');
+}
 
+function evalScoreSumText(tot) { return '합계 <strong>' + tot + '</strong>점' + (tot !== 100 ? ' · 100점이 되도록 입력' : ''); }
+function evalRefreshScoreSum(i) {
+  const it = evalState.items[i], el = document.getElementById('evalScoreSum_' + i);
+  if (!it || !el) return;
+  const tot = (Number(it.scoreChoice) || 0) + (Number(it.scoreEssay) || 0);
+  el.innerHTML = evalScoreSumText(tot);
+  el.classList.toggle('warn', tot !== 100);
+}
 function evalCardHtml(item, i, weeks = []) {
   const isExam = item.type === 'exam';
   const ai = esc(JSON.stringify([i]));
@@ -213,19 +250,20 @@ function evalCardHtml(item, i, weeks = []) {
     const sc = Number(item.scoreChoice)||0;
     const se = Number(item.scoreEssay)||0;
     const tot = sc + se;
-    const warn = tot > 100;
+    const warn = tot !== 100;
+    const val = v => (v === '' || v == null) ? '' : v;
     scoreHtml = `<div class="eval-score-row">
       <div class="eval-score-field">
         <span class="eval-score-label">선택형</span>
-        <input class="eval-score-input" type="number" min="0" value="${sc}" data-oninput="ev:scoreChoice" data-args="${ai}">
+        <input class="eval-score-input" type="number" min="0" value="${val(item.scoreChoice)}" placeholder="예) 70" aria-label="${esc(item.name)} 선택형 배점" data-oninput="ev:scoreChoice" data-args="${ai}">
         <span class="eval-score-unit">점</span>
       </div>
       <div class="eval-score-field">
         <span class="eval-score-label">논술형</span>
-        <input class="eval-score-input" type="number" min="0" value="${se}" data-oninput="ev:scoreEssay" data-args="${ai}">
+        <input class="eval-score-input" type="number" min="0" value="${val(item.scoreEssay)}" placeholder="예) 30" aria-label="${esc(item.name)} 논술형 배점" data-oninput="ev:scoreEssay" data-args="${ai}">
         <span class="eval-score-unit">점</span>
       </div>
-      <span class="eval-score-sum${warn?' warn':''}">합계 <strong>${tot}</strong>점${warn?' ⚠':''}</span>
+      <span class="eval-score-sum${warn?' warn':''}" id="evalScoreSum_${i}" role="status">${evalScoreSumText(tot)}</span>
     </div>`;
   }
   const examPlaceholders = ['예) 4월 4주', '예) 6월 5주'];
@@ -286,6 +324,13 @@ function renderEvalPlan() {
         <div class="eval-field">
           <span class="eval-label">정기시험 횟수 (0~2)</span>          
           <input type="number" class="eval-number" min="0" max="2" value="${evalState.examCount}" data-oninput="ev:examCount">
+        </div>
+        <div class="eval-field" id="evalExamKindField"${evalState.examCount === 1 ? '' : ' hidden'}>
+          <span class="eval-label">어느 시험인가요?</span>
+          <div class="eval-toggle-group" role="group" aria-label="정기시험 1회일 때 시험 종류">
+            <button class="eval-toggle${evalState.examKind === 'mid' ? ' active' : ''}" aria-pressed="${evalState.examKind === 'mid'}" data-onclick="ev:examKind" data-args='["mid"]'>1차(중간)</button>
+            <button class="eval-toggle${evalState.examKind !== 'mid' ? ' active' : ''}" aria-pressed="${evalState.examKind !== 'mid'}" data-onclick="ev:examKind" data-args='["final"]'>2차(기말)</button>
+          </div>
         </div>        
         <div class="eval-field">          
           <span class="eval-label">수행평가 개수 (1~5)</span>          
@@ -304,11 +349,20 @@ function renderEvalPlan() {
   </div>`;
 }
 
+// 시험 1회일 때 중간/기말 선택 — 기본 이름 그대로인 단일 시험 항목은 이름도 따라 바꾼다
+function evalSetExamKind(kind) {
+  evalState.examKind = kind === 'mid' ? 'mid' : 'final';
+  const exams = evalState.items.filter(it => it.type === 'exam');
+  const defaults = ['1차 정기시험(중간)', '2차 정기시험(기말)', '2차 정기시험', '1차 정기시험'];
+  if (exams.length === 1 && defaults.includes(exams[0].name)) exams[0].name = evalExamNames(1, evalState.examKind)[0];
+  evalSave(); evalRerender();
+}
 function evalGenItems() {  
   const ec = evalState.examCount;  
   const pc = evalState.perfCount;  
   const items = [];  
-  for (let i=0;i<ec;i++) items.push({type:'exam', name: ec===1 ? '2차 정기시험' : `${i+1}차 정기시험`, ratio:0, linkedCodes:[], scoreChoice:0, scoreEssay:0, elements:'', period:''});  
+  const examNames = evalExamNames(ec, evalState.examKind);
+  for (let i=0;i<ec;i++) items.push({type:'exam', name: examNames[i], ratio:0, linkedCodes:[], scoreChoice:'', scoreEssay:'', elements:'', period:''});  
   for (let i=0;i<pc;i++) items.push({type:'perf', name:`수행평가 ${i+1}`, ratio:0, linkedCodes:[], elements:'', period:'', isEssay:false});  
   if (items.length) {
     const r = evalDistribute(items.length);
@@ -320,13 +374,14 @@ function evalGenItems() {
 }
 function evalUpdateName(i, val) {  evalState.items[i].name = val; evalSave(); evalShowSummary();}
 function evalUpdateRatio(i, val) {  evalState.items[i].ratio = isNaN(val)?0:val; evalSave(); evalShowSummary();}
-function evalUpdateScoreChoice(i, val) {  
-  evalState.items[i].scoreChoice = isNaN(val)?0:Math.max(0,val);  
-  evalSave(); evalShowSummary();
+function evalScoreValue(raw) { if (String(raw).trim() === '') return ''; const n = +raw; return isNaN(n) ? '' : Math.max(0, n); }
+function evalUpdateScoreChoice(i, raw) {
+  evalState.items[i].scoreChoice = evalScoreValue(raw);
+  evalSave(); evalShowSummary(); evalRefreshScoreSum(i);
 }
-function evalUpdateScoreEssay(i, val) {  
-  evalState.items[i].scoreEssay = isNaN(val)?0:Math.max(0,val);  
-  evalSave(); evalShowSummary();
+function evalUpdateScoreEssay(i, raw) {
+  evalState.items[i].scoreEssay = evalScoreValue(raw);
+  evalSave(); evalShowSummary(); evalRefreshScoreSum(i);
 }
 function evalUpdatePeriod(i, val) {  evalState.items[i].period = val; evalSave();}
 function evalToggleEssay(i, checked) {  
@@ -522,7 +577,7 @@ export {
   evalReset, evalOpenPreview, evalClosePreview
 };
 // 테스트 전용 노출 (tools/test.mjs) — 순수 계산 코어. 앱 렌더는 위 함수만 사용.
-export const __evalTest = { candidates: evalCandidatesFromLesson, examNames: evalExamNames, reload: evalLoadSlot, ratioSum: evalRatioSum, essayRatio: evalEssayRatio, distribute: evalDistribute, previewTableHtml: evalPreviewTableHtml };
+export const __evalTest = { coverageBase: evalCoverageBase, summaryHtml: () => evalSummaryHtml(), status: evalStatus, candidates: evalCandidatesFromLesson, examNames: evalExamNames, reload: evalLoadSlot, ratioSum: evalRatioSum, essayRatio: evalEssayRatio, distribute: evalDistribute, previewTableHtml: evalPreviewTableHtml };
 // index.html 정적 모달 버튼(app.js bindStaticHandlers)이 참조 — 유지
 window.evalClosePreview = evalClosePreview;
 window.evalCopyPreviewTable = evalCopyPreviewTable;
@@ -530,6 +585,10 @@ window.evalCopyPreviewTable = evalCopyPreviewTable;
 // ── 이벤트 위임 등록 (인라인 핸들러 대체) ──
 registerActions('click', {
   'ev:importOpen':   function() { evalOpenImport(); },
+  'ev:examKind':     function(el, e, kind) { evalSetExamKind(kind); },
+  'ev:sumToggle':    function() { evalState.sumOpen = !evalState.sumOpen; evalSumPop = null; evalSave(); evalShowSummary(); document.querySelector('#evalSumPanel .eval-sum-toggle')?.focus(); },
+  'ev:sumChip':      function(el, e, code) { evalSumPop = evalSumPop === code ? null : code; evalShowSummary(); document.querySelector('#evalSumPanel .eval-sum-pop [role=menuitem]')?.focus(); },
+  'ev:sumLink':      function(el, e, code, i) { evalSumLink(code, i); },
   'ev:importApply':  function() { evalApplyImport(); },
   'ev:importCancel': function() { evalImport = null; evalRerender(); },
   'ev:generate':  function() { evalGenItems(); },
@@ -541,11 +600,11 @@ registerActions('click', {
 registerActions('input', {
   'ev:name':        function(el, e, i) { evalUpdateName(i, el.value); },
   'ev:ratio':       function(el, e, i) { evalUpdateRatio(i, +el.value); },
-  'ev:scoreChoice': function(el, e, i) { evalUpdateScoreChoice(i, +el.value); },
-  'ev:scoreEssay':  function(el, e, i) { evalUpdateScoreEssay(i, +el.value); },
+  'ev:scoreChoice': function(el, e, i) { evalUpdateScoreChoice(i, el.value); },
+  'ev:scoreEssay':  function(el, e, i) { evalUpdateScoreEssay(i, el.value); },
   'ev:period':      function(el, e, i) { evalUpdatePeriod(i, el.value); },
   'ev:elements':    function(el, e, i) { evalUpdateElements(i, el.value); },
-  'ev:examCount':   function(el) { evalState.examCount = Math.max(0, Math.min(2, +el.value||0)); },
+  'ev:examCount':   function(el) { evalState.examCount = Math.max(0, Math.min(2, +el.value||0)); evalSave(); const f = document.getElementById('evalExamKindField'); if (f) f.hidden = evalState.examCount !== 1; },
   'ev:perfCount':   function(el) { evalState.perfCount = Math.max(1, Math.min(5, +el.value||1)); },
 });
 registerActions('change', {
