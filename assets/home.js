@@ -57,6 +57,42 @@ export function renderHome() {
   </div>`;
 }
 
+// --- 이어서 하기 (최근 작업 칩, 최대 3개) ---
+// 이미 저장 중인 jungle_last_used·수업/평가계획 슬롯·jungle_collected만 읽는다(새 저장 없음). 없으면 영역 전체를 숨긴다.
+function readJSON(key) { try { return JSON.parse(localStorage.getItem(key)); } catch (e) { return null; } }
+export function recentItems() {
+  const items = [];
+  let last = '';
+  try { last = localStorage.getItem('jungle_last_used') || ''; } catch (e) {}
+  const idxOf = id => SUBJECTS.findIndex(s => s.id === id);
+  if (last.startsWith('evalplan:') && PLAN_TOOLS[last.slice(9)]) {
+    const k = last.slice(9);
+    items.push({ label: PLAN_TOOLS[k].label + ' 이어서', action: 'app:epSubtabNav', args: [k] });
+  } else if (last === 'simulator') {
+    items.push({ label: '고교학점제 시뮬레이터 이어서', action: 'app:ovSubtab', args: ['simulator'] });
+  } else if (STANDARDS_IDS.includes(last) && idxOf(last) >= 0) {
+    items.push({ label: SUBJECTS[idxOf(last)].name + ' 성취기준 이어서', action: 'app:subject', args: [idxOf(last)] });
+  }
+  // 수업/평가계획: 지금 기준(과목·학기) 슬롯에 만든 계획이 있으면
+  const ctx = readJSON('jungle_plan_ctx');
+  const slot = ctx ? ctx.subjectId + ':' + ctx.semester : '';
+  const has = key => { const d = readJSON(key); const s = d && d.slots ? d.slots[slot] : null; return !!(s && s.generated); };
+  const evalHas = has('jungle_evalplan'), lessonHas = has('jungle_lesson_plan');
+  if ((evalHas || lessonHas) && !last.startsWith('evalplan:')) {
+    const subj = SUBJECTS.find(s => s.id === ctx.subjectId);
+    items.push({ label: '수업/평가계획 이어서 · ' + (subj ? subj.name : '') + ' ' + ctx.semester + '학기', action: 'app:epSubtabNav', args: [evalHas ? 'eval' : 'lesson'] });
+  }
+  const col = readJSON('jungle_collected');
+  if (Array.isArray(col) && col.length) items.push({ label: '담은 성취기준 ' + col.length + '개', action: 'app:openCollected', args: [] });
+  return items.slice(0, 3);
+}
+export function renderRecent() {
+  const items = recentItems();
+  if (!items.length) return '';
+  return '<span class="home-recent-label">최근 작업</span>' + items.map(it =>
+    '<button type="button" class="home-recent-chip" data-onclick="' + it.action + '"' + (it.args.length ? ' data-args="' + esc(JSON.stringify(it.args)) + '"' : '') + '>' + esc(it.label) + '</button>').join('');
+}
+
 registerActions('click', {
   'home:openGuide': function() { document.getElementById('homeGuide').showModal(); },
   'home:closeGuide': function() { document.getElementById('homeGuide').close(); },

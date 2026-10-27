@@ -17,7 +17,7 @@ import { dacInit, renderDsAiCompare, renderSubjectGuide, renderCompare, renderOv
 import { openAchvModal, closeAchvModal, achvCopyAll, achvCopyStd, openSemesterAchvPicker } from './achv.js';
 import { renderAffective } from './affective.js';
 import * as planCtx from './planctx.js';
-import { renderHome } from './home.js';
+import { renderHome, renderRecent } from './home.js';
 import { collected, updatePanel, togglePanel, closePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
 import { backupExport, backupImport } from './backup.js';
 import { initTypedPlaceholder } from './searchfx.js';
@@ -644,6 +644,8 @@ function render() {
   // 성취기준 화면(과목·검색 결과)에서만 0개짜리 '담은 항목' 버튼을 보인다 — 다른 화면에선 담은 게 있을 때만
   document.body.classList.toggle('std-view', !homeMode && !NON_SUBJECT_TYPES.includes(S().type));
   syncSubtabScope();
+  const recent = document.getElementById('homeRecent');
+  if (recent) { const h = homeMode ? renderRecent() : ''; recent.innerHTML = h; recent.hidden = !h; }
   if (homeMode) { document.getElementById('main').innerHTML = renderHome(); return; }
   const s = S();
   if (s.type === 'overview') {
@@ -783,6 +785,7 @@ initTypedPlaceholder(document.getElementById('searchInput'), () => homeMode);
 // --- Window registrations (for onclick handlers in dynamically generated HTML) ---
 function lpSelectSubtab(key) {
   setEvalPlanSubtab(key);
+  try { localStorage.setItem('jungle_last_used', 'evalplan:' + key); } catch(e) {} // 홈 '최근 작업' 칩용
   pushHash();
   renderTabs();
   renderWithFade();
@@ -818,6 +821,7 @@ registerActions('click', {
   'app:semAchv':        function(el, e, subjId, accent) { openSemesterAchvPicker(subjId, accent); },
   'app:focusSearch':    function() { focusSearch(); },
   'app:suggestQuery':   function(el) { query = el.dataset.query || ''; domainFilter = null; document.getElementById('searchInput').value = query; document.getElementById('searchClear').classList.toggle('on', !!query); render(); pushHash(); announce(query + ' 검색'); },
+  'app:openCollected':  function() { togglePanel(); },
   'app:retryAll':       function() { searchScope = 'all'; render(); pushHash(); document.querySelector('.std-search-scope [data-scope="all"]')?.focus(); },
   'app:exampleSearch': function(el) { onHomeSearch(el.dataset.query); },
   'app:lucky':          function() { luckyJump(); },

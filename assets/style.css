@@ -2134,3 +2134,11 @@ body:has(.home-guide-modal[open]){overflow:hidden}
 .no-res-chip:hover{background:var(--brand-soft)}
 .no-res-chip:focus-visible,.no-res-retry:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
 .no-res-retry{margin-top:16px}
+/* 홈 '최근 작업' 칩 — 검색창 바로 아래, 저장 데이터가 없으면 영역째 숨김 */
+.home-recent{display:none}
+.home-cover:has(.home-mode) .home-recent:not([hidden]){display:flex;flex-wrap:wrap;align-items:center;gap:8px;grid-column:1;grid-row:3;margin-top:12px}
+.home-cover:has(.home-mode) .home-recent:not([hidden]) ~ .home-cover-tools{grid-row:4}
+.home-recent-label{font-size:13px;font-weight:600;color:var(--g500);margin-right:2px}
+.home-recent-chip{font:inherit;font-size:14px;font-weight:600;min-height:36px;padding:6px 14px;border:1px solid var(--brand-line);border-radius:999px;background:var(--brand-soft);color:var(--brand-dark);cursor:pointer}
+.home-recent-chip:hover{border-color:var(--brand)}
+.home-recent-chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
