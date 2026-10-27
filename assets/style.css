@@ -1974,11 +1974,14 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .home-nav{max-width:none;margin:0;padding:8px 0 24px;gap:0;border-top:1px solid var(--brand-line)}
 .home-nav-section{display:grid;grid-template-columns:124px minmax(0,1fr);gap:16px;padding:20px 0;border-bottom:1px solid var(--g200);align-items:start}
 .home-nav-label{padding:12px 0;font-size:15px;font-weight:700;color:var(--g500)}
-.home-card-grid{display:flex;flex-wrap:wrap;gap:4px 24px}
-.home-card,.home-card:hover,[data-theme="dark"] .home-card,[data-theme="dark"] .home-card:hover{border:0;border-radius:0;background:transparent;box-shadow:none;transform:none;padding:12px 0;min-height:44px;gap:0}
-.home-card-name{font-size:15px;font-weight:600;line-height:1.4}
-.home-card:hover .home-card-name{color:var(--brand);text-decoration:underline;text-underline-offset:4px}
-.home-card-dot{width:6px;height:6px}
+/* 홈 바로가기 카드(2026-10): 이름 + 한 줄 설명, 테두리·호버·포커스로 누를 수 있음을 드러낸다 */
+.home-card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px}
+.home-card,[data-theme="dark"] .home-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;min-height:64px;padding:12px 14px;border:1px solid var(--g200);border-radius:12px;background:var(--surface);box-shadow:none;transform:none;color:inherit;transition:border-color .15s,background .15s,box-shadow .15s}
+.home-card:hover,[data-theme="dark"] .home-card:hover{border-color:var(--hc-accent,var(--g400));background:var(--g50);box-shadow:0 4px 12px -6px rgba(15,23,42,.25);transform:none}
+.home-card:focus-visible{outline:2px solid var(--hc-accent,var(--brand));outline-offset:2px}
+.home-card-name{font-size:15px;font-weight:700;line-height:1.4;color:var(--g900)}
+.home-card-dot{width:7px;height:7px}
+.home-card .home-card-desc{padding-left:15px;font-size:13px;line-height:1.5;color:var(--g600)}
 @media(max-width:760px){
 .home-cover:has(.home-mode){grid-template-columns:minmax(0,1fr);padding:20px 20px 20px;margin:0;min-height:0;gap:0}
 .home-cover .hero-wordmark{font-size:76px}
@@ -1986,8 +1989,8 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 .cover-tree{right:8px;top:24px;width:48px;height:48px;opacity:.85}
 .home-nav-section{grid-template-columns:1fr;gap:0;padding:12px 0}
 .home-nav-label{padding:8px 0}
-.home-card-grid{gap:0 20px}
-.home-card{padding:10px 0}
+.home-card-grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.home-card{padding:10px 12px}
 }
 @media(min-width:761px) and (max-width:1000px){.home-cover:has(.home-mode){column-gap:24px;grid-template-columns:minmax(0,1fr) minmax(260px,.7fr)}.cover-tree{width:40%;height:300px}.home-cover .hero-wordmark{font-size:88px}}
 

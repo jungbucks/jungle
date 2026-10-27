@@ -1,5 +1,5 @@
 import { esc, registerActions } from './utils.js';
-import { NAV, STANDARDS_IDS } from './state.js';
+import { NAV, STANDARDS_IDS, HOME_CARD_META } from './state.js';
 
 
 // --- 홈 렌더 — app.js에서 분리 (2026-07-08 F2) ---
@@ -23,11 +23,13 @@ export function renderHome() {
     const s = SUBJECTS[idx];
     return `<button class="home-card" style="--hc-accent:${s.accent}" data-onclick="app:subject" data-args="[${idx}]">
       <span class="home-card-name"><span class="home-card-dot"></span>${esc(s.name)}</span>
+      ${HOME_CARD_META[id] ? `<span class="home-card-desc">${esc(HOME_CARD_META[id].desc)}</span>` : ''}
     </button>`;
   }
   const ovCards = () => OV_SUBTABS.map(t =>
     `<button class="home-card" style="--hc-accent:var(--curr)" data-onclick="app:ovSubtab" data-args="${esc(JSON.stringify([t.key]))}">
       <span class="home-card-name"><span class="home-card-dot"></span>${esc(t.label)}</span>
+      <span class="home-card-desc">${esc(t.desc)}</span>
     </button>`
   ).join('');
   const section = (label, cards) => `

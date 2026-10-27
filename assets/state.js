@@ -19,22 +19,23 @@ export const NAV = [
 ];
 export const LP_SEM_DEFAULTS = { 1:{startMW:'3/1',endMW:'7/2'}, 2:{startMW:'8/2',endMW:'1/2'} };
 
+// 홈 카드 한 줄 설명(단일 원천). 성취기준 과목은 학교급·선택 유형, 자료실은 용도.
 export const HOME_CARD_META = {
   overview:  { label:'교육과정', desc:'교육과정 체계·중고 비교·선택과목 가이드·시뮬레이터' },
-  middle:    { label:'중학', desc:'2022 개정 교육과정' },
-  high:      { label:'고등', desc:'일반선택' },
-  ai:        { label:'AI',  desc:'진로선택' },
-  ds:        { label:'DS',  desc:'진로선택' },
-  sw:        { label:'SW',  desc:'융합선택' },
-  cs:        { label:'CS',  desc:'과학계열 진로선택' },
-  prog:      { label:'전문', desc:'전문교과' },
-  evalplan:  { label:'계획', desc:'수업 설계 및 평가계획 작성', tags:['차시계산기','수업계획','평가계획','루브릭','정기시험 출제','성적 산출'] },
-  aitools:   { label:'AI', desc:'Gemini로 코드 변형·수업 아이디어 만들기', tags:['코드 변형 생성기','AI 수업 아이디어'] },
+  middle:    { label:'중학', desc:'중학교 · 공통 과목' },
+  high:      { label:'고등', desc:'고등학교 · 일반선택' },
+  ai:        { label:'AI',  desc:'고등학교 · 진로선택' },
+  ds:        { label:'DS',  desc:'고등학교 · 진로선택' },
+  sw:        { label:'SW',  desc:'고등학교 · 융합선택' },
+  cs:        { label:'CS',  desc:'고등학교 · 과학계열 진로선택' },
+  prog:      { label:'전문', desc:'고등학교 · 전문교과' },
+  evalplan:  { label:'계획', desc:'차시부터 성적까지 한 흐름으로', tags:['차시계산기','수업계획','평가계획','루브릭','정기시험 출제','성적 산출'] },
+  aitools:   { label:'AI', desc:'Gemini로 코드 변형·수업 아이디어', tags:['코드 변형 생성기','AI 수업 아이디어'] },
   simulator: { label:'시뮬', desc:'고등학교 과목 배치 시뮬레이션' },
-  swrec:     { label:'SW',  desc:'정보교사 추천 소프트웨어' },
-  fav:       { label:'사이트', desc:'수업 활용 사이트 모음' },
-  textbook:  { label:'교과서', desc:'인정교과서 목록 및 비교' },
-  appstore:  { label:'앱',  desc:'정보 선생님들이 만든 웹앱·프로그램' },
+  textbook:  { label:'교과서', desc:'인정교과서 목록·e북 바로가기' },
+  fav:       { label:'사이트', desc:'수업에 바로 쓰는 사이트 모음' },
+  swrec:     { label:'SW',  desc:'업무·수업용 추천 소프트웨어' },
+  appstore:  { label:'앱',  desc:'정보 선생님이 만든 웹앱·프로그램' },
 };
 
 export const ALL_ITEMS = {};
