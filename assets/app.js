@@ -1,6 +1,6 @@
 import { matchesStandard, highlightStandard, uiToast, initScrollFades } from './utils.js';
 import { esc, safeUrl, hi, cid, announce, setAccent, resetAccent, initDelegation, registerActions, clipboardWriteText, getAchvKey, findTextByCode } from './utils.js';
-import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META } from './state.js';
+import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META, NAV } from './state.js';
 import { renderSimulator } from './simulator.js';
 import { renderChasi } from './chasi.js';
 import { renderEvalPlan, evalSubjects, evalHideSummary, evalShowSummary, evalPlanSubtab, evalState, setEvalPlanSubtab } from './evalplan.js';
@@ -109,21 +109,18 @@ function planStatusDot(key) {
   return `<span class="tab-status st-${st}" aria-hidden="true" title="${STATUS_TEXT[st]}"></span><span class="sr-only">(${STATUS_TEXT[st]})</span>`;
 }
 
-// --- Tabs ---
-function renderTabs() {  
-  const idxOf = id => SUBJECTS.findIndex(s => s.id === id);  
-  const isHS = !homeMode && HS_SUBTAB_ORDER.includes(curIdx);  
-  const mainItems = [
-    {type:'subject', idx:idxOf('overview')},
-    {type:'hsgroup'},
-    {type:'subject', idx:idxOf('evalplan')},
-    {type:'subject', idx:idxOf('textbook')},
-    {type:'subject', idx:idxOf('aitools')},
-    {type:'subject', idx:idxOf('swrec')},
-    {type:'subject', idx:idxOf('fav')},
-    {type:'subject', idx:idxOf('appstore')},
-  ];  
-  const desktopItems = mainItems.map(item => {    
+// 상단 메뉴 항목·마크업 — 정적 셸(index.html)도 tools/sync-shell.mjs가 이 함수 출력으로 만든다
+function mainNavItems() {
+  const idxOf = id => SUBJECTS.findIndex(s => s.id === id);
+  // 상단 메뉴·드로어 순서 = state.js NAV (홈 섹션과 같은 원천). 자료실은 메뉴에선 낱개로 펼친다.
+  return NAV.flatMap(n =>
+    n.kind === 'standards' ? [{type:'hsgroup'}]
+    : n.kind === 'library' ? n.ids.map(id => ({type:'subject', idx:idxOf(id)}))
+    : [{type:'subject', idx:idxOf(n.id)}]);
+}
+function desktopTabsHtml() {
+  const isHS = !homeMode && HS_SUBTAB_ORDER.includes(curIdx);
+  const desktopItems = mainNavItems().map(item => {    
     if (item.type === 'subject') {      
       const s = SUBJECTS[item.idx];      
       const active = !homeMode && item.idx === curIdx;      
@@ -144,7 +141,15 @@ function renderTabs() {
       <span class="tab-inner">성취기준<span style="font-size:10px;line-height:1">▾</span></span></button>`;
   }).join('');  
   const suggestBtn = `<button class="tab tab-suggest" data-onclick="app:suggest" aria-label="건의사항 남기기">💬 건의사항</button>`;
-  document.getElementById('tabs').innerHTML = desktopItems + suggestBtn;
+  return desktopItems + suggestBtn;
+}
+
+// --- Tabs ---
+function renderTabs() {  
+  const idxOf = id => SUBJECTS.findIndex(s => s.id === id);  
+  const isHS = !homeMode && HS_SUBTAB_ORDER.includes(curIdx);  
+  const mainItems = mainNavItems();
+  document.getElementById('tabs').innerHTML = desktopTabsHtml();
 
   const mobileMenu = document.getElementById('mobileNavMenu');
   if (mobileMenu) {
@@ -858,3 +863,5 @@ updateSearchVisibility();
 render();
 updatePanel();
 export const __stdTest = { stdCardHtml, domainSectionHtml };
+// 정적 셸 동기화·불변식용(홈 모드 기준 상단 메뉴 마크업)
+export const __navTest = { desktopTabsHtml };

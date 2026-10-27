@@ -49,7 +49,7 @@
 6. **복사 기능은 한글 붙여넣기 호환 최우선**: 탭 구분값(TSV)·빈 줄 제거, 필요 시 clipboardWriteHTML(스타일 인라인).
 7. **13px 미만 텍스트 금지**(12px는 배지·칩 하한). 본문성은 15px+.
 8. **인라인 이벤트 핸들러(onclick=) 금지** — CSP에 조용히 차단됨. `data-onclick`/`-oninput`/`-onchange` + utils `registerActions()` 위임. 인라인 `<script>`도 금지(외부 파일 + ASSETS + modulepreload 등록).
-9. **첫 페인트 = 최종 레이아웃**(규칙 10): index.html 정적 셸(탭·홈 상단)이 renderTabs()/renderHome() 출력과 동일. **둘 중 하나 바꾸면 나머지도 반드시 동기**(레이아웃 점프 방지).
+9. **첫 페인트 = 최종 레이아웃**(규칙 10): index.html 정적 셸(탭·홈 상단)이 renderTabs()/renderHome() 출력과 동일. **메뉴 순서·묶음의 원천은 `state.js` NAV 하나** — 바꾼 뒤 `node tools/shell.mjs`로 정적 셸을 다시 만든다(불변식 static-shell-matches-render가 어긋남을 잡는다, 2026-10).
 10. **브랜드**: 'JunGLE'(Jun 소문자+GLE 대문자)·잎 로고 = `--brand` 딥그린. 구글 패러디(무지개 4색·"행운을 믿어요") 복원 금지. 새 아이콘은 이모지 대신 stroke SVG(lucide 계열).
 11. **용어**: 정보교과서에 검정교과서 없음 → "인정교과서"가 올바름.
 12. **파일 임의 통합/재구성 금지.** 위 매핑의 분리 기준(도구 1개 = 파일 1개, 공용은 utils/state)을 따라 배치. app.js·evalplan.js는 상태 결합이 깊어 더 쪼개지 말 것.

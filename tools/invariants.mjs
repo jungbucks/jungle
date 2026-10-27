@@ -10,6 +10,7 @@
 // ============================================================
 import { pathToFileURL } from 'node:url';
 import { renderAll, checkCounts } from './render.mjs';
+import { locate, normalize } from './shell.mjs';
 
 const 제목 = s => (s.html.match(/id="achvModalTitle"[^>]*>([^<]*)</) || [, ''])[1];
 
@@ -68,6 +69,20 @@ function nestedInteractive(screen) {
 }
 
 export const RULES = [
+  {
+    id: 'static-shell-matches-render',
+    왜: 'index.html 정적 셸(첫 페인트)의 상단 메뉴·홈 바로가기가 렌더러 출력과 다르면 화면이 뜨자마자 바뀐다(규칙 9). 메뉴 순서는 state.js NAV 한 곳이 원천 — 고치면 node tools/shell.mjs로 셸을 다시 만든다.',
+    대상: 'homeShell',
+    검사: s => {
+      if (!s.meta.rendered) return '렌더러 출력이 없다';
+      let loc;
+      try { loc = locate(s.html); } catch (e) { return e.message; }
+      if (normalize(s.html.slice(...loc.tabs)) !== normalize(s.meta.rendered.tabs)) return '정적 상단 메뉴가 renderTabs 출력과 다르다';
+      if (normalize(s.html.slice(...loc.home)) !== normalize(s.meta.rendered.home)) return '정적 홈 바로가기가 renderHome 출력과 다르다';
+      return null;
+    },
+    가짜: { html: '<div class="tabs" id="tabs" role="navigation"><button>교과서</button></div><div class="main" id="main"><div class="home-nav"><div>옛 순서</div></div></div>', meta: { rendered: { tabs: '<button>교육과정</button>', home: '<div class="home-nav"><div>새 순서</div></div>' } } },
+  },
   {
     id: 'theme-decided-before-paint',
     왜: '다크 테마는 첫 페인트 전에 정해야 한다. 모듈(app.js)에서 정하면 운영체제 다크 사용자에게 흰 화면이 번쩍인다. 토글 버튼도 헤더에 있어야 한다(2026-10 이전엔 toggleDarkMode를 부르는 곳이 없었다).',

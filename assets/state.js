@@ -1,11 +1,22 @@
 // --- Constants (ES Module) ---
 // SUBJECTS, ACHIEVEMENTS are globals from data.js (classic script)
 
-export const HS_SUBTAB_ORDER = ['middle','high','ai','ds','sw','cs','prog'].map(id => SUBJECTS.findIndex(s => s.id === id));
+export const STANDARDS_IDS = ['middle','high','ai','ds','sw','cs','prog'];
+export const HS_SUBTAB_ORDER = STANDARDS_IDS.map(id => SUBJECTS.findIndex(s => s.id === id));
 export const HS_SUBTAB_LABELS = ['중학교 정보', '고등학교 정보 (일반선택)', '인공지능 기초 (진로선택)', '데이터 과학 (진로선택)', '소프트웨어와 생활 (융합선택)', '정보과학 (과학계열 진로선택)', '프로그래밍 (전문교과)'];
 
 export const NON_SUBJECT_TYPES = ['overview','simulator','evalplan','fav','textbook','swrec','chasi','appstore','aitools'];
 
+// 메뉴 구조의 단일 원천 (2026-10): 상단 메뉴·모바일 드로어·홈 섹션이 모두 이 순서와 묶음을 쓴다.
+// 화면 이름은 SUBJECTS(data.js)의 name이 원천 — 여기엔 순서·묶음과 묶음 이름만 둔다.
+//   kind 'subject' = 메뉴 1개(=SUBJECTS id), 'standards' = 성취기준 7과목 묶음, 'library' = 자료실(메뉴에선 낱개로 펼침)
+export const NAV = [
+  { kind: 'subject', id: 'overview' },
+  { kind: 'standards', label: '성취기준' },
+  { kind: 'subject', id: 'evalplan' },
+  { kind: 'subject', id: 'aitools' },
+  { kind: 'library', label: '자료실', ids: ['textbook', 'fav', 'swrec', 'appstore'] },
+];
 export const LP_SEM_DEFAULTS = { 1:{startMW:'3/1',endMW:'7/2'}, 2:{startMW:'8/2',endMW:'1/2'} };
 
 export const HOME_CARD_META = {

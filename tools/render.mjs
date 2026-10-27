@@ -46,7 +46,7 @@ function captureNode() {
   return n;
 }
 
-function ensureGlobals() {
+export function ensureGlobals() {
   if (!globalThis.addEventListener) globalThis.addEventListener = () => {};
   if (!globalThis.scrollTo) globalThis.scrollTo = () => {};
   if (!globalThis.window) globalThis.window = globalThis;
@@ -176,6 +176,9 @@ export async function renderAll() {
     const html = capture('stdPickerModalBody', () => openStdPicker({ subjectIdx: i, selectAll: true }));
     screens.push({ kind: 'stdPicker', id: 'stdPicker/' + subj.id, html, meta: {} });
   });
+  // 정적 셸 비교용: 홈 모드 렌더러 출력(상단 메뉴·홈 바로가기)
+  const { rendered } = await import(pathToFileURL(join(root, 'tools', 'shell.mjs')).href);
+  screens.find(s => s.kind === 'homeShell').meta.rendered = await rendered();
   return screens;
 }
 
