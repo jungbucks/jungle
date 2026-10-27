@@ -430,20 +430,39 @@ function selectSubject(i) {
 
 // --- Search ---
 let _searchTimer = null;
-document.getElementById('searchInput').addEventListener('input', e => {  
-  query = e.target.value.trim();  
-  domainFilter = null;  
-  document.getElementById('searchClear').classList.toggle('on', query.length > 0);  
-  if (homeMode && query) {
-    searchScope = 'all';
-    homeMode = false; curIdx = 1;
-    renderTabs(); updateSearchVisibility();    
-    const inp = e.target;    
-    const pos = inp.selectionEnd;    
-    requestAnimationFrame(() => { inp.focus(); inp.setSelectionRange(pos, pos); });  
-  }  
+// 한글 조합(IME) 중에는 화면을 옮기지 않는다 — 조합이 끝나고(compositionend) 잠시 멈춘 뒤에만 검색한다.
+// (예전엔 홈에서 한 글자만 쳐도 곧바로 #middle로 넘어갔다)
+let _composing = false;
+const HOME_SEARCH_DELAY = 300, SEARCH_DELAY = 150;
+function scheduleSearch(inp) {
   clearTimeout(_searchTimer);
-  _searchTimer = setTimeout(() => { render(); pushHash(); }, 150);
+  if (_composing) return;
+  _searchTimer = setTimeout(() => {
+    if (_composing) return;
+    query = inp.value.trim();
+    domainFilter = null;
+    document.getElementById('searchClear').classList.toggle('on', query.length > 0);
+    if (homeMode) {
+      if (!query) return;
+      // 홈 → 결과 화면: 같은 입력칸이 그대로 남으므로 포커스·커서만 지킨다
+      const start = inp.selectionStart, end = inp.selectionEnd;
+      searchScope = 'all';
+      homeMode = false; curIdx = 1;
+      renderTabs(); updateSearchVisibility();
+      render(); pushHash();
+      inp.focus(); inp.setSelectionRange(start, end);
+      return;
+    }
+    render(); pushHash();
+  }, homeMode ? HOME_SEARCH_DELAY : SEARCH_DELAY);
+}
+const _searchInp = document.getElementById('searchInput');
+_searchInp.addEventListener('compositionstart', () => { _composing = true; clearTimeout(_searchTimer); });
+_searchInp.addEventListener('compositionend', e => { _composing = false; scheduleSearch(e.target); });
+_searchInp.addEventListener('input', e => {
+  document.getElementById('searchClear').classList.toggle('on', e.target.value.trim().length > 0);
+  if (e.isComposing) { _composing = true; return; }
+  scheduleSearch(e.target);
 });
 
 function clearSearch() {
@@ -456,7 +475,11 @@ function clearSearch() {
 // 전체 과목 검색 중에는 '지금 과목' 서브탭 강조를 끈다 (CSS .scope-all) — 검색을 지우면 원래대로
 function syncSubtabScope() {
   const bar = document.getElementById('subtabBar');
-  if (bar) bar.classList.toggle('scope-all', !homeMode && !!query && searchScope === 'all' && HS_SUBTAB_ORDER.includes(curIdx));
+  const all = !homeMode && !!query && searchScope === 'all' && HS_SUBTAB_ORDER.includes(curIdx);
+  if (!bar) return;
+  bar.classList.toggle('scope-all', all);
+  // 화면 읽기 도구에도 '특정 과목 선택됨'으로 읽히지 않게 aria-selected까지 맞춘다
+  if (bar.querySelectorAll) bar.querySelectorAll('.subtab.active').forEach(t => t.setAttribute('aria-selected', all ? 'false' : 'true'));
 }
 
 // --- Domain toggle ---
