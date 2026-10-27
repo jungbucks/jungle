@@ -145,6 +145,18 @@ function desktopTabsHtml() {
   return desktopItems + suggestBtn;
 }
 
+// '/' 단축키: 어느 화면에서든 검색창으로(입력 중·한글 조합 중·창이 열려 있을 땐 무시). 검색창이 없는 도구 화면이면 홈으로.
+document.addEventListener('keydown', e => {
+  if (e.key !== '/' || e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return;
+  const t = e.target;
+  if (t && t.closest && t.closest('input, textarea, select, [contenteditable="true"], [contenteditable=""]')) return;
+  if (document.querySelector('dialog[open]') || [...document.querySelectorAll('[aria-modal="true"]')].some(m => m.offsetParent !== null)) return;
+  e.preventDefault();
+  if (document.getElementById('searchSection').style.display === 'none') goHome();
+  const inp = document.getElementById('searchInput');
+  inp.focus(); inp.select();
+});
+
 // --- Tabs ---
 function renderTabs() {  
   const idxOf = id => SUBJECTS.findIndex(s => s.id === id);  

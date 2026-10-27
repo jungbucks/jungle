@@ -10,8 +10,13 @@ export function initTypedPlaceholder(input, isIdle) {
     '네트워크', '빅데이터', '디지털 윤리'
   ];
   let phase = 'intro', qi = 0, ci = 0, typing = true, timer = null;
+  // 모션 줄이기(prefers-reduced-motion: reduce)면 타자 애니메이션 대신 고정 문구 — 설정이 바뀌면 바로 따른다
+  const STATIC = '성취기준 검색 (예: 알고리즘, 12정01-01)';
+  const RM = window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)') : null;
+  const reduced = () => !!(RM && RM.matches);
 
   function tick() {
+    if (reduced()) { if (isIdle() && document.activeElement !== input) input.placeholder = STATIC; return; }
     if (!isIdle() || document.activeElement === input) {
       timer = setTimeout(tick, 300); return;
     }
@@ -56,12 +61,19 @@ export function initTypedPlaceholder(input, isIdle) {
     }
   }
 
-  timer = setTimeout(tick, 800);
+  if (reduced()) { if (isIdle()) input.placeholder = STATIC; } else timer = setTimeout(tick, 800);
+  if (RM && RM.addEventListener) RM.addEventListener('change', () => {
+    clearTimeout(timer);
+    if (reduced()) { if (isIdle()) input.placeholder = STATIC; }
+    else { phase = 'examples'; ci = 0; typing = true; timer = setTimeout(tick, 800); }
+  });
   input.addEventListener('focus', () => {
     clearTimeout(timer);
     input.placeholder = '';
   });
   input.addEventListener('blur', () => {
-    if (isIdle()) { phase = 'examples'; ci = 0; typing = true; timer = setTimeout(tick, 800); }
+    if (!isIdle()) return;
+    if (reduced()) { input.placeholder = STATIC; return; }
+    phase = 'examples'; ci = 0; typing = true; timer = setTimeout(tick, 800);
   });
 }

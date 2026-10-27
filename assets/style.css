@@ -2154,3 +2154,6 @@ body:has(.home-guide-modal[open]){overflow:hidden}
 .backup-nag-close{font:inherit;font-size:13px;min-height:36px;padding:6px 12px;border:1px solid var(--warn-line);border-radius:8px;background:var(--surface);color:var(--g700);cursor:pointer}
 .backup-nag-close:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
 @media(max-width:560px){.site-footer-local .sfl-long{display:none}}
+.home-guide-keys{margin:4px 0 0;font-size:14px;color:var(--g700);line-height:1.8}
+.home-guide-keys span{font-weight:700;margin-right:4px}
+.home-guide-keys kbd{display:inline-block;min-width:22px;padding:1px 6px;border:1px solid var(--g300);border-bottom-width:2px;border-radius:5px;background:var(--g50);font-family:inherit;font-size:13px;font-weight:600;line-height:1.4;text-align:center;color:var(--g900)}
