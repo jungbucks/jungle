@@ -144,16 +144,34 @@
     </div>
     <div class="home-nav-section">
       <div class="home-nav-label">수업/평가계획</div>
-      <div class="home-card-grid"><button class="home-card" style="--hc-accent:#7C3AED" data-onclick="app:subject" data-args="[8]">
-      <span class="home-card-name"><span class="home-card-dot"></span>수업/평가계획</span>
-      <span class="home-card-desc">차시부터 성적까지 한 흐름으로</span>
+      <div class="home-card-grid"><button class="home-card" style="--hc-accent:var(--plan)" data-onclick="app:epSubtabNav" data-args="[&quot;chasi&quot;]">
+      <span class="home-card-name"><span class="home-card-step" aria-hidden="true">1</span>차시 계산기</span>
+      <span class="home-card-desc">학사일정으로 학기 수업 차시 계산</span>
+    </button><button class="home-card" style="--hc-accent:var(--plan)" data-onclick="app:epSubtabNav" data-args="[&quot;lesson&quot;]">
+      <span class="home-card-name"><span class="home-card-step" aria-hidden="true">2</span>수업계획</span>
+      <span class="home-card-desc">주차별 단원·성취기준 배치</span>
+    </button><button class="home-card" style="--hc-accent:var(--plan)" data-onclick="app:epSubtabNav" data-args="[&quot;eval&quot;]">
+      <span class="home-card-name"><span class="home-card-step" aria-hidden="true">3</span>평가계획</span>
+      <span class="home-card-desc">정기시험·수행평가 비율 설계</span>
+    </button><button class="home-card" style="--hc-accent:var(--plan)" data-onclick="app:epSubtabNav" data-args="[&quot;rubric&quot;]">
+      <span class="home-card-name"><span class="home-card-step" aria-hidden="true">4</span>수행평가 루브릭 설계</span>
+      <span class="home-card-desc">성취수준표·채점 루브릭</span>
+    </button><button class="home-card" style="--hc-accent:var(--plan)" data-onclick="app:epSubtabNav" data-args="[&quot;regexam&quot;]">
+      <span class="home-card-name"><span class="home-card-step" aria-hidden="true">5</span>정기시험 출제 계획</span>
+      <span class="home-card-desc">문항별 주제·성취기준·배점</span>
+    </button><button class="home-card" style="--hc-accent:var(--plan)" data-onclick="app:epSubtabNav" data-args="[&quot;grade&quot;]">
+      <span class="home-card-name"><span class="home-card-step" aria-hidden="true">6</span>내신 5등급제 성적 산출기</span>
+      <span class="home-card-desc">환산 총점·석차·등급 계산</span>
     </button></div>
     </div>
     <div class="home-nav-section">
       <div class="home-nav-label">AI 도구</div>
-      <div class="home-card-grid"><button class="home-card" style="--hc-accent:var(--ovr)" data-onclick="app:subject" data-args="[15]">
-      <span class="home-card-name"><span class="home-card-dot"></span>AI 도구</span>
-      <span class="home-card-desc">Gemini로 코드 변형·수업 아이디어</span>
+      <div class="home-card-grid"><button class="home-card" style="--hc-accent:var(--ovr)" data-onclick="app:aiGo" data-args="[&quot;codevar&quot;]">
+      <span class="home-card-name"><span class="home-card-dot"></span>코드 변형 생성기</span>
+      <span class="home-card-desc">코드로 시험·수행평가 변형 문제</span>
+    </button><button class="home-card" style="--hc-accent:var(--ovr)" data-onclick="app:aiGo" data-args="[&quot;idea&quot;]">
+      <span class="home-card-name"><span class="home-card-dot"></span>AI 수업 아이디어</span>
+      <span class="home-card-desc">성취기준으로 수업 활동 제안</span>
     </button></div>
     </div>
     <div class="home-nav-section">

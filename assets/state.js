@@ -17,6 +17,23 @@ export const NAV = [
   { kind: 'subject', id: 'aitools' },
   { kind: 'library', label: '자료실', ids: ['textbook', 'fav', 'swrec', 'appstore'] },
 ];
+// 수업/평가계획·AI 도구 하위 화면(이름·설명 단일 원천) — 서브탭(app.js)과 홈 카드(home.js)가 함께 쓴다
+export const PLAN_TOOLS = {
+  chasi:     { label: '차시 계산기',            desc: '학사일정으로 학기 수업 차시 계산' },
+  lesson:    { label: '수업계획',               desc: '주차별 단원·성취기준 배치' },
+  eval:      { label: '평가계획',               desc: '정기시험·수행평가 비율 설계' },
+  affective: { label: '정의적 영역 평가',        desc: '가치·태도 평가 예시' },
+  rubric:    { label: '수행평가 루브릭 설계',     desc: '성취수준표·채점 루브릭' },
+  regexam:   { label: '정기시험 출제 계획',      desc: '문항별 주제·성취기준·배점' },
+  grade:     { label: '내신 5등급제 성적 산출기', desc: '환산 총점·석차·등급 계산' },
+};
+// 홈 카드는 실제 업무 흐름 순서로 펼친다
+export const PLAN_FLOW = ['chasi', 'lesson', 'eval', 'rubric', 'regexam', 'grade'];
+export const AI_TOOLS = [
+  { key: 'codevar', label: '코드 변형 생성기', desc: '코드로 시험·수행평가 변형 문제' },
+  { key: 'idea',    label: 'AI 수업 아이디어', desc: '성취기준으로 수업 활동 제안' },
+];
+
 export const LP_SEM_DEFAULTS = { 1:{startMW:'3/1',endMW:'7/2'}, 2:{startMW:'8/2',endMW:'1/2'} };
 
 // 홈 카드 한 줄 설명(단일 원천). 성취기준 과목은 학교급·선택 유형, 자료실은 용도.

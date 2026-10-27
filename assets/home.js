@@ -1,5 +1,5 @@
 import { esc, registerActions } from './utils.js';
-import { NAV, STANDARDS_IDS, HOME_CARD_META } from './state.js';
+import { NAV, STANDARDS_IDS, HOME_CARD_META, PLAN_TOOLS, PLAN_FLOW, AI_TOOLS } from './state.js';
 
 
 // --- 홈 렌더 — app.js에서 분리 (2026-07-08 F2) ---
@@ -32,6 +32,14 @@ export function renderHome() {
       <span class="home-card-desc">${esc(t.desc)}</span>
     </button>`
   ).join('');
+  // 하위 도구 카드: 수업/평가계획은 업무 흐름 순서(차시 → … → 5등급), 번호로 순서를 보인다
+  const toolCard = (accent, action, key, label, desc, step) =>
+    `<button class="home-card" style="--hc-accent:${accent}" data-onclick="${action}" data-args="${esc(JSON.stringify([key]))}">
+      <span class="home-card-name">${step ? `<span class="home-card-step" aria-hidden="true">${step}</span>` : '<span class="home-card-dot"></span>'}${esc(label)}</span>
+      <span class="home-card-desc">${esc(desc)}</span>
+    </button>`;
+  const planCards = () => PLAN_FLOW.map((k, i) => toolCard('var(--plan)', 'app:epSubtabNav', k, PLAN_TOOLS[k].label, PLAN_TOOLS[k].desc, i + 1)).join('');
+  const aiCards = () => AI_TOOLS.map(t => toolCard('var(--ovr)', 'app:aiGo', t.key, t.label, t.desc)).join('');
   const section = (label, cards) => `
     <div class="home-nav-section">
       <div class="home-nav-label">${esc(label)}</div>
@@ -43,6 +51,8 @@ export function renderHome() {
     n.kind === 'standards' ? section(n.label, STANDARDS_IDS.map(subCard).join(''))
     : n.kind === 'library' ? section(n.label, n.ids.map(subCard).join(''))
     : n.id === 'overview' ? section(nameOf('overview'), ovCards())
+    : n.id === 'evalplan' ? section(nameOf('evalplan'), planCards())
+    : n.id === 'aitools' ? section(nameOf('aitools'), aiCards())
     : section(nameOf(n.id), subCard(n.id))).join('')}
   </div>`;
 }

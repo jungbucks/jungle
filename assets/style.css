@@ -2126,3 +2126,5 @@ body:has(.home-guide-modal[open]){overflow:hidden}
 .plan-page{width:100%;max-width:none;margin-left:0;margin-right:0;box-sizing:border-box}
 .regexam-wrap.plan-page > :not(.ov-head){max-width:900px}
 @media(max-width:640px){:root{--plan-sticky-top:93px}}
+.home-card-step{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:50%;background:var(--plan-soft);color:var(--plan-dark);font-size:12px;font-weight:800;flex-shrink:0}
+.home-card:has(.home-card-step) .home-card-desc{padding-left:28px}

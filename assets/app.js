@@ -1,6 +1,6 @@
 import { matchesStandard, highlightStandard, uiToast, initScrollFades } from './utils.js';
 import { esc, safeUrl, hi, cid, announce, setAccent, resetAccent, initDelegation, registerActions, clipboardWriteText, getAchvKey, findTextByCode } from './utils.js';
-import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META, NAV } from './state.js';
+import { HS_SUBTAB_ORDER, HS_SUBTAB_LABELS, NON_SUBJECT_TYPES, ALL_ITEMS, LP_SEM_DEFAULTS, HOME_CARD_META, NAV, PLAN_TOOLS, AI_TOOLS } from './state.js';
 import { renderSimulator } from './simulator.js';
 import { renderChasi } from './chasi.js';
 import { renderEvalPlan, evalSubjects, evalHideSummary, evalShowSummary, evalPlanSubtab, evalState, setEvalPlanSubtab } from './evalplan.js';
@@ -91,14 +91,15 @@ document.addEventListener('keydown', function(e) {
 });
 
 // --- 수업/평가계획 서브탭: 업무 흐름 순서 그룹 (2026-10) ---
+const tool = key => ({ key, label: PLAN_TOOLS[key].label });
 const EP_GROUPS = [
-  { label: '준비',     tabs: [{ key: 'chasi', label: '차시 계산기' }] },
-  { label: '계획',     tabs: [{ key: 'lesson', label: '수업계획' }, { key: 'eval', label: '평가계획' }] },
-  { label: '평가 설계', tabs: [{ key: 'affective', label: '정의적 영역 평가' }, { key: 'rubric', label: '수행평가 루브릭 설계' }, { key: 'regexam', label: '정기시험 출제 계획' }] },
-  { label: '성적',     tabs: [{ key: 'grade', label: '내신 5등급제 성적 산출기' }] },
+  { label: '준비',     tabs: [tool('chasi')] },
+  { label: '계획',     tabs: [tool('lesson'), tool('eval')] },
+  { label: '평가 설계', tabs: [tool('affective'), tool('rubric'), tool('regexam')] },
+  { label: '성적',     tabs: [tool('grade')] },
 ];
 // AI 도구(코드 변형 생성기·AI 수업 아이디어)는 수업/평가계획에서 분리된 별도 메뉴. 해시 #ai:codevar / #ai:idea
-const AI_TABS = [{ key: 'codevar', label: '코드 변형 생성기' }, { key: 'idea', label: 'AI 수업 아이디어' }];
+const AI_TABS = AI_TOOLS;
 let aiSubtab = 'codevar';
 // 계획 탭 상태 점: 없음 / 작성 중 / 완료 (현재 공통 기준의 과목·학기 기준)
 const STATUS_TEXT = { none: '아직 없음', draft: '작성 중', done: '완료' };
@@ -778,6 +779,7 @@ registerActions('click', {
   'app:ovSubtab':       function(el, e, key) { goToOverviewSubtab(key); },
   'app:epSubtab':       function(el, e, key) { lpSelectSubtab(key); },
   'app:epSubtabNav':    function(el, e, key) { const i = SUBJECTS.findIndex(s => s.id === 'evalplan'); if (homeMode || curIdx !== i) { homeMode = false; curIdx = i; query = ''; domainFilter = null; } lpSelectSubtab(key); updateSearchVisibility(); closeMobileNav(); },
+  'app:aiGo':           function(el, e, key) { homeMode = false; curIdx = SUBJECTS.findIndex(s => s.id === 'aitools'); query = ''; domainFilter = null; aiSubtab = key === 'idea' ? 'idea' : 'codevar'; pushHash(); renderTabs(); updateSearchVisibility(); renderWithFade(); },
   'app:aiSubtab':       function(el, e, key) { aiSubtab = key === 'idea' ? 'idea' : 'codevar'; pushHash(); renderTabs(); renderWithFade(); },
   'app:copy':           function(el) { doCopy(el); },
   'app:toggleDomain':   function(el) { toggleDomain(el.dataset.key); },
