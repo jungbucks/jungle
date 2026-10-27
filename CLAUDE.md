@@ -67,7 +67,7 @@
 수업/평가계획 도구 키(`jungle_lesson_plan`·`jungle_evalplan`·`jungle_rubric`·`jungle_regexam`·`jungle_chasi`)는 2026-10부터 `{ v:2, slots: { "<과목id>:<학기>": 데이터 } }` 형식 — 예전 단일 객체는 첫 로드 때 그 과목·학기 슬롯으로 옮겨진다. 공통 기준은 `jungle_plan_ctx`.
 
 
-`jungle_collected`(2026-10 이전 `collected` — collect.js가 첫 로드 때 옮기고 삭제, 옛 백업 파일의 `collected`도 복원 시 변환) · `jungle_rubric` · `jungle_lesson_plan`(v2 행 형식 — lessonplan.js `lpMigrate`) · `jungle_evalplan` · `jungle_regexam` · `jungle_gradecalc`(반영비율·동점자 설정만 — **학생 점수·번호는 비영속**) · `jungle_chasi` · `jungle_darkmode` · `jungle_visited` · `jungle_last_used` · Gemini 키(gemini.js, 평문+삭제버튼, 헤더 전송). Gemini 키는 백업 제외.
+`jungle_last_backup`(마지막 백업 시각) · `jungle_backup_nag`(백업 권유 배너 since·dismissedAt) · `jungle_collected`(2026-10 이전 `collected` — collect.js가 첫 로드 때 옮기고 삭제, 옛 백업 파일의 `collected`도 복원 시 변환) · `jungle_rubric` · `jungle_lesson_plan`(v2 행 형식 — lessonplan.js `lpMigrate`) · `jungle_evalplan` · `jungle_regexam` · `jungle_gradecalc`(반영비율·동점자 설정만 — **학생 점수·번호는 비영속**) · `jungle_chasi` · `jungle_darkmode` · `jungle_visited` · `jungle_last_used` · Gemini 키(gemini.js, 평문+삭제버튼, 헤더 전송). Gemini 키는 백업 제외.
 
 ## 형제 프로젝트 (별도 폴더·별도 배포 — 정글 규칙 끌어오지 말 것, **각 폴더의 CLAUDE.md가 그 프로젝트의 진입점**)
 

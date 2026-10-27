@@ -95,10 +95,12 @@
 
 <!-- 수업/평가계획 공통 기준(과목·학기·학년도) — planctx.js가 채운다. #main 밖이라 도구가 #main을 다시 그려도 남는다 -->
 <div class="ctx-bar" id="planCtxBar" hidden></div>
+<!-- 백업 리마인더(backup.js initBackupNag) — 수업/평가 데이터가 있고 14일 넘게 백업하지 않았을 때만 -->
+<div class="backup-nag" id="backupNag" role="region" aria-label="백업 안내" hidden></div>
 
 <div class="main" id="main" role="main">
 
-  <div class="home-nav">
+  <div class="home-nav"><p class="home-local-note">입력한 수업·평가 데이터와 담은 성취기준은 <strong>이 브라우저에만 저장</strong>됩니다. 다른 PC로 옮기려면 맨 아래 '데이터 백업'을 쓰세요.</p>
     <div class="home-nav-section">
       <div class="home-nav-label">교육과정</div>
       <div class="home-card-grid"><button class="home-card" style="--hc-accent:var(--curr)" data-onclick="app:ovSubtab" data-args="[&quot;map&quot;]">
@@ -213,6 +215,7 @@
     </div>
     <div class="site-footer-actions">
       <div class="site-footer-tools" role="group" aria-label="데이터 관리">
+        <span class="site-footer-local"><span class="sfl-long">데이터는 </span>이 브라우저에만 저장<span class="sfl-long">됩니다</span></span>
         <button class="site-footer-btn" id="backupExportBtn" type="button">데이터 백업</button>
         <button class="site-footer-btn" id="backupImportBtn" type="button">백업 복원</button>
         <input type="file" id="backupImportFile" accept=".json,application/json" hidden>

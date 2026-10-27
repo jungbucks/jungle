@@ -47,7 +47,7 @@ export function renderHome() {
     </div>`;
   const nameOf = id => (SUBJECTS.find(s => s.id === id) || {}).name || '';
   return `
-  <div class="home-nav">${NAV.map(n =>
+  <div class="home-nav"><p class="home-local-note">입력한 수업·평가 데이터와 담은 성취기준은 <strong>이 브라우저에만 저장</strong>됩니다. 다른 PC로 옮기려면 맨 아래 '데이터 백업'을 쓰세요.</p>${NAV.map(n =>
     n.kind === 'standards' ? section(n.label, STANDARDS_IDS.map(subCard).join(''))
     : n.kind === 'library' ? section(n.label, n.ids.map(subCard).join(''))
     : n.id === 'overview' ? section(nameOf('overview'), ovCards())

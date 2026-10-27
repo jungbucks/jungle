@@ -19,7 +19,7 @@ import { renderAffective } from './affective.js';
 import * as planCtx from './planctx.js';
 import { renderHome, renderRecent } from './home.js';
 import { collected, updatePanel, togglePanel, closePanel, clearCollect, copyAll, downloadCollected } from './collect.js';
-import { backupExport, backupImport } from './backup.js';
+import { backupExport, backupImport, initBackupNag } from './backup.js';
 import { initTypedPlaceholder } from './searchfx.js';
 
 // --- App State ---
@@ -903,6 +903,7 @@ if (location.hash && location.hash !== '#home') {
   canonicalizeHash();
 }
 bindStaticHandlers();
+initBackupNag();
 // 공통 기준이 바뀌면(각 도구 모듈이 먼저 슬롯을 갈아끼운 뒤) 지금 화면과 서브탭 상태 점을 다시 그린다
 planCtx.subscribe(() => { if (!homeMode && S().type === 'evalplan') { renderTabs(); render(); } });
 planCtx.onTouched(() => {

@@ -2142,3 +2142,15 @@ body:has(.home-guide-modal[open]){overflow:hidden}
 .home-recent-chip{font:inherit;font-size:14px;font-weight:600;min-height:36px;padding:6px 14px;border:1px solid var(--brand-line);border-radius:999px;background:var(--brand-soft);color:var(--brand-dark);cursor:pointer}
 .home-recent-chip:hover{border-color:var(--brand)}
 .home-recent-chip:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
+/* 로컬 저장 안내·백업 리마인더 (2026-10) */
+.home-local-note{margin:0;padding:12px 0;border-bottom:1px solid var(--g200);font-size:13px;line-height:1.6;color:var(--g600)}
+.home-local-note strong{color:var(--g800)}
+.site-footer-local{font-size:13px;color:var(--g500);margin-right:4px}
+.backup-nag{background:var(--warn-soft);border-bottom:1px solid var(--warn-line)}
+.backup-nag[hidden]{display:none}
+.backup-nag:not([hidden]){display:flex;align-items:center;flex-wrap:wrap;gap:8px 12px;max-width:none;padding:10px max(20px,calc((100% - 1160px) / 2))}
+.backup-nag p{margin:0;flex:1 1 320px;font-size:14px;line-height:1.6;color:var(--g800)}
+.backup-nag strong{color:var(--warn-dark)}
+.backup-nag-close{font:inherit;font-size:13px;min-height:36px;padding:6px 12px;border:1px solid var(--warn-line);border-radius:8px;background:var(--surface);color:var(--g700);cursor:pointer}
+.backup-nag-close:focus-visible{outline:2px solid var(--warn);outline-offset:2px}
+@media(max-width:560px){.site-footer-local .sfl-long{display:none}}
