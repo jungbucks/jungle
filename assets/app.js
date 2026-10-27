@@ -840,6 +840,15 @@ if (location.hash && location.hash !== '#home') {
 bindStaticHandlers();
 // 공통 기준이 바뀌면(각 도구 모듈이 먼저 슬롯을 갈아끼운 뒤) 지금 화면과 서브탭 상태 점을 다시 그린다
 planCtx.subscribe(() => { if (!homeMode && S().type === 'evalplan') { renderTabs(); render(); } });
+planCtx.onTouched(() => {
+  ['lesson', 'eval'].forEach(key => {
+    const lab = [...document.querySelectorAll('#subtabBarInner .subtab')]
+      .find(b => b.getAttribute('data-args') === JSON.stringify([key]))?.querySelector('.subtab-label');
+    if (!lab) return;
+    lab.querySelectorAll('.tab-status, .sr-only').forEach(n => n.remove());
+    lab.insertAdjacentHTML('beforeend', planStatusDot(key));
+  });
+});
 document.getElementById('themeToggle').setAttribute('aria-pressed', String(isDark));
 bindSubtabArrows();
 initScrollFades(document.body);

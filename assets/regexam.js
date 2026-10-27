@@ -152,7 +152,7 @@ function renderRegExam() {
     </tr>`;
   }).join('');
 
-  return `<div class="regexam-wrap">
+  return `<div class="regexam-wrap plan-page">
     ${pageHead('수업/평가계획', '정기시험 출제 계획', '문항별 출제 주제·성취기준·난이도·배점을 정리합니다.')}
     ${examBar}
     <div class="regexam-toolbar">

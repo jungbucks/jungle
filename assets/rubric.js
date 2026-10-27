@@ -400,7 +400,7 @@ function renderRubric() {
       + '</div>';
   }
 
-  return '<div class="eval-wrap">'
+  return '<div class="eval-wrap plan-page">'
     + pageHead('수업/평가계획', '수행평가 루브릭 설계', '성취기준별 성취수준표와 세부 채점 루브릭을 만들어 한글/워드로 복사합니다.')
     + settingsHtml + contentSection + '</div>';
 }

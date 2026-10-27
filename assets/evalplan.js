@@ -36,7 +36,7 @@ function evalSubjects() {
   return SUBJECTS.filter(s => !NON_SUBJECT_TYPES.includes(s.type));
 }
 
-function evalSave() { evalStore.save(JSON.parse(JSON.stringify(evalState))); }
+function evalSave() { evalStore.save(JSON.parse(JSON.stringify(evalState))); planCtx.touched(); }
 
 // --- 순수 계산 헬퍼 (앱·tools/test.mjs 공용 — 로직 단일 소스) ---
 function evalRatioSum(items) { return items.reduce((s, it) => s + (Number(it.ratio) || 0), 0); }
@@ -312,7 +312,7 @@ function renderEvalPlan() {
   } else {    
     itemsHtml = `<div class="eval-cards">${evalState.items.map((it,i) => evalCardHtml(it,i,evalWeekOptions())).join('')}</div>`;  
   }  
-  return `<div class="eval-wrap">
+  return `<div class="eval-wrap plan-page">
     ${pageHead('수업/평가계획', '평가계획', '정기시험·수행평가 구성과 반영 비율을 설계해 표로 미리봅니다.')}
     <div class="eval-settings">
       <div class="eval-settings-title">평가 설정 <span class="eval-settings-sub">과목·학기는 위 기준을 따릅니다</span></div>

@@ -70,7 +70,7 @@ let lessonState = lpLoadSlot();
 planCtx.subscribe(() => { lessonState = lpLoadSlot(); });
 planCtx.provide('lesson', () => lessonState);
 
-function lpSave() { lpStore.save(lessonState); }
+function lpSave() { lpStore.save(lessonState); planCtx.touched(); }
 // '3/1' 또는 '3월 1주' → {m, w}. 1~12월, 1~5주만 유효(달력 기준 5주차가 있는 달 — 차시 계산기 반영).
 function lpParseWeek(str) {
   const t = String(str || '').trim().match(/^(\d{1,2})\s*(?:\/|월)\s*(\d)\s*주?$/);
@@ -467,7 +467,7 @@ function renderLessonPlan() {
           <span class="lp-week-note${err ? ' err' : ''}" id="lpWeekNote_${which}" aria-live="polite">${esc(err || lpFormatMW(val))}</span>
         </div>`;
   };
-  return `<div class="eval-wrap">
+  return `<div class="eval-wrap plan-page">
     ${pageHead('수업/평가계획', '수업계획', '성취기준을 주차별로 배치해 학기 수업계획서를 만들고 표로 복사합니다.')}
     <div class="eval-settings">
       <div class="eval-settings-title">수업계획 설정 <span class="eval-settings-sub">과목·학기는 위 기준을 따릅니다</span></div>

@@ -2,6 +2,7 @@
 @font-face{font-family:'Pretendard';src:url('fonts/PretendardVariable.woff2') format('woff2');font-weight:45 920;font-style:normal;font-display:swap}
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
+  --plan-sticky-top:99px; /* 헤더(58)+서브탭 바(41) — 페이지 기준 sticky 머리행 */
   --surface:#FFFFFF;
   /* 브랜드 기본색 (파랑) — 전역 기능색 전용(포커스·검색·담기·공용 버튼). 메뉴 아이덴티티 아님 (2026-07-10) */
   --accent:#2563EB;--accent-light:#EFF6FF;--accent-dark:#1E40AF;--accent-line:#BFDBFE;
@@ -999,9 +1000,11 @@ span.astore-card-author{color:var(--brand)}
 
 /* ── 수업계획 ─────────────────────────────────────── */
 /* 표 영역 자체가 세로 스크롤 상자 → 머리행 sticky가 그 안에서 고정된다(바깥 overflow-x 때문에 페이지 기준 sticky는 불가) */
-.lp-table-wrap{overflow:auto;max-height:calc(100vh - 170px);margin-top:8px;border:1px solid var(--g200);border-radius:8px}
+/* 2026-10: 표 상자의 세로 스크롤을 없애 이중 스크롤 해소 — 가로 스크롤만. 표가 다 들어가는 폭(≥1180px)에선 overflow를 풀어 머리행이 페이지 기준으로 붙는다 */
+.lp-table-wrap{overflow-x:auto;margin-top:8px;border:1px solid var(--g200);border-radius:8px}
+@media(min-width:1180px){.lp-table-wrap{overflow:visible}}
 .lp-table{width:100%;border-collapse:separate;border-spacing:0;font-size:14px;min-width:1000px}
-.lp-table th{position:sticky;top:0;z-index:2;background:var(--g50);border-bottom:1px solid var(--g200);border-right:1px solid var(--g200);padding:8px 10px;font-weight:600;color:var(--g700);text-align:left;white-space:nowrap}
+.lp-table th{position:sticky;top:var(--plan-sticky-top);z-index:2;background:var(--g50);border-bottom:1px solid var(--g200);border-right:1px solid var(--g200);padding:8px 10px;font-weight:600;color:var(--g700);text-align:left;white-space:nowrap}
 .lp-table td{border-bottom:1px solid var(--g200);border-right:1px solid var(--g200)}
 .lp-table th:last-child,.lp-table td:last-child{border-right:none}
 .lp-table tbody tr:last-child td{border-bottom:none}
@@ -2116,3 +2119,7 @@ body:has(.home-guide-modal[open]){overflow:hidden}
 .eval-sum-pop{position:absolute;bottom:calc(100% + 6px);left:0;z-index:5;min-width:180px;display:flex;flex-direction:column;padding:4px;border:1px solid var(--g200);border-radius:8px;background:var(--surface);box-shadow:0 6px 20px rgba(0,0,0,.15)}
 .eval-sum-pop button{font:inherit;font-size:14px;text-align:left;padding:7px 10px;border:none;border-radius:6px;background:none;color:var(--g800);cursor:pointer;white-space:nowrap}
 .eval-sum-pop button:hover{background:var(--plan-soft)}
+/* 수업/평가계획 화면 공통 컨테이너(2026-10): 바깥 폭·시작 위치를 통일(탭을 넘길 때 좌우로 흔들리던 문제), 좁아야 하는 내용만 안쪽에서 제한 */
+.plan-page{width:100%;max-width:none;margin-left:0;margin-right:0;box-sizing:border-box}
+.regexam-wrap.plan-page > :not(.ov-head){max-width:900px}
+@media(max-width:640px){:root{--plan-sticky-top:93px}}

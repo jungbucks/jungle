@@ -83,6 +83,10 @@ export function formatMW(mw) {
 // 예: lessonplan이 provide('lesson', () => 현재 슬롯 수업계획) → evalplan이 consume('lesson')
 const providers = {};
 export function provide(name, fn) { providers[name] = fn; }
+// 도구가 저장할 때 알린다 → 앱이 서브탭 상태 점만 제자리에서 갱신
+const touchedFns = [];
+export function onTouched(fn) { touchedFns.push(fn); }
+export function touched() { touchedFns.forEach(fn => { try { fn(); } catch (e) {} }); }
 export function consume(name, ...args) { return providers[name] ? providers[name](...args) : null; }
 
 // --- 컨텍스트 바 (서브탭 아래, #main 밖 정적 자리 #planCtxBar) ---

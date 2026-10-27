@@ -38,11 +38,11 @@ function renderAffective() {
   const banner = verified ? '' : '<div class="aff-banner" role="note"><strong>검수 예정 · 예시 초안</strong> 교육과정 가치·태도를 바탕으로 만든 예시입니다. 학교 사정에 맞게 고쳐 쓰세요.</div>';
   const head = pageHead('수업/평가계획', '정의적 영역 평가', '교육과정 가치·태도를 영역별 평가 예시로 정리했습니다. 표를 복사해 평가계획서에 붙여넣으세요.');
   if (!rows.length) {
-    return '<div class="aff-wrap">' + head + banner
+    return '<div class="aff-wrap plan-page">' + head + banner
       + '<div class="eval-empty">' + esc(subj ? subj.name : '이 과목') + '의 정의적 영역 예시는 아직 없습니다. 예시가 있는 과목: '
       + subs.map(s => esc(s.name)).join(', ') + ' — 위 기준에서 과목을 바꿔 보세요.</div></div>';
   }
-  return '<div class="aff-wrap">' + head + banner
+  return '<div class="aff-wrap plan-page">' + head + banner
     + '<div class="aff-tools"><span class="aff-subj">' + esc(subj.name) + ' · 영역 ' + rows.length + '개</span>'
     + '<button class="dl-btn" data-onclick="aff:copy" data-args="' + esc(JSON.stringify([subj.id])) + '">전체 복사</button></div>'
     + '<table class="aff-table">'
