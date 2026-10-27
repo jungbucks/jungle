@@ -71,7 +71,7 @@ input:focus-visible,textarea:focus-visible,select:focus-visible{outline:2px soli
 .tab.active{font-weight:700}
 
 /* HAMBURGER */
-/* 테마 토글: 데스크톱은 메뉴 오른쪽 끝, 1179px 이하(햄버거)에서는 드로어 항목으로 */
+/* 테마 토글: 데스크톱은 메뉴 오른쪽 끝, 1219px 이하(햄버거)에서는 드로어 항목으로 */
 .theme-toggle{display:flex;align-items:center;justify-content:center;align-self:center;width:40px;height:40px;margin-left:6px;padding:0;border:none;border-radius:8px;background:none;color:var(--g600);cursor:pointer;flex-shrink:0;transition:background .15s,color .15s}
 .theme-toggle:hover{background:var(--g100);color:var(--g900)}
 .theme-toggle:focus-visible{outline:2px solid var(--brand);outline-offset:2px}
@@ -1227,8 +1227,8 @@ details[open] .msub-collapse-arrow{transform:rotate(90deg)}
 
 /* 탭 9개는 한 줄에 ~1050px가 필요하다. 768px에서만 햄버거로 바꾸면 769~1049px
    (태블릿 가로·작은 노트북)에서 탭바가 뷰포트를 넘쳐 가로 스크롤이 생긴다.
-   → 1049px 이하는 전부 햄버거로 전환해 넘침을 없앤다. 2026-10 헤더에 테마 토글(46px)이 붙어 1099px로, AI 도구 탭이 더해져 1179px로 올림. */
-@media(max-width:1179px){
+   → 1049px 이하는 전부 햄버거로 전환해 넘침을 없앤다. 2026-10 헤더에 테마 토글(46px)이 붙어 1099px로, AI 도구 탭이 더해져 1179px로, 메뉴명 '선생님 웹앱'으로 1219px로 올림. */
+@media(max-width:1219px){
   .tabs{display:none}
   .theme-toggle{display:none}
   .hamburger{display:flex}

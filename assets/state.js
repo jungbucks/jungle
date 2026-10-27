@@ -52,7 +52,7 @@ export const HOME_CARD_META = {
   textbook:  { label:'교과서', desc:'인정교과서 목록·e북 바로가기' },
   fav:       { label:'사이트', desc:'수업에 바로 쓰는 사이트 모음' },
   swrec:     { label:'SW',  desc:'업무·수업용 추천 소프트웨어' },
-  appstore:  { label:'앱',  desc:'정보 선생님이 만든 웹앱·프로그램' },
+  appstore:  { label:'웹앱', desc:'정보 선생님이 만든 수업용 웹앱' },
 };
 
 export const ALL_ITEMS = {};

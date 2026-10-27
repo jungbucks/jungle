@@ -1,7 +1,9 @@
 // --- 검색창 placeholder 타자 애니메이션 — app.js에서 분리 (2026-07-08 F2) ---
 // app 상태(homeMode)는 isIdle 콜백으로 주입받아 순환 의존을 회피한다.
 export function initTypedPlaceholder(input, isIdle) {
-  const INTRO = '성취기준 코드나 키워드를 입력하세요';
+  // 검색 범위를 늘 밝힌다(2026-10): 예시도 '성취기준 검색 · ' 뒤에 타자된다
+  const INTRO = '성취기준 검색 — 코드나 키워드를 입력하세요';
+  const PREFIX = '성취기준 검색 · ';
   const EXAMPLES = [
     '알고리즘', '클래스와 인스턴스', '9정03', '12인기', '머신러닝',
     '정렬', '데이터 구조화', '피지컬 컴퓨팅', '12데과', '인공지능',
@@ -40,12 +42,12 @@ export function initTypedPlaceholder(input, isIdle) {
     const q = EXAMPLES[qi];
     if (typing) {
       ci++;
-      input.placeholder = q.slice(0, ci) + '|';
+      input.placeholder = PREFIX + q.slice(0, ci) + '|';
       if (ci >= q.length) { typing = false; timer = setTimeout(tick, 1200); }
       else timer = setTimeout(tick, 90);
     } else {
       ci--;
-      input.placeholder = ci > 0 ? q.slice(0, ci) + '|' : '';
+      input.placeholder = PREFIX + (ci > 0 ? q.slice(0, ci) + '|' : '');
       if (ci <= 0) {
         typing = true;
         qi = (qi + 1) % EXAMPLES.length;

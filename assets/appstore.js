@@ -1,6 +1,6 @@
 import { esc, safeUrl } from './utils.js';
 
-// appstore.js — 정보교사 앱스토어 렌더링
+// appstore.js — 선생님 웹앱(옛 앱스토어, 해시 #appstore) 렌더링
 // 모두 웹앱이면 유형은 공통 안내로 묶는다. 태그는 주제·활용 방식 순서.
 
 function renderAppStore() {
@@ -20,7 +20,7 @@ function renderAppStore() {
   const s = SUBJECTS.find(x => x.id === 'appstore') || {};
   const header = `<div class="ov-head">
     <span class="ov-eyebrow" style="color:${s.accent};background:${s.aLight}">${esc(s.name || '')}</span>
-    <h2 class="ov-h2">정보교사 앱스토어</h2>
+    <h2 class="ov-h2">선생님이 만든 웹앱</h2>
     <p class="ov-sub">정보 선생님들이 직접 만든 웹앱·프로그램 모음입니다.${allWebApps ? ' 모두 브라우저에서 여는 웹앱입니다.' : ''}</p>
   </div>`;
 

@@ -1798,7 +1798,7 @@ const SUBJECTS = [
     accent:"#059669", aLight:"#ECFDF5", aDark:"#047857", domains:[] },
   { id:"swrec", name:"추천 SW", type:"swrec",
     accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
-  { id:"appstore", name:"앱스토어", type:"appstore",
+  { id:"appstore", name:"선생님 웹앱", type:"appstore", // 2026-10 앱스토어 → 실제 내용(선생님이 만든 웹앱) 이름, 해시 #appstore 유지
     accent:"var(--brand)", aLight:"var(--brand-soft)", aDark:"var(--brand-dark)", domains:[] },
   // 2026-10 수업/평가계획에서 분리 — 해시 #ai:codevar / #ai:idea (id 'ai'는 인공지능 기초 과목이라 aitools)
   { id:"aitools", name:"AI 도구", type:"aitools",
