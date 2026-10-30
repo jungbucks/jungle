@@ -1,7 +1,7 @@
 // --- Gemini API 공용 헬퍼 (ES Module) ---
 // codevar.js, aiidea.js 등 AI 기능이 공유하는 호출/키관리 로직
 
-const GEMINI_MODEL = 'gemini-2.5-flash';
+const GEMINI_MODEL = 'gemini-3.8-flash'; // 2.5는 2026-10부터 기존 사용자만 접근 가능 → 새 키도 되는 정식 Flash로
 const KEY_STORAGE = 'jungle_gemini_api_key';
 const KEY_LEGACY = 'gemini_api_key';
 
