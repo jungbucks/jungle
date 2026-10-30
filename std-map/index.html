@@ -7,123 +7,204 @@
 <meta name="description" content="중학교 정보부터 고등학교 7과목까지, 성취기준 137개가 개념으로 이어지는 인터랙티브 지식 그래프">
 <meta name="theme-color" content="#0E1116">
 <style>
-/* 옵시디언 그래프 뷰 무드 — 어두운 우주에 과목색 별들 */
+/* 옵시디언 그래프 뷰 무드 — 어두운 우주에 과목색 별들.
+   그래프 위에 떠 있는 것(학교급 띠·제목·범례·확대 버튼·상세 패널·안내 말풍선)만 리퀴드 글래스. */
 :root{
   --bg:#0E1116; --panel:#161B24; --panel2:#1D2430; --line:#2A3342;
-  --ink:#DEE4EF; --dim:#8B93A8; --tag:#9AA5BC; --accent:#7C9BFF;
+  --ink:#DEE4EF; --dim:#8B93A8; --tag:#9AA5BC; --accent:#7C9BFF; --accent-hi:#9DB3FF;
+  /* 리퀴드 글래스: 어두운 바탕색을 깔고(대비 확보) 위에 빛 그라데이션 + 가장자리 반사 */
+  --glass-base:rgba(20,25,34,.62);
+  --glass-strong:rgba(20,25,34,.9);
+  --glass-sheen:linear-gradient(180deg,rgba(255,255,255,.13),rgba(255,255,255,.03) 46%,rgba(255,255,255,.05));
+  --glass-edge:rgba(255,255,255,.18);
+  --glass-shadow:inset 0 1px 0 rgba(255,255,255,.3),inset 0 -1px 0 rgba(255,255,255,.06),0 14px 34px rgba(0,0,0,.5);
+  --glass-blur:blur(16px) saturate(1.45);
 }
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{height:100%;overflow:hidden}
 body{background:var(--bg);color:var(--ink);font-family:'Pretendard','Malgun Gothic',-apple-system,sans-serif}
 #stage{position:fixed;inset:0;cursor:grab}
 #stage:active{cursor:grabbing}
+button{font-family:inherit}
+button:focus-visible,input:focus-visible{outline:2px solid var(--accent-hi);outline-offset:2px}
 
-/* 좌상단: 타이틀·검색 */
-#hud{position:fixed;top:18px;left:20px;z-index:10;max-width:340px;pointer-events:none}
-#hud>*{pointer-events:auto}
+.glass{background:var(--glass-sheen),var(--glass-base);border:1px solid var(--glass-edge);box-shadow:var(--glass-shadow);
+  -webkit-backdrop-filter:var(--glass-blur);backdrop-filter:var(--glass-blur)}
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  .glass{background:var(--glass-sheen),var(--panel)}
+}
+
+/* 상단: 학교급 띠 — 라벨은 그래프의 실제 열 위치를 따라 움직인다(updateTiers) */
+#tierGuide{position:fixed;top:8px;left:8px;right:8px;z-index:11;border-radius:16px;padding:8px 12px 7px;height:56px}
+#tierLabels{position:relative;height:20px}
+#tierLabels span{position:absolute;top:0;transform:translateX(-50%);font-size:14px;font-weight:700;white-space:nowrap;color:var(--ink)}
+#tierGuide p{font-size:12px;color:var(--dim);text-align:center;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* 좌상단: 제목·검색 (내부 둥글기 12 + 여백 12 = 바깥 24) */
+#hud{position:fixed;top:76px;left:16px;z-index:10;width:332px;padding:12px;border-radius:24px}
 #hud h1{font-size:20px;font-weight:900;letter-spacing:-.01em}
-#hud h1 b{color:var(--accent)}
-#hud .hook{font-size:13px;color:var(--dim);margin:4px 0 10px;line-height:1.6}
-#search{width:280px;padding:9px 13px;border-radius:10px;border:1px solid var(--line);
-  background:var(--panel);color:var(--ink);font-family:inherit;font-size:14px}
+#hud h1 b{color:var(--accent-hi)}
+#hud .hook{font-size:13px;color:#B4BCCE;margin:4px 0 10px;line-height:1.6}
+#search{width:100%;padding:9px 13px;border-radius:12px;border:1px solid var(--glass-edge);
+  background:rgba(255,255,255,.07);color:var(--ink);font-family:inherit;font-size:14px}
+#search::placeholder{color:#9AA3B8}
 #search:focus{outline:2px solid var(--accent);border-color:transparent}
-#searchHint{font-size:12px;color:var(--dim);margin-top:5px}
+#searchHint{font-size:13px;color:#B4BCCE;margin-top:6px}
+#searchHint:empty{display:none}
+#searchResults{max-height:35vh;overflow-y:auto;border-radius:12px;margin-top:6px}
+#searchResults:empty{display:none}
+.search-hit{display:block;width:100%;padding:11px 12px;text-align:left;background:var(--glass-strong);border:0;border-bottom:1px solid var(--line);color:var(--ink);font:inherit;font-size:14px;cursor:pointer;line-height:1.6}
+.search-hit small{display:block;color:#A7B0C4;font-size:13px}.search-hit:hover{background:var(--panel2)}
+.suggest{font-size:13px;color:#B4BCCE;margin-top:8px}
+.suggest .chips{margin-top:6px}
 
-/* 좌하단: 과목 범례(토글 필터) */
-#legend{position:fixed;left:20px;bottom:18px;z-index:10;background:rgba(22,27,36,.92);
-  border:1px solid var(--line);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:6px}
+/* 처음 안내: '알고리즘' 원 위 말풍선 (위치는 placeCoach가 그래프 좌표에서 계산) */
+#coach{position:fixed;z-index:9;left:0;top:0;padding:7px 12px;border-radius:99px;font-size:13px;font-weight:700;color:#0E1116;white-space:nowrap;
+  background:linear-gradient(180deg,#D4DEFF,#8FA9FF);border:1px solid rgba(255,255,255,.65);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 8px 22px rgba(124,155,255,.45);pointer-events:none;transform:translate(-50%,-100%)}
+#coach::after{content:"";position:absolute;left:50%;bottom:-6px;margin-left:-6px;border:6px solid transparent;border-bottom:0;border-top-color:#8FA9FF}
+#coach.below{transform:translate(-50%,0)}
+#coach.below::after{bottom:auto;top:-6px;border-top:0;border-bottom:6px solid #D4DEFF;border-top-color:transparent}
+#coach[hidden]{display:none}
+.coach-ring{fill:none;stroke:var(--accent-hi);stroke-width:3;pointer-events:none;transform-box:fill-box;transform-origin:center;animation:coach 1.7s ease-out infinite}
+@keyframes coach{0%{opacity:.95;transform:scale(1)}100%{opacity:0;transform:scale(1.9)}}
+
+/* 좌하단: 읽는 법 + 과목 범례(누르면 숨기기) (내부 8 + 여백 12 = 바깥 20) */
+#legend{position:fixed;left:16px;bottom:16px;z-index:10;border-radius:20px;padding:12px;width:236px}
+#legendToggle{display:none}
+.lg-key{font-size:13px;line-height:1.7;padding:0 4px 8px;border-bottom:1px solid var(--glass-edge);margin-bottom:8px}
+.lg-key i{display:inline-block;border-radius:50%;vertical-align:-1px;margin-right:6px}
+.lg-key small{color:#A7B0C4;font-size:13px}
+.lg-hint{font-size:13px;color:#A7B0C4;padding:0 4px 4px}
+#legendList{display:flex;flex-direction:column;gap:2px}
 .lg{display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;border:none;background:none;
-  color:var(--ink);font-family:inherit;padding:2px 4px;border-radius:6px;text-align:left}
-.lg:hover{background:var(--panel2)}
+  color:var(--ink);padding:4px 6px;border-radius:8px;text-align:left;width:100%}
+.lg:hover{background:rgba(255,255,255,.08)}
 .lg .sw{width:11px;height:11px;border-radius:50%;flex-shrink:0}
-.lg.off{opacity:.32}
-.lg small{color:var(--dim)}
-#legend .lg-tag .sw{background:var(--tag)}
+.lg small{color:#A7B0C4;margin-left:auto}
+.lg.off{opacity:.45}.lg.off .sw{background:transparent!important;box-shadow:inset 0 0 0 1.5px var(--dim)}
+.lg.off .nm{text-decoration:line-through}
+#hiddenNote{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:13px;color:#FFD27A;margin-top:8px;padding:6px 6px 0;border-top:1px solid var(--glass-edge)}
+#hiddenNote[hidden]{display:none}
+#hiddenNote button{font-size:13px;color:var(--ink);background:rgba(255,255,255,.1);border:1px solid var(--glass-edge);border-radius:99px;padding:3px 10px;cursor:pointer}
 
-/* 우측: 상세 패널 */
-#panel{position:fixed;top:0;right:0;bottom:0;width:min(340px,88vw);z-index:20;
-  background:var(--panel);border-left:1px solid var(--line);padding:22px 20px;overflow-y:auto;
-  transform:translateX(100%);transition:transform .25s ease}
-#panel.on{transform:none}
-#panelClose{position:absolute;top:14px;right:14px;background:none;border:1px solid var(--line);
-  color:var(--dim);border-radius:8px;width:30px;height:30px;cursor:pointer;font-size:14px}
-#panelClose:hover{color:var(--ink);border-color:var(--accent)}
-.p-eyebrow{font-size:12px;letter-spacing:.14em;color:var(--dim);text-transform:uppercase}
+/* 우하단: 확대·축소·전체 보기 */
+#zoomCtl{position:fixed;right:16px;bottom:40px;z-index:10;display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:26px}
+#zoomCtl button{width:40px;height:40px;border-radius:20px;border:0;background:rgba(255,255,255,.06);color:var(--ink);font-size:20px;line-height:1;cursor:pointer;display:grid;place-items:center}
+#zoomCtl button:hover{background:rgba(255,255,255,.16)}
+#zoomCtl svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+body:has(#panel.on) #zoomCtl{right:362px}
+
+/* 우측: 상세 패널 (글이 많아 유리를 더 불투명하게 — 가독성 우선) */
+#panel{position:fixed;top:76px;right:8px;bottom:8px;width:min(340px,88vw);z-index:20;border-radius:20px;
+  background:var(--glass-sheen),var(--glass-strong);padding:16px 20px 22px;overflow-y:auto;
+  transform:translateX(calc(100% + 16px));transition:transform .25s ease;visibility:hidden}
+#panel.on{transform:none;visibility:visible}
+#panelClose{position:absolute;top:14px;right:14px;background:rgba(255,255,255,.06);border:1px solid var(--glass-edge);
+  color:var(--ink);border-radius:10px;width:32px;height:32px;cursor:pointer;font-size:14px}
+#panelClose:hover{border-color:var(--accent)}
+#panelNav{display:flex;gap:8px;margin:0 40px 12px 0}
+#panelNav button{min-height:36px;padding:6px 12px;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--glass-edge);border-radius:10px;cursor:pointer}
+#goBack:disabled{opacity:.4;cursor:default}
+#trail{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:12px;overflow-wrap:anywhere}
+.p-eyebrow{font-size:13px;letter-spacing:.08em;color:#A7B0C4}
 .p-code{font-size:19px;font-weight:900;margin:4px 0 2px;font-variant-numeric:tabular-nums}
 .p-subj{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;
   border:1px solid var(--line);border-radius:99px;padding:4px 12px;margin:8px 0}
 .p-subj .sw{width:9px;height:9px;border-radius:50%}
-.p-domain{font-size:12.5px;color:var(--dim);margin-bottom:10px}
+.p-domain{font-size:13px;color:#A7B0C4;margin-bottom:10px;line-height:1.6}
+.p-how{font-size:13px;line-height:1.6;color:var(--ink);background:rgba(124,155,255,.12);border:1px solid rgba(124,155,255,.35);border-radius:12px;padding:9px 12px;margin:4px 0 6px}
 .p-text{font-size:15px;line-height:1.8;background:var(--panel2);border-radius:12px;padding:14px 16px}
-.p-sec{font-size:12px;letter-spacing:.12em;color:var(--dim);text-transform:uppercase;margin:18px 0 8px}
+.p-sec{font-size:13px;letter-spacing:.06em;color:#A7B0C4;margin:18px 0 8px}
 .chips{display:flex;flex-wrap:wrap;gap:7px}
-.chip{font-size:12.5px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;
-  background:none;color:var(--ink);cursor:pointer;font-family:inherit}
-.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip{font-size:13px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;
+  background:rgba(255,255,255,.04);color:var(--ink);cursor:pointer}
+.chip:hover{border-color:var(--accent);color:var(--accent-hi)}
 .p-list{display:flex;flex-direction:column;gap:6px}
 .p-item{display:flex;gap:8px;align-items:flex-start;font-size:13px;line-height:1.55;
-  background:none;border:none;color:var(--ink);cursor:pointer;font-family:inherit;text-align:left;
+  background:none;border:none;color:var(--ink);cursor:pointer;text-align:left;
   padding:7px 9px;border-radius:9px}
 .p-item:hover{background:var(--panel2)}
 .p-item .sw{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px}
 .p-item b{font-variant-numeric:tabular-nums;font-weight:800;white-space:nowrap}
+#sheetToggle,#sheetTitle{display:none}
 
 /* 그래프 요소 */
-.band-label{fill:#4A5878;font-size:16px;font-weight:900;letter-spacing:.18em}
-.band-arrow{fill:#242D40;font-size:14px}
+.band-label,.band-arrow{display:none}
 .band-sep{stroke:#1B2230;stroke-dasharray:3 9}
 .lk{stroke:#2E3850;stroke-width:1;stroke-opacity:.55}
-.nd{cursor:pointer}
+.nd{cursor:pointer;outline:none}
 .nd circle{stroke:#0E1116;stroke-width:1.4}
-.nd text{fill:var(--dim);font-size:9px;pointer-events:none;font-family:'Pretendard','Malgun Gothic',sans-serif}
+.nd text{fill:var(--dim);font-size:9px;pointer-events:none;font-family:'Pretendard','Malgun Gothic',sans-serif;
+  paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
 .nd.tag text{fill:var(--tag);font-size:11px;font-weight:700}
+.nd:focus-visible circle{stroke:var(--accent-hi);stroke-width:3;vector-effect:non-scaling-stroke}
+.nd.selected circle{stroke:var(--ink);stroke-width:3;vector-effect:non-scaling-stroke}
 .faded{opacity:.08}
 .lk.hl{stroke:var(--accent);stroke-opacity:.9;stroke-width:1.6}
-footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:11.5px;color:var(--dim)}
-@media (prefers-reduced-motion:reduce){#panel{transition:none}}
-#resetView{margin-top:10px;padding:9px 14px;border:1px solid var(--line);border-radius:10px;background:var(--panel);color:var(--ink);cursor:pointer}
-#searchResults{max-height:35vh;overflow-y:auto;background:var(--panel);border-radius:10px;margin-top:6px;width:min(340px,calc(100vw - 40px))}
-.search-hit{display:block;width:100%;padding:12px;text-align:left;background:none;border:0;border-bottom:1px solid var(--line);color:var(--ink);font:inherit;font-size:14px;cursor:pointer;line-height:1.6}
-.search-hit small{display:block;color:var(--dim);font-size:13px}.search-hit:hover{background:var(--panel2)}
-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.nd.selected circle{stroke:var(--ink);stroke-width:3;vector-effect:non-scaling-stroke}
-.nd text{paint-order:stroke;stroke:var(--bg);stroke-width:3px;stroke-linejoin:round}
-#tierGuide{position:fixed;top:0;left:0;right:0;z-index:11;background:var(--bg);border-bottom:1px solid var(--line);padding:10px 16px}
-#tierGuide>div{display:grid;grid-template-columns:repeat(5,1fr);text-align:center;gap:8px;font-size:14px;font-weight:700}
-#tierGuide p{font-size:12px;color:var(--dim);text-align:center;margin-top:6px}
-#hud{top:82px}.band-label,.band-arrow{display:none}
-#panel{top:72px;padding-top:16px;visibility:hidden}#panel.on{visibility:visible}
-#panelNav{display:flex;gap:8px;margin:0 40px 12px 0}
-#panelNav button{min-height:36px;padding:6px 12px;color:var(--ink);background:var(--panel2);border:1px solid var(--line);border-radius:8px;cursor:pointer}
-#goBack:disabled{opacity:.4;cursor:default}#trail{font-size:13px;color:var(--dim);line-height:1.6;margin-bottom:12px;overflow-wrap:anywhere}
-#sheetToggle,#sheetTitle{display:none}
+footer{position:fixed;right:16px;bottom:12px;z-index:5;font-size:12px;color:var(--dim)}
+body:has(#panel.on) footer{display:none}
+
+@media (prefers-reduced-motion:reduce){
+  #panel{transition:none}
+  .coach-ring{animation:none;opacity:1;stroke-width:4}
+}
+
+/* 휴대폰·좁은 화면 */
 @media(max-width:760px){
- #tierGuide{padding:8px}#tierGuide>div{font-size:12px;gap:4px}#tierGuide p{font-size:11px;line-height:1.4}
- #hud{top:82px;left:12px;max-width:calc(100vw - 24px)}#hud .hook{max-width:300px;font-size:12px}
- #panel{top:auto;left:0;right:0;bottom:0;width:100%;height:52dvh;border:1px solid var(--line);border-radius:16px 16px 0 0;padding:12px 16px;transform:translateY(100%);overflow:hidden;display:flex;flex-direction:column}
- #panel.on{transform:none}#panelContent{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom)}
- #sheetToggle{display:block}#sheetTitle{display:none}#panel.folded #sheetTitle{display:block}#sheetTitle{font-size:15px;font-weight:700;margin-bottom:8px;overflow-wrap:anywhere}
+ :root{--glass-blur:blur(8px) saturate(1.3)}
+ #tierGuide{top:6px;left:6px;right:6px;height:50px;padding:7px 8px 6px;border-radius:14px}
+ #tierLabels span{font-size:12px}
+ #tierGuide p{font-size:11px}
+ #hud{top:64px;left:8px;right:8px;width:auto;padding:10px;border-radius:22px}
+ #hud .hook{font-size:13px;margin-bottom:8px}
+ #legend{left:8px;bottom:8px;width:auto;max-width:calc(100vw - 80px);padding:6px;border-radius:20px}
+ #legendToggle{display:flex;align-items:center;gap:6px;min-height:40px;padding:0 12px;border-radius:14px;border:0;background:none;color:var(--ink);font-size:14px;font-weight:700;cursor:pointer}
+ #legendBody{display:none;max-height:48vh;overflow-y:auto;padding:6px 6px 4px}
+ #legend.open #legendBody{display:block}
+ #zoomCtl{right:8px;bottom:8px}
+ #zoomCtl button{width:40px;height:40px}
+ footer{display:none}
+ #panel{top:auto;left:0;right:0;bottom:0;width:100%;height:52dvh;border-radius:20px 20px 0 0;padding:12px 16px;transform:translateY(100%);overflow:hidden;display:flex;flex-direction:column}
+ #panel.on{transform:none}
+ #panelContent{min-height:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:env(safe-area-inset-bottom)}
+ #sheetToggle{display:block}#panel.folded #sheetTitle{display:block}#sheetTitle{font-size:15px;font-weight:700;margin-bottom:8px;overflow-wrap:anywhere}
  #panel.folded{height:auto;max-height:30dvh}#panel.folded #panelContent{display:none}
- #legend{max-height:24vh;overflow-y:auto;left:12px;bottom:12px}body:has(#panel.on) #legend,body:has(#panel.on) footer{display:none}
+ body:has(#panel.on) #legend,body:has(#panel.on) #zoomCtl{display:none}
 }
 </style>
 </head>
 <body>
-<svg id="stage"></svg>
-<div id="tierGuide" aria-label="학교급 안내"><div><span>초등</span><span>중학교</span><span>일반선택</span><span>진로·융합선택</span><span>심화·전문</span></div><p>전체 보기의 학교급 배치 · 연결선은 공통 개념이며 선수학습 순서가 아닙니다.</p></div>
+<svg id="stage" aria-label="성취기준과 개념을 잇는 그래프"></svg>
+<div id="tierGuide" class="glass" aria-label="학교급 안내"><div id="tierLabels"></div><p>학교급 배치 · 연결선은 공통 개념이며 선수학습 순서가 아닙니다.</p></div>
 
-<div id="hud">
+<div id="hud" class="glass">
   <h1>성취기준 <b>은하</b></h1>
   <p class="hook">중1의 '변수'는 어디까지 여행할까?<br>왼쪽 중학교에서 오른쪽 전문교과까지 — 성취기준 137개가 28개의 개념으로 이어집니다. 별을 끌어보세요.</p>
   <input aria-label="개념 또는 성취기준 검색" id="search" type="search" placeholder="🔍 검색: 재귀, 12정03, 딥러닝…" autocomplete="off">
   <div id="searchHint" role="status"></div>
   <div id="searchResults" aria-label="검색 결과"></div>
-  <button id="resetView">전체 은하로</button>
 </div>
 
-<div id="legend"></div>
+<div id="coach" hidden>이 원을 눌러 보세요</div>
 
-<aside id="panel" aria-live="polite">
+<div id="legend" class="glass">
+  <button id="legendToggle" aria-expanded="false" aria-controls="legendBody">범례·과목 ▴</button>
+  <div id="legendBody">
+    <div class="lg-key"></div>
+    <div class="lg-hint">과목을 누르면 숨기거나 다시 보여요</div>
+    <div id="legendList"></div>
+    <div id="hiddenNote" hidden><span></span><button id="showAll">모두 보기</button></div>
+  </div>
+</div>
+
+<div id="zoomCtl" class="glass" role="group" aria-label="지도 확대·축소">
+  <button id="zoomIn" aria-label="확대" title="확대">＋</button>
+  <button id="zoomOut" aria-label="축소" title="축소">－</button>
+  <button id="resetView" aria-label="처음 화면으로 (검색·숨김·선택 모두 해제)" title="처음 화면으로"><svg viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg></button>
+</div>
+
+<aside id="panel" class="glass" aria-live="polite">
   <div id="panelNav"><button id="goBack" disabled>이전으로</button><button id="sheetToggle" aria-expanded="true" aria-controls="panelContent">접기</button></div>
   <div id="sheetTitle"></div>
   <div id="panelContent"><div id="trail" aria-label="탐색 경로"></div><div id="panelBody"></div></div>
@@ -138,12 +219,15 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 'use strict';
 (function(){
 const G = window.STD_GRAPH;
-document.querySelector('#hud .hook').textContent='초등부터 전문교과까지 — 성취기준 '+G.nodes.filter(n=>n.type==='std').length+'개가 '+G.nodes.filter(n=>n.type==='tag').length+'개의 개념으로 이어집니다. 별을 선택해 보세요.';
+const STD_N = G.nodes.filter(n=>n.type==='std').length, TAG_N = G.nodes.filter(n=>n.type==='tag').length;
+document.querySelector('#hud .hook').textContent='초등부터 전문교과까지 — 성취기준 '+STD_N+'개가 '+TAG_N+'개의 개념으로 이어지는 지도예요. 반짝이는 원부터 눌러 보세요.';
 const SUBJ = Object.fromEntries(G.subjects.map(s=>[s.id,s]));
 const $ = s=>document.querySelector(s);
 const esc = s=>String(s).replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const reduceMotion = ()=>matchMedia('(prefers-reduced-motion:reduce)').matches;
 
 const W = innerWidth, H = innerHeight;
+const MOB = W<=760;
 const GW = Math.max(1320, W), GH = Math.max(780, H);
 const svg = d3.select('#stage').attr('viewBox',[0,0,W,H]);
 const root = svg.append('g');
@@ -160,6 +244,7 @@ const colorOf = d => d.type==='tag' ? '#9AA5BC' : SUBJ[d.subject].color;
 
 /* 학교급 밴드 — 왼쪽 중학교에서 출발해 오른쪽으로 갈수록 깊어진다 */
 const TIERS = ['초등','중학교','일반선택','진로·융합선택','심화·전문'];
+const TIERS_SHORT = ['초등','중학교','일반','진로·융합','심화·전문'];
 const tierOfLevel = lv => lv==='초등학교' ? 0
   : lv==='중학교' ? 1
   : lv.includes('일반') ? 2
@@ -179,7 +264,7 @@ const sim = d3.forceSimulation(nodes)
   .force('y', d3.forceY(GH/2).strength(.1))
   .force('collide', d3.forceCollide().radius(d=>d.type==='tag'?rOf(d)+16:rOf(d)+4).strength(.9));
 
-/* 배경 가이드: 단계 라벨 + 경계선 (그래프 좌표계 — 팬·줌을 따라감) */
+/* 배경 가이드: 경계선 (그래프 좌표계 — 팬·줌을 따라감). 라벨은 상단 유리 띠가 맡는다 */
 const bands = root.append('g');
 TIERS.forEach((t,i)=>{
   bands.append('text').attr('class','band-label')
@@ -192,17 +277,54 @@ TIERS.forEach((t,i)=>{
       .attr('x',sepX).attr('y',GH*.07).attr('text-anchor','middle').text('⟶');
   }
 });
+const tierLabels = TIERS.map((t,i)=>{ const s=document.createElement('span'); s.textContent=MOB?TIERS_SHORT[i]:t; $('#tierLabels').appendChild(s); return s; });
+function updateTiers(t){
+  const box=$('#tierLabels').getBoundingClientRect();
+  tierLabels.forEach((s,i)=>{
+    const x=t.applyX(tierX(i))-box.left, half=s.offsetWidth/2;
+    // 가장자리 열(초등·심화)은 글자가 띠 밖으로 잘리지 않게 안쪽으로 붙이고, 아예 화면 밖이면 숨긴다
+    s.style.left=Math.min(Math.max(x,half),box.width-half)+'px';
+    s.style.visibility=(x<-half||x>box.width+half)?'hidden':'visible';
+  });
+}
 
 const lk = root.append('g').selectAll('line').data(links).join('line').attr('class','lk');
 const nd = root.append('g').selectAll('g').data(nodes).join('g')
   .attr('class',d=>'nd'+(d.type==='tag'?' tag':''))
   .call(d3.drag()
     .on('start',(e,d)=>{ if(!e.active) sim.alphaTarget(.25).restart(); d.fx=d.x; d.fy=d.y; })
-    .on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; })
+    .on('drag',(e,d)=>{ d.fx=e.x; d.fy=e.y; placeCoach(); })
     .on('end',(e,d)=>{ if(!e.active) sim.alphaTarget(0); d.fx=null; d.fy=null; }));
 nd.append('circle').attr('r',rOf).attr('fill',colorOf);
 nd.append('text').attr('dy',d=>rOf(d)+11).attr('text-anchor','middle')
   .text(d=>d.type==='tag'?d.label:d.id.replace(/\[|\]/g,''));
+/* 키보드: 개념 원(28개)만 Tab으로 이동 — 성취기준은 개념 패널 목록에서 고른다 */
+nd.filter(d=>d.type==='tag')
+  .attr('tabindex',0).attr('role','button')
+  .attr('aria-label',d=>'개념 '+d.label+', 성취기준 '+d.deg+'개')
+  .on('keydown',(e,d)=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); focusNode(d); } });
+
+/* 처음 안내: '알고리즘' 원에 반짝이는 고리 + 말풍선 (원을 고르거나 검색하면 사라짐) */
+const COACH_ID = 'tag:알고리즘';
+let coachOn = byId.has(COACH_ID);
+if(coachOn) nd.filter(d=>d.id===COACH_ID).insert('circle',':first-child').attr('class','coach-ring').attr('r',d=>rOf(d)+3);
+function placeCoach(){
+  const el=$('#coach');
+  if(!coachOn){ el.hidden=true; return; }
+  const n=byId.get(COACH_ID), t=d3.zoomTransform(svg.node());
+  const x=t.applyX(n.x), y=t.applyY(n.y), r=(rOf(n)+3)*t.k;
+  const hudBottom=$('#hud').getBoundingClientRect().bottom;
+  const off = x<0||x>W||y<0||y>H;
+  el.hidden=off || nd.filter(d=>d.id===COACH_ID).style('display')==='none';
+  const above = y-r-12 > hudBottom+40 || x > $('#hud').getBoundingClientRect().right+90;
+  el.classList.toggle('below',!above);
+  el.style.left=x+'px';
+  el.style.top=(above ? y-r-10 : y+r+10)+'px';
+}
+function dismissCoach(){
+  if(!coachOn) return;
+  coachOn=false; nd.selectAll('.coach-ring').remove(); placeCoach();
+}
 
 sim.on('tick',()=>{
   lk.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
@@ -210,34 +332,35 @@ sim.on('tick',()=>{
 });
 
 let selectedId = null;
+// 개념 이름은 확대 정도에 따라 연결이 많은 것부터 — 휴대폰처럼 많이 줄인 화면에서 이름끼리 겹치지 않게
+const tagLabelMin = k => k>=1.4 ? 0 : k>=.8 ? 8 : k>=.5 ? 13 : 18;
 function updateLabels(){
  const k=d3.zoomTransform(svg.node()).k;
- nd.select('text').style('display',d=>d.id===selectedId || (d.type==='tag' ? k>=1.4 || d.deg>=8 : k>=1.8) ? null:'none')
+ nd.select('text').style('display',d=>d.id===selectedId || (d.type==='tag' ? d.deg>=tagLabelMin(k) : k>=1.8) ? null:'none')
    .style('font-size',d=>((d.id===selectedId?15:d.type==='tag'?13:12)/k)+'px');
  nd.classed('selected',d=>d.id===selectedId);
 }
 /* 줌·팬 */
 const zoom = d3.zoom().scaleExtent([.25,5]).on('zoom',e=>{
   root.attr('transform',e.transform);
-  updateLabels();
+  updateLabels(); updateTiers(e.transform); placeCoach();
 });
 svg.call(zoom);
 updateLabels();
 
-/* 초기: 애니 없이 안정화 → 그래프 전체를 화면에 fit(줌아웃). 모바일에서 노드가 화면 밖으로 나가는 문제 해소 */
+/* 초기: 애니 없이 안정화 → 그래프 전체를 화면에 fit. 위·아래 떠 있는 유리 상자가 가리는 띠는 실제 높이로 피한다 */
 function fitView(animate){
   const xs=nodes.map(n=>n.x), ys=nodes.map(n=>n.y);
   const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
   const gw=Math.max(1,x1-x0), gh=Math.max(1,y1-y0);
-  const mob = W<600;
-  const pad = mob ? 14 : 48;
-  // 모바일: 상단 훅·하단 범례가 가리는 띠를 피해 가용 세로 영역 안에 맞춘다
-  const top = mob ? 150 : pad, bot = mob ? 118 : pad;
-  const availW = W-pad*2, availH = H-top-bot;
+  const pad = MOB ? 14 : 48;
+  const top = MOB ? $('#hud').getBoundingClientRect().bottom+10 : $('#tierGuide').getBoundingClientRect().bottom+16;
+  const bot = MOB ? H-Math.min($('#legend').getBoundingClientRect().top,$('#zoomCtl').getBoundingClientRect().top)+10 : 32;
+  const availW = W-pad*2, availH = Math.max(120, H-top-bot);
   const k = Math.min(availW/gw, availH/gh, 1.4);
   const cx = pad + availW/2, cy = top + availH/2;
   const tr = d3.zoomIdentity.translate(cx-(x0+gw/2)*k, cy-(y0+gh/2)*k).scale(k);
-  (animate ? svg.transition().duration(450) : svg).call(zoom.transform, tr);
+  (animate && !reduceMotion() ? svg.transition().duration(450) : svg).call(zoom.transform, tr);
 }
 sim.stop();
 for(let i=0;i<320;i++) sim.tick();
@@ -263,19 +386,32 @@ function applyFilter(){
   const vis = d=> d.type==='tag' ? [...neighbors.get(d.id)].some(x=>!hidden.has(byId.get(x).subject)) : !hidden.has(d.subject);
   nd.style('display',d=>vis(d)?null:'none');
   lk.style('display',l=>(vis(l.source)&&vis(l.target))?null:'none');
+  syncLegend(); placeCoach();
 }
-const lg = $('#legend');
+const lg = $('#legendList');
+$('#legend .lg-key').innerHTML=`<i style="width:12px;height:12px;background:var(--tag)"></i>큰 원 = 개념 <small>${TAG_N}</small><br>`+
+  `<i style="width:7px;height:7px;background:#5B8DEF;margin-left:2px;margin-right:8px"></i>작은 점 = 성취기준 <small>${STD_N} · 색 = 과목</small>`;
 G.subjects.forEach(s=>{
   const b=document.createElement('button');
   b.className='lg';
-  b.innerHTML=`<span class="sw" style="background:${s.color}"></span>${esc(s.name)} <small>${nodes.filter(n=>n.subject===s.id).length}</small>`;
-  b.onclick=()=>{ hidden.has(s.id)?hidden.delete(s.id):hidden.add(s.id); b.classList.toggle('off'); applyFilter(); };
+  b.setAttribute('aria-pressed','true');
+  b.title=s.name+' 숨기기/보이기';
+  b.innerHTML=`<span class="sw" style="background:${s.color}"></span><span class="nm">${esc(s.name)}</span><small>${nodes.filter(n=>n.subject===s.id).length}</small>`;
+  b.onclick=()=>{ hidden.has(s.id)?hidden.delete(s.id):hidden.add(s.id); applyFilter(); };
   lg.appendChild(b);
 });
-const tagLg=document.createElement('div');
-tagLg.className='lg lg-tag'; tagLg.style.cursor='default';
-tagLg.innerHTML=`<span class="sw"></span>개념 <small>${nodes.filter(n=>n.type==='tag').length}</small>`;
-lg.appendChild(tagLg);
+function syncLegend(){
+  [...lg.querySelectorAll('button')].forEach((b,i)=>{ const off=hidden.has(G.subjects[i].id); b.classList.toggle('off',off); b.setAttribute('aria-pressed',String(!off)); });
+  $('#hiddenNote').hidden=!hidden.size;
+  $('#hiddenNote span').textContent=hidden.size+'과목 숨김';
+  $('#legendToggle').textContent=(hidden.size?'범례·과목 ('+hidden.size+'개 숨김) ':'범례·과목 ')+($('#legend').classList.contains('open')?'▾':'▴');
+}
+$('#showAll').onclick=()=>{ hidden.clear(); applyFilter(); };
+$('#legendToggle').onclick=()=>{ const open=$('#legend').classList.toggle('open'); $('#legendToggle').setAttribute('aria-expanded',String(open)); syncLegend(); };
+
+/* 확대·축소 버튼 */
+$('#zoomIn').onclick=()=>svg.interrupt().transition().duration(reduceMotion()?0:200).call(zoom.scaleBy,1.4);
+$('#zoomOut').onclick=()=>svg.interrupt().transition().duration(reduceMotion()?0:200).call(zoom.scaleBy,1/1.4);
 
 /* 상세 패널 */
 const visits=[];
@@ -286,15 +422,15 @@ function renderTrail(){
  $('#trail').textContent=[...visits.map(v=>v.id),selectedId].filter(Boolean).slice(-4).map(id=>byId.get(id)?.label||id).join(' → ');
 }
 function focusNode(d){
+ dismissCoach();
  if(selectedId!==d.id){visits.push(snapshot());if(visits.length>50)visits.shift();}
  sim.stop();
   selectedId=d.id;
   if(d.type==='std') hidden.delete(d.subject);
   else neighbors.get(d.id).forEach(id=>hidden.delete(byId.get(id).subject));
-  [...lg.querySelectorAll('button')].forEach((b,i)=>b.classList.toggle('off',hidden.has(G.subjects[i].id)));
   applyFilter(); updateLabels();
   $('#searchResults').replaceChildren();
-  svg.interrupt().transition().duration(matchMedia('(prefers-reduced-motion:reduce)').matches?0:250).call(zoom.transform,
+  svg.interrupt().transition().duration(reduceMotion()?0:250).call(zoom.transform,
     d3.zoomIdentity.translate(W/2-(W>760?170:0)-d.x*1.8, (W>760?H/2:H*.38)-d.y*1.8).scale(1.8));
   openPanel(d);
   highlight(d.id);
@@ -318,6 +454,7 @@ function openPanel(d){
     body.innerHTML=`<div class="p-eyebrow">개념</div>
       <div class="p-code"># ${esc(d.label)}</div>
       <div class="p-domain">${stds.length}개 성취기준이 이 개념으로 이어집니다 — 중학교에서 고등학교까지.</div>
+      <div class="p-how">지도에서 이 원과 선으로 이어진 점들이 아래 성취기준이에요. 하나를 누르면 그 성취기준으로 이동해요.</div>
       ${G.subjects.filter(s=>bySub[s.id]).map(s=>`
         <div class="p-sec">${esc(s.name)}</div>
         <div class="p-list">${bySub[s.id].map(n=>
@@ -337,7 +474,6 @@ $('#sheetToggle').onclick=()=>{const folded=$('#panel').classList.toggle('folded
 $('#goBack').onclick=()=>{
  const v=visits.pop();if(!v)return;
  svg.interrupt();selectedId=v.id;hidden.clear();v.hidden.forEach(id=>hidden.add(id));
- lg.querySelectorAll('button').forEach((b,i)=>b.classList.toggle('off',hidden.has(G.subjects[i].id)));
  $('#search').value=v.query;applyFilter();
  if(v.id){openPanel(byId.get(v.id));$('#panelContent').scrollTop=v.scroll;}else $('#panel').classList.remove('on');
  svg.call(zoom.transform,d3.zoomIdentity.translate(v.x,v.y).scale(v.k));updateLabels();refreshSearch();
@@ -345,19 +481,32 @@ $('#goBack').onclick=()=>{
 };
 svg.on('click',closeSelection);
 
-/* 검색 결과는 키보드로도 선택 가능한 실제 버튼 목록이다. */
+/* 검색 결과는 키보드로도 선택 가능한 실제 버튼 목록이다. 없으면 비슷한 개념을 제안한다 */
+function similarTags(q){
+  const grams=s=>{const a=new Set();s=s.replace(/\s+/g,'');for(let i=0;i<s.length;i++){a.add(s[i]);if(i<s.length-1)a.add(s.slice(i,i+2));}return a;};
+  const qg=grams(q);
+  return nodes.filter(n=>n.type==='tag').map(n=>{const g=grams(n.label.toLowerCase());let c=0;qg.forEach(x=>{if(g.has(x))c+=x.length;});return {n,c};})
+    .filter(o=>o.c>0).sort((a,b)=>b.c-a.c||b.n.deg-a.n.deg).slice(0,3).map(o=>o.n);
+}
 function refreshSearch(){
  const input=$('#search'),q=input.value.trim().toLowerCase();
  const hits=q?nodes.filter(n=>n.type==='tag'?n.label.toLowerCase().includes(q):n.id.toLowerCase().includes(q)||n.text.toLowerCase().includes(q)):[];
  input._hits=hits;
  $('#searchHint').textContent=q?(hits.length?hits.length+'개 일치 · 결과를 선택하세요':'일치하는 결과가 없습니다.'):'';
  $('#searchResults').innerHTML=hits.map(n=>'<button class="search-hit" data-id="'+esc(n.id)+'">'+esc(n.type==='tag'?n.label:n.id)+'<small>'+esc(n.type==='tag'?'개념 · '+n.deg+'개 연결':SUBJ[n.subject].name+' · '+n.text)+'</small></button>').join('');
+ if(q && !hits.length){
+   const sug=similarTags(q);
+   const pick=(sug.length?sug:nodes.filter(n=>n.type==='tag').sort((a,b)=>b.deg-a.deg).slice(0,3));
+   $('#searchHint').innerHTML='일치하는 결과가 없습니다.<div class="suggest">'+(sug.length?'혹시 이 개념을 찾으셨나요?':'많이 연결된 개념부터 둘러보세요.')+
+     '<div class="chips">'+pick.map(n=>'<button class="chip" data-id="'+esc(n.id)+'"># '+esc(n.label)+'</button>').join('')+'</div></div>';
+   $('#searchHint').querySelectorAll('[data-id]').forEach(b=>b.onclick=()=>focusNode(byId.get(b.dataset.id)));
+ }
  $('#searchResults').querySelectorAll('button').forEach(b=>b.onclick=()=>focusNode(byId.get(b.dataset.id)));
  if(selectedId){highlight(selectedId);return;}
  if(!q){highlight(null);return;}
  nd.classed('faded',d=>!hits.includes(d));lk.classed('faded',true).classed('hl',false);
 }
-$('#search').addEventListener('input',()=>{selectedId=null;$('#panel').classList.remove('on');updateLabels();refreshSearch();});
+$('#search').addEventListener('input',()=>{dismissCoach();selectedId=null;$('#panel').classList.remove('on');updateLabels();refreshSearch();});
 $('#search').addEventListener('keydown',function(e){
  if(e.key==='Enter' && this._hits?.length){e.preventDefault();focusNode(this._hits[0]);}
  if(e.key==='ArrowDown'){e.preventDefault();$('#searchResults button')?.focus();}
@@ -365,9 +514,12 @@ $('#search').addEventListener('keydown',function(e){
 });
 $('#resetView').onclick=()=>{
  visits.length=0;renderTrail();
- $('#search').value='';hidden.clear();lg.querySelectorAll('button').forEach(b=>b.classList.remove('off'));
- applyFilter();closeSelection();svg.interrupt();fitView(false);
+ $('#search').value='';hidden.clear();
+ applyFilter();closeSelection();svg.interrupt();fitView(true);
 };
+
+syncLegend(); updateTiers(d3.zoomTransform(svg.node())); placeCoach();
+addEventListener('resize',()=>{ updateTiers(d3.zoomTransform(svg.node())); placeCoach(); });
 
 window.STDMAP={ nodes, links, tierOf, focus:id=>{const n=byId.get(id); if(n)focusNode(n);} };   // 프로브용
 })();

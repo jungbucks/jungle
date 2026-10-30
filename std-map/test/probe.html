@@ -14,7 +14,14 @@ document.getElementById('f').onload=async()=>{
   const avgX=t=>{const a=W.STDMAP.nodes.filter(n=>n.type==='std'&&W.STDMAP.tierOf(n)===t);return a.reduce((s,n)=>s+n.x,0)/a.length;};
   log('초→중→일반→진로→전문 좌→우 흐름: '+(avgX(0)<avgX(1)&&avgX(1)<avgX(2)&&avgX(2)<avgX(3)&&avgX(3)<avgX(4)));
   log('링크 렌더(215+): '+(D.querySelectorAll('.lk').length>=215));
-  log('범례 과목 8+개념 1: '+(D.querySelectorAll('#legend .lg').length===9));
+  log('범례 과목 8 + 읽는 법: '+(D.querySelectorAll('#legend .lg').length===8 && D.querySelector('#legend .lg-key').textContent.includes('개념')));
+  log('처음 안내(알고리즘 고리+말풍선): '+(D.querySelectorAll('.coach-ring').length===1 && !D.getElementById('coach').hidden));
+  log('학교급 라벨 5개 화면 안: '+([...D.querySelectorAll('#tierLabels span')].filter(s=>s.style.visibility!=='hidden').length===5));
+  log('확대 버튼 3개: '+(D.querySelectorAll('#zoomCtl button').length===3));
+  D.querySelector('#legendList .lg').click(); await sleep(150);
+  log('과목 숨김 표시: '+(!D.getElementById('hiddenNote').hidden && D.querySelector('#legendList .lg').getAttribute('aria-pressed')==='false'));
+  D.getElementById('showAll').click(); await sleep(150);
+  log('모두 보기: '+D.getElementById('hiddenNote').hidden);
   W.STDMAP.focus('[12정01-01]'); await sleep(700);
   log('상세 패널 열림: '+D.getElementById('panel').classList.contains('on'));
   log('패널에 성취기준 전문: '+D.getElementById('panelBody').textContent.includes('유무선 네트워크'));
@@ -24,6 +31,10 @@ document.getElementById('f').onload=async()=>{
   const inp=D.getElementById('search');
   inp.value='재귀'; inp.dispatchEvent(new W.Event('input',{bubbles:true})); await sleep(200);
   log('검색 매칭 힌트: '+D.getElementById('searchHint').textContent.includes('일치'));
+  log('개념 선택 후 안내 사라짐: '+(D.querySelectorAll('.coach-ring').length===0 && D.getElementById('coach').hidden));
+  inp.value='알고리듬'; inp.dispatchEvent(new W.Event('input',{bubbles:true})); await sleep(200);
+  log('결과 없음 → 비슷한 개념 제안: '+(D.querySelectorAll('#searchHint .chip').length>=1 && D.getElementById('searchHint').textContent.includes('알고리즘')));
+  log('개념 원 Tab 이동(28): '+(D.querySelectorAll('.nd.tag[tabindex="0"]').length===28));
   log('DONE');
  }catch(e){ log('ERR '+e.message); }
 };
