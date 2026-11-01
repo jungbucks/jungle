@@ -39,6 +39,18 @@
 | 캐시 전략·CSP·정적 셸 | `sw.js` / `index.html` |
 | 배포 전 검증기 | `tools/verify.mjs`([1]~[4] 정적 + [5]·[6] 호출) + `tools/test.mjs`(계산 단위 테스트, verify [5]가 호출) + `tools/render.mjs`(화면 카탈로그) + `tools/invariants.mjs`(렌더 불변식 규칙, verify [6]이 호출) |
 
+## 선생님 웹앱 썸네일 다시 찍기 (2026-11)
+
+앱 목록 = `assets/data.js`의 `APPSTORE_APPS`(url·thumb), 이미지 = `images/apps/<id>.png`(1120×630 PNG, 16:9). 손으로 찍지 말고 `tools/app-shots.mjs`(로컬 전용 — 사이트엔 안 들어감)로 실제 앱을 헤드리스 Edge로 찍는다.
+
+1. `node tools/app-shots.mjs --list` → id·대상 파일·앱별 설정 확인
+2. `node tools/app-shots.mjs --out .app-shots` → 미리보기(사이트 이미지 안 건드림) + `.app-shots/_sheet.png` 모아보기를 **눈으로 확인**(빈 화면·안내창·로딩 표시)
+3. 이상하면 파일 위쪽 `SHOTS`에 앱별 설정(scroll·click·hide·storage·viewport·wait·skip)을 넣고 2번 반복
+4. `node tools/app-shots.mjs`(일부만: `--only sort-lab,cipher`) → `images/apps/` 덮어쓰기 → verify → 캐시 +1 → 커밋
+
+- 새 앱을 등재할 때 thumb은 `images/apps/<id>.png`로 적고 sw.js ASSETS에도 넣는다(먼저 찍고 등록).
+- Playwright·sharp는 정글에 없으므로 다른 폴더에서 빌려 쓴다(기본 `D:/Works/token_economy`·`D:/Works/sih26`의 node_modules, 바꾸려면 `JUNGLE_PLAYWRIGHT`·`JUNGLE_SHARP`). 브라우저는 1개만 띄우고 끝나면 닫는다.
+
 ## 절대 규칙 (하위 모델이 자주 실수하는 곳)
 
 1. **모든 수정 후 `node tools/verify.mjs`** — ⚙️ **2026-07-17부터 git pre-commit 훅이 자동 강제**(원본 `tools/pre-commit` → `.git/hooks/`에 설치됨. 새 클론이면 복사 필요. `--no-verify` 우회 금지 — 5a69e3f가 verify 생략 커밋이었던 재발 방지). 6항목(import 정합성/문법/그래프 로드+init/SW 프리캐시 존재/**[5] 계산 단위 테스트**/**[6] 렌더 불변식**) 통과 못 하면 배포 금지. 새 DOM API를 쓰면 verify.mjs의 DOM 스텁에도 추가. **계산 로직(gradecalc·chasi·evalplan)을 고치면 `tools/test.mjs`에 케이스를 먼저/함께 추가**할 것 — 실무 사고 방지선. 테스트용 export는 `__gcTest`/`__chasiTest`/`__evalTest`(앱은 render 함수만 씀). chasi는 로컬 날짜 키를 사용한다. `tools/workflow-tests.mjs`에서 한국·UTC·미국 시간대의 월 경계·제외일과 CSV·복사·과목 선택 흐름도 검증한다(verify [5] 자동 실행).

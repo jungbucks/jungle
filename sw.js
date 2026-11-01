@@ -1,4 +1,4 @@
-const CACHE = 'jungle-v86';
+const CACHE = 'jungle-v87';
 
 const ASSETS = [
   './',
@@ -40,9 +40,9 @@ const ASSETS = [
   './images/apps/markdown.png',
   './images/apps/py_visual.png',
   './images/apps/data-science.png',
-  './images/apps/sort-lab.svg',
-  './images/apps/sw-life.svg',
-  './images/apps/cipher.svg',
+  './images/apps/sort-lab.png',
+  './images/apps/sw-life.png',
+  './images/apps/cipher.png',
   './images/apps/teacher-pay.png',
   './assets/affective.js',
   './assets/planctx.js',

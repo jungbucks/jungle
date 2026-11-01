@@ -1872,7 +1872,7 @@ const APPSTORE_APPS = [
     type: 'webapp',
     tags: ['알고리즘', '단계별 실험'],
     url: 'https://jungbucks.github.io/sort-lab/',
-    thumb: 'images/apps/sort-lab.svg',
+    thumb: 'images/apps/sort-lab.png',
   },
   {
     name: '소프트웨어와 생활 학습 시리즈',
@@ -1882,7 +1882,7 @@ const APPSTORE_APPS = [
     type: 'webapp',
     tags: ['소프트웨어와 생활', '체험 학습'],
     url: 'https://jungbucks.github.io/sw-life/',
-    thumb: 'images/apps/sw-life.svg',
+    thumb: 'images/apps/sw-life.png',
   },
   {
     name: '암호의 세계',
@@ -1892,7 +1892,7 @@ const APPSTORE_APPS = [
     type: 'webapp',
     tags: ['정보보호', '암호 실험'],
     url: 'https://jungbucks.github.io/cipher/',
-    thumb: 'images/apps/cipher.svg',
+    thumb: 'images/apps/cipher.png',
   },
   {
     name: '교사 수당 계산기',
