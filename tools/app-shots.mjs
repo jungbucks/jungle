@@ -38,7 +38,7 @@ const SHOTS = {
   'data-science': {},
   'sort-lab':     { steps: [{ scroll: 150 }] },        // 카드 줄이 잘리지 않게 탭부터
   'sw-life':      {},
-  'cipher':       { steps: [{ scroll: 318 }] },        // 제목 대신 알파벳 휠(핵심 시각화)
+  'cipher':       { storage: { cipher_intro_seen: '1' }, steps: [{ scroll: 250 }] },  // 첫 화면에 휠·조작부가 다 보임(2026-11-02 개편), 첫 방문 안내는 건너뜀
   'teacher-pay':  {},
 };
 
